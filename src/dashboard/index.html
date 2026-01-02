@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>P5 Live Grid Dashboard v2.2</title>
+    <title>P5 Live Grid Dashboard v2.3</title>
     
-    <!-- Security: Content Security Policy (Updated for GIS) -->
-    <meta http-equiv="Content-Security-Policy" 
-          content="default-src 'self'; 
-                   script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://accounts.google.com; 
-                   style-src 'self' 'unsafe-inline'; 
-                   img-src 'self' data: blob: https://*.googleusercontent.com; 
+    <!-- Security: Content Security Policy (Updated for GIS + SheetJS + jsPDF) -->
+    <meta http-equiv="Content-Security-Policy"
+          content="default-src 'self';
+                   script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://accounts.google.com https://cdn.sheetjs.com https://cdnjs.cloudflare.com;
+                   style-src 'self' 'unsafe-inline';
+                   img-src 'self' data: blob: https://*.googleusercontent.com;
                    connect-src 'self' https://script.google.com https://*.googleusercontent.com https://oauth2.googleapis.com;
                    font-src 'self' https://fonts.gstatic.com;
                    frame-src https://accounts.google.com;">
@@ -23,7 +23,14 @@
     
     <!-- Alpine.js (Core) -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
-    
+
+    <!-- SheetJS for Excel Export -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+
+    <!-- jsPDF for PDF Report Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
     <!-- P5 Modules -->
     <script type="module" src="./js/auth.js"></script>
     <script type="module" src="./js/api.js"></script>
@@ -301,11 +308,42 @@
 
         .elevation-grid {
             display: flex;
-            gap: 4px;
-            height: 80px;
+            flex-direction: column; /* Ensure rows stack vertically */
+            gap: 2px;
+            height: auto; /* Allow dynamic height based on floors */
+            min-height: 80px;
             margin-bottom: 10px;
         }
 
+        .elevation-row {
+            display: flex;
+            gap: 2px;
+            height: 18px; /* Fixed height for rows */
+            align-items: center;
+        }
+        
+        .elevation-floor-label {
+            width: 25px;
+            font-size: 9px;
+            color: var(--text-sub);
+            text-align: right;
+            padding-right: 4px;
+        }
+
+        .elevation-cell {
+            flex: 1;
+            background: #161b22;
+            border: 1px solid var(--border-color);
+            border-radius: 2px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .elevation-cell:hover { border-color: var(--text-sub); }
+        .elevation-cell.active { background: rgba(31, 111, 235, 0.2); border-color: #58a6ff; }
+        
         .jeolju-bar {
             flex: 1;
             background: #161b22;
@@ -318,6 +356,7 @@
             display: flex;
             flex-direction: column;
             justify-content: flex-end;
+            height: 60px; /* Explicit height for bar chart */
         }
 
         .jeolju-bar:hover {
@@ -1295,6 +1334,107 @@
         .export-btn-icon { font-size: 24px; display: block; margin-bottom: 8px; }
         .export-btn-label { font-size: 12px; font-weight: 600; }
         .export-btn-hint { font-size: 10px; color: var(--text-sub); margin-top: 4px; }
+
+        /* Excel Export Dropdown Menu */
+        .export-btn-wrapper {
+            position: relative;
+            flex: 1;
+        }
+        .excel-export-menu {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            right: 0;
+            min-width: 220px;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            z-index: 200;
+            overflow: hidden;
+        }
+        .excel-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .excel-menu-item:last-child { border-bottom: none; }
+        .excel-menu-item:hover {
+            background: rgba(31, 111, 235, 0.1);
+        }
+        .excel-menu-item.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .excel-menu-item.disabled:hover {
+            background: transparent;
+        }
+        .excel-menu-icon {
+            font-size: 16px;
+            width: 24px;
+            text-align: center;
+        }
+        .excel-menu-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .excel-menu-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+        .excel-menu-hint {
+            font-size: 10px;
+            color: var(--text-sub);
+        }
+        .excel-menu-divider {
+            height: 1px;
+            background: var(--border-color);
+            margin: 4px 0;
+        }
+
+        /* Header Excel Export Button */
+        .header-export-btn {
+            position: relative;
+        }
+        .header-export-dropdown {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            min-width: 200px;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            z-index: 200;
+            overflow: hidden;
+        }
+        .header-export-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            font-size: 12px;
+            color: var(--text-sub);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .header-export-item:last-child { border-bottom: none; }
+        .header-export-item:hover {
+            background: rgba(31, 111, 235, 0.1);
+            color: var(--text-main);
+        }
+        .header-export-item.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
 
         /* Phase 8: Import Preview Modal */
         .import-preview-modal {
@@ -4143,7 +4283,41 @@
                     <option value="ALL">전체</option>
                 </select>
             </div>
-        <button class="btn btn-primary" @click="exportData()">📥 내보내기</button>
+        <!-- Excel Export Dropdown -->
+        <div class="header-export-btn" x-data="{ headerExportOpen: false }" @click.outside="headerExportOpen = false">
+            <button class="btn btn-primary" @click="headerExportOpen = !headerExportOpen">
+                📥 내보내기 <span style="font-size:10px;">▼</span>
+            </button>
+            <div class="header-export-dropdown" x-show="headerExportOpen" x-transition style="display:none;">
+                <div class="header-export-item" @click="exportData(); headerExportOpen = false;">
+                    📄 JSON (전체 백업)
+                </div>
+                <div class="header-export-item" @click="exportToCSV(); headerExportOpen = false;">
+                    📊 CSV (기둥 데이터)
+                </div>
+                <div class="header-export-item" @click="exportToExcel({ scope: 'all' }); headerExportOpen = false;">
+                    📗 Excel (전체)
+                </div>
+                <div class="header-export-item" @click="exportToExcel({ scope: 'filtered' }); headerExportOpen = false;">
+                    🔍 Excel (필터됨)
+                </div>
+                <div class="header-export-item"
+                     :class="{ 'disabled': selectedCells.length === 0 }"
+                     @click="selectedCells.length > 0 && (exportToExcel({ scope: 'selected' }), headerExportOpen = false)">
+                    ✓ Excel (선택: <span x-text="selectedCells.length"></span>개)
+                </div>
+                <div style="border-top: 1px solid var(--border-color); margin: 4px 0;"></div>
+                <div class="header-export-item" @click="generatePDFReport('summary'); headerExportOpen = false;">
+                    📕 PDF 요약 보고서
+                </div>
+                <div class="header-export-item" @click="generatePDFReport('detailed'); headerExportOpen = false;">
+                    📘 PDF 상세 보고서
+                </div>
+                <div class="header-export-item" @click="generatePDFReport('issues'); headerExportOpen = false;">
+                    📙 PDF 이슈 보고서
+                </div>
+            </div>
+        </div>
         <button class="btn" @click="toggleIssuePanel()" :style="openIssues.length > 0 ? 'border-color:#da3633; color:#f85149;' : ''">
             🚨 이슈 <span x-show="openIssues.length > 0" x-text="`(${openIssues.length})`" style="font-weight:bold;"></span>
         </button>
@@ -4628,7 +4802,7 @@
             </div>
         </div>
 
-        <hr style="border-color:#30363d; margin:0;">
+        <hr style="border-color:#30363d; margin: 15px 0;">
 
         <div>
             <h3>공간 구역</h3>
@@ -4650,7 +4824,7 @@
             </template>
         </div>
 
-        <hr style="border-color:#30363d; margin:0;">
+        <hr style="border-color:#30363d; margin: 15px 0;">
 
         <div>
             <h3>빠른 실행</h3>
@@ -4662,7 +4836,7 @@
                     @click="saveToLocalStorage()">💾 로컬 저장</button>
         </div>
 
-        <hr style="border-color:#30363d; margin:0;">
+        <hr style="border-color:#30363d; margin: 15px 0;">
 
         <!-- Phase 9: 층-절주 입면 뷰어 (Enhanced) -->
         <div class="elevation-viewer" x-show="elevationViewOpen">
@@ -5190,6 +5364,8 @@
             <button class="admin-tab" :class="{ 'active': adminTab === 'status' }" @click="adminTab = 'status'" role="tab" :aria-selected="adminTab === 'status'">🎨 Status Codes</button>
             <button class="admin-tab" :class="{ 'active': adminTab === 'import' }" @click="adminTab = 'import'" role="tab" :aria-selected="adminTab === 'import'">📥 Import/Export</button>
             <button class="admin-tab" :class="{ 'active': adminTab === 'api' }" @click="adminTab = 'api'" role="tab" :aria-selected="adminTab === 'api'">🔗 API Config</button>
+            <button class="admin-tab" :class="{ 'active': adminTab === 'slack' }" @click="adminTab = 'slack'; loadSlackSettings()" role="tab" :aria-selected="adminTab === 'slack'">🔔 Slack</button>
+            <button class="admin-tab" :class="{ 'active': adminTab === 'email' }" @click="adminTab = 'email'; loadEmailSettings()" role="tab" :aria-selected="adminTab === 'email'">📧 Email</button>
         </div>
         
         <div class="admin-modal-body">
@@ -5267,16 +5443,85 @@
                                 <span class="export-btn-label">CSV</span>
                                 <span class="export-btn-hint">Column data only</span>
                             </button>
-                            <button class="export-btn" @click="exportToExcel()">
-                                <span class="export-btn-icon">📗</span>
-                                <span class="export-btn-label">Excel</span>
-                                <span class="export-btn-hint">With formatting</span>
-                            </button>
+                            <!-- Excel Export with Dropdown Options -->
+                            <div class="export-btn-wrapper" x-data="{ excelMenuOpen: false }" @click.outside="excelMenuOpen = false">
+                                <button class="export-btn" @click="excelMenuOpen = !excelMenuOpen" style="position:relative;">
+                                    <span class="export-btn-icon">📗</span>
+                                    <span class="export-btn-label">Excel <span style="font-size:10px;">▼</span></span>
+                                    <span class="export-btn-hint">With formatting</span>
+                                </button>
+                                <!-- Excel Export Dropdown Menu -->
+                                <div class="excel-export-menu" x-show="excelMenuOpen" x-transition style="display:none;">
+                                    <div class="excel-menu-item" @click="exportToExcel({ scope: 'all' }); excelMenuOpen = false;">
+                                        <span class="excel-menu-icon">📋</span>
+                                        <div class="excel-menu-content">
+                                            <span class="excel-menu-label">전체 데이터</span>
+                                            <span class="excel-menu-hint">모든 기둥 및 이슈 내보내기</span>
+                                        </div>
+                                    </div>
+                                    <div class="excel-menu-item" @click="exportToExcel({ scope: 'filtered' }); excelMenuOpen = false;">
+                                        <span class="excel-menu-icon">🔍</span>
+                                        <div class="excel-menu-content">
+                                            <span class="excel-menu-label">필터된 데이터</span>
+                                            <span class="excel-menu-hint">현재 필터 조건만 내보내기</span>
+                                        </div>
+                                    </div>
+                                    <div class="excel-menu-item"
+                                         :class="{ 'disabled': selectedCells.length === 0 }"
+                                         @click="selectedCells.length > 0 && (exportToExcel({ scope: 'selected' }), excelMenuOpen = false)">
+                                        <span class="excel-menu-icon">✓</span>
+                                        <div class="excel-menu-content">
+                                            <span class="excel-menu-label">선택된 항목</span>
+                                            <span class="excel-menu-hint" x-text="selectedCells.length > 0 ? selectedCells.length + '개 선택됨' : '선택된 항목 없음'"></span>
+                                        </div>
+                                    </div>
+                                    <div class="excel-menu-divider"></div>
+                                    <div class="excel-menu-item" @click="exportToExcel({ scope: 'floor', floorId: selectedFloor }); excelMenuOpen = false;">
+                                        <span class="excel-menu-icon">🏢</span>
+                                        <div class="excel-menu-content">
+                                            <span class="excel-menu-label">현재 층만</span>
+                                            <span class="excel-menu-hint" x-text="currentFloorLabel + ' 데이터만 내보내기'"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- PDF Export with Dropdown Options -->
+                            <div class="export-btn-wrapper" x-data="{ pdfMenuOpen: false }" @click.outside="pdfMenuOpen = false">
+                                <button class="export-btn" @click="pdfMenuOpen = !pdfMenuOpen" style="position:relative;">
+                                    <span class="export-btn-icon">📕</span>
+                                    <span class="export-btn-label">PDF <span style="font-size:10px;">▼</span></span>
+                                    <span class="export-btn-hint">Report format</span>
+                                </button>
+                                <!-- PDF Export Dropdown Menu -->
+                                <div class="excel-export-menu" x-show="pdfMenuOpen" x-transition style="display:none;">
+                                    <div class="excel-menu-item" @click="generatePDFReport('summary'); pdfMenuOpen = false;">
+                                        <span class="excel-menu-icon">📋</span>
+                                        <div class="excel-menu-content">
+                                            <span class="excel-menu-label">요약 보고서</span>
+                                            <span class="excel-menu-hint">핵심 지표 및 진행률 (2-3페이지)</span>
+                                        </div>
+                                    </div>
+                                    <div class="excel-menu-item" @click="generatePDFReport('detailed'); pdfMenuOpen = false;">
+                                        <span class="excel-menu-icon">📚</span>
+                                        <div class="excel-menu-content">
+                                            <span class="excel-menu-label">상세 보고서</span>
+                                            <span class="excel-menu-hint">층별 상세 현황 포함 (11+ 페이지)</span>
+                                        </div>
+                                    </div>
+                                    <div class="excel-menu-item" @click="generatePDFReport('issues'); pdfMenuOpen = false;">
+                                        <span class="excel-menu-icon">🚨</span>
+                                        <div class="excel-menu-content">
+                                            <span class="excel-menu-label">이슈 보고서</span>
+                                            <span class="excel-menu-hint">미해결 이슈 및 통계</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    
+
                     <hr style="border-color:#30363d; margin:10px 0;">
-                    
+
                     <div>
                         <h3 style="margin:0 0 12px 0; font-size:14px; color:#fff;">📥 Import Data</h3>
                         <div class="import-box" 
@@ -5290,6 +5535,60 @@
                         </div>
                         <input type="file" x-ref="importFile" accept=".json,.csv" style="display:none;" 
                                @change="handleFileImport($event)">
+                    </div>
+                    
+                    <hr style="border-color:#30363d; margin:15px 0;">
+                    
+                    <!-- MGT Import Section -->
+                    <div>
+                        <h3 style="margin:0 0 12px 0; font-size:14px; color:#fff;">🏗️ MGT 해석모델 가져오기</h3>
+                        <p style="margin:0 0 12px 0; font-size:11px; color:#8b949e;">
+                            MIDAS Gen/Civil MGT 파일에서 평면 구조를 자동으로 생성합니다.
+                        </p>
+                        <div class="import-box" 
+                             style="border-color: #8957e5; background: rgba(137, 87, 229, 0.05);"
+                             @click="$refs.mgtFile.click()"
+                             @dragover.prevent="$event.target.classList.add('dragover')"
+                             @dragleave="$event.target.classList.remove('dragover')"
+                             @drop.prevent="handleMgtDrop($event)">
+                            <div class="import-box-icon">📐</div>
+                            <div class="import-box-text">MGT 파일을 여기에 드래그하거나 클릭하세요</div>
+                            <div class="import-box-hint">*.mgt (MIDAS 해석모델)</div>
+                        </div>
+                        <input type="file" x-ref="mgtFile" accept=".mgt" style="display:none;" 
+                               @change="handleMgtImport($event)">
+                        
+                        <!-- MGT Import Progress -->
+                        <div x-show="mgtImportStatus.loading" style="margin-top:12px; padding:12px; background:#0d1117; border:1px solid #30363d; border-radius:8px;">
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <div class="loading-spinner"></div>
+                                <span style="font-size:12px; color:#8b949e;" x-text="mgtImportStatus.message"></span>
+                            </div>
+                        </div>
+                        
+                        <!-- MGT Import Result -->
+                        <div x-show="mgtImportStatus.success" style="margin-top:12px; padding:12px; background:#0d1117; border:1px solid #238636; border-radius:8px;">
+                            <div style="display:flex; align-items:center; gap:10px; color:#3fb950; margin-bottom:8px;">
+                                <span>✅</span>
+                                <span style="font-size:12px; font-weight:600;">MGT 파싱 완료</span>
+                            </div>
+                            <div style="font-size:11px; color:#8b949e;">
+                                <div>노드: <span x-text="mgtImportStatus.nodes"></span>개 | 요소: <span x-text="mgtImportStatus.elements"></span>개</div>
+                                <div>그리드: <span x-text="mgtImportStatus.cols"></span>열 × <span x-text="mgtImportStatus.rows"></span>행</div>
+                                <div style="color:#58a6ff;">🏢 층 수: <span x-text="mgtImportStatus.floors"></span>개 (Z좌표 기반)</div>
+                                <div x-show="mgtImportStatus.excludedCols.length > 0" style="color:#d29922;">
+                                    ⚠️ 제외 열: <span x-text="mgtImportStatus.excludedCols.join(', ')"></span>
+                                </div>
+                            </div>
+                            <div style="margin-top:10px; display:flex; gap:8px;">
+                                <button class="btn btn-success" style="font-size:11px; padding:6px 12px;" @click="applyMgtConfig()">
+                                    ✅ 설정 적용
+                                </button>
+                                <button class="btn" style="font-size:11px; padding:6px 12px;" @click="mgtImportStatus.success = false">
+                                    취소
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -5334,6 +5633,297 @@
                             Disable
                         </button>
                     </div>
+                </div>
+            </div>
+
+            <!-- Slack Integration Tab (Phase 11) -->
+            <div x-show="adminTab === 'slack'">
+                <div style="margin-bottom:20px;">
+                    <h3 style="margin:0 0 8px 0; font-size:14px; color:#fff;">🔔 Slack Webhook Integration</h3>
+                    <p style="margin:0; font-size:11px; color:#8b949e;">
+                        Slack Webhook을 설정하여 대시보드 이벤트 알림을 받으세요.
+                    </p>
+                </div>
+
+                <!-- Webhook URL Input -->
+                <div class="form-group">
+                    <label>Webhook URL</label>
+                    <div style="position: relative;">
+                        <input :type="slackSettings.showWebhookUrl ? 'text' : 'password'"
+                               x-model="slackSettings.webhookUrl"
+                               placeholder="https://hooks.slack.com/services/T00000000/B00000000/XXXXXXX"
+                               style="padding-right: 80px;">
+                        <button class="btn"
+                                style="position:absolute; right:4px; top:50%; transform:translateY(-50%); padding:4px 8px; font-size:10px;"
+                                @click="slackSettings.showWebhookUrl = !slackSettings.showWebhookUrl">
+                            <span x-text="slackSettings.showWebhookUrl ? '숨기기' : '보기'"></span>
+                        </button>
+                    </div>
+                    <div x-show="slackSettings.webhookConfigured && !slackSettings.webhookUrl"
+                         style="font-size:11px; color:#8b949e; margin-top:4px;">
+                        현재 설정됨: <span x-text="slackSettings.webhookUrlMasked"></span>
+                    </div>
+                </div>
+
+                <!-- Notification Settings -->
+                <div style="margin-top:20px;">
+                    <h4 style="margin:0 0 12px 0; font-size:13px; color:#fff;">알림 설정</h4>
+
+                    <div class="slack-notification-toggles" style="display:flex; flex-direction:column; gap:12px;">
+                        <!-- Critical Issue -->
+                        <label class="slack-toggle-item" style="display:flex; align-items:center; justify-content:space-between; padding:10px 12px; background:#0d1117; border:1px solid var(--border-color); border-radius:6px; cursor:pointer;">
+                            <div>
+                                <div style="font-size:12px; color:#fff;">🚨 Critical 이슈 생성</div>
+                                <div style="font-size:10px; color:#8b949e;">심각도가 Critical인 이슈가 등록될 때</div>
+                            </div>
+                            <input type="checkbox" x-model="slackSettings.notifications.criticalIssue"
+                                   style="width:18px; height:18px; cursor:pointer;">
+                        </label>
+
+                        <!-- Status Delay -->
+                        <label class="slack-toggle-item" style="display:flex; align-items:center; justify-content:space-between; padding:10px 12px; background:#0d1117; border:1px solid var(--border-color); border-radius:6px; cursor:pointer;">
+                            <div>
+                                <div style="font-size:12px; color:#fff;">⏳ 지연 상태 변경</div>
+                                <div style="font-size:10px; color:#8b949e;">기둥 상태가 "delay"로 변경될 때</div>
+                            </div>
+                            <input type="checkbox" x-model="slackSettings.notifications.statusDelay"
+                                   style="width:18px; height:18px; cursor:pointer;">
+                        </label>
+
+                        <!-- Status Blocked/Hold -->
+                        <label class="slack-toggle-item" style="display:flex; align-items:center; justify-content:space-between; padding:10px 12px; background:#0d1117; border:1px solid var(--border-color); border-radius:6px; cursor:pointer;">
+                            <div>
+                                <div style="font-size:12px; color:#fff;">🛑 Hold 상태 변경</div>
+                                <div style="font-size:10px; color:#8b949e;">기둥 상태가 "blocked" 또는 "hold"로 변경될 때</div>
+                            </div>
+                            <input type="checkbox" x-model="slackSettings.notifications.statusBlocked"
+                                   style="width:18px; height:18px; cursor:pointer;">
+                        </label>
+
+                        <!-- Bulk Update -->
+                        <label class="slack-toggle-item" style="display:flex; align-items:center; justify-content:space-between; padding:10px 12px; background:#0d1117; border:1px solid var(--border-color); border-radius:6px; cursor:pointer;">
+                            <div>
+                                <div style="font-size:12px; color:#fff;">📦 대량 업데이트</div>
+                                <div style="font-size:10px; color:#8b949e;">10개 이상의 기둥이 한 번에 변경될 때</div>
+                            </div>
+                            <input type="checkbox" x-model="slackSettings.notifications.bulkUpdate"
+                                   style="width:18px; height:18px; cursor:pointer;">
+                        </label>
+
+                        <!-- Daily Summary -->
+                        <label class="slack-toggle-item" style="display:flex; align-items:center; justify-content:space-between; padding:10px 12px; background:#0d1117; border:1px solid var(--border-color); border-radius:6px; cursor:pointer;">
+                            <div>
+                                <div style="font-size:12px; color:#fff;">📊 일일 진행률 요약</div>
+                                <div style="font-size:10px; color:#8b949e;">매일 지정된 시간에 진행률 요약 전송 (트리거 설정 필요)</div>
+                            </div>
+                            <input type="checkbox" x-model="slackSettings.notifications.dailySummary"
+                                   style="width:18px; height:18px; cursor:pointer;">
+                        </label>
+
+                        <!-- Issue Resolved -->
+                        <label class="slack-toggle-item" style="display:flex; align-items:center; justify-content:space-between; padding:10px 12px; background:#0d1117; border:1px solid var(--border-color); border-radius:6px; cursor:pointer;">
+                            <div>
+                                <div style="font-size:12px; color:#fff;">✅ 이슈 해결</div>
+                                <div style="font-size:10px; color:#8b949e;">이슈가 해결 상태로 변경될 때</div>
+                            </div>
+                            <input type="checkbox" x-model="slackSettings.notifications.issueResolved"
+                                   style="width:18px; height:18px; cursor:pointer;">
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div style="display:flex; gap:10px; margin-top:20px; flex-wrap:wrap;">
+                    <button class="btn btn-success" @click="saveSlackSettings()" :disabled="slackSettings.saving">
+                        <span x-show="!slackSettings.saving">💾 설정 저장</span>
+                        <span x-show="slackSettings.saving">저장 중...</span>
+                    </button>
+                    <button class="btn" @click="testSlackNotification()"
+                            :disabled="slackSettings.testing || (!slackSettings.webhookUrl && !slackSettings.webhookConfigured)">
+                        <span x-show="!slackSettings.testing">🧪 테스트 알림 전송</span>
+                        <span x-show="slackSettings.testing">전송 중...</span>
+                    </button>
+                    <button class="btn" @click="clearSlackWebhook()"
+                            x-show="slackSettings.webhookConfigured || slackSettings.webhookUrl"
+                            style="color:#da3633;">
+                        🗑️ Webhook 삭제
+                    </button>
+                </div>
+
+                <!-- Status Message -->
+                <div x-show="slackSettings.message"
+                     :class="{'success': slackSettings.messageType === 'success', 'error': slackSettings.messageType === 'error'}"
+                     style="margin-top:15px; padding:10px 12px; border-radius:6px; font-size:12px;"
+                     :style="slackSettings.messageType === 'success' ? 'background:#0d1117; border:1px solid #238636; color:#3fb950;' : 'background:#0d1117; border:1px solid #da3633; color:#f85149;'">
+                    <span x-text="slackSettings.message"></span>
+                </div>
+
+                <!-- Help Section -->
+                <div style="margin-top:20px; padding:15px; background:#0d1117; border:1px solid var(--border-color); border-radius:8px;">
+                    <h4 style="margin:0 0 10px 0; font-size:12px; color:#fff;">📖 Slack Webhook 설정 방법</h4>
+                    <ol style="margin:0; padding-left:20px; font-size:11px; color:#8b949e; line-height:1.8;">
+                        <li>Slack 워크스페이스에서 <a href="https://api.slack.com/apps" target="_blank" style="color:#58a6ff;">Slack App</a>을 생성합니다.</li>
+                        <li>"Incoming Webhooks" 기능을 활성화합니다.</li>
+                        <li>알림을 받을 채널을 선택하고 Webhook URL을 생성합니다.</li>
+                        <li>생성된 URL을 위 입력란에 붙여넣고 저장합니다.</li>
+                        <li>"테스트 알림 전송" 버튼으로 연동을 확인합니다.</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- Email Integration Tab (Phase 12) -->
+            <div x-show="adminTab === 'email'">
+                <div style="margin-bottom:20px;">
+                    <h3 style="margin:0 0 8px 0; font-size:14px; color:#fff;">📧 Email 알림 Integration</h3>
+                    <p style="margin:0; font-size:11px; color:#8b949e;">
+                        이메일 수신자를 설정하여 대시보드 이벤트 알림을 받으세요.
+                    </p>
+                </div>
+
+                <!-- Email Recipients Management -->
+                <div class="form-group">
+                    <label>수신자 이메일 목록</label>
+                    <div style="margin-bottom:12px;">
+                        <div style="display:flex; gap:8px;">
+                            <input type="email"
+                                   x-model="emailSettings.newRecipient"
+                                   placeholder="email@example.com"
+                                   @keydown.enter="addEmailRecipient()"
+                                   style="flex:1;">
+                            <button class="btn btn-primary"
+                                    style="padding:8px 16px; white-space:nowrap;"
+                                    @click="addEmailRecipient()"
+                                    :disabled="!emailSettings.newRecipient">
+                                + 추가
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Recipients List -->
+                    <div x-show="emailSettings.recipients.length > 0"
+                         style="max-height:150px; overflow-y:auto; background:#0d1117; border:1px solid var(--border-color); border-radius:6px; padding:8px;">
+                        <template x-for="(email, index) in emailSettings.recipients" :key="index">
+                            <div style="display:flex; align-items:center; justify-content:space-between; padding:6px 8px; border-bottom:1px solid #21262d;">
+                                <span style="font-size:12px; color:#c9d1d9; font-family:monospace;" x-text="email"></span>
+                                <button class="btn"
+                                        style="padding:2px 8px; font-size:10px; color:#f85149;"
+                                        @click="removeEmailRecipient(index)">
+                                    ✕
+                                </button>
+                            </div>
+                        </template>
+                    </div>
+                    <div x-show="emailSettings.recipients.length === 0"
+                         style="padding:20px; text-align:center; background:#0d1117; border:1px solid var(--border-color); border-radius:6px;">
+                        <span style="font-size:12px; color:#8b949e;">등록된 수신자가 없습니다</span>
+                    </div>
+                    <div style="font-size:11px; color:#8b949e; margin-top:8px;">
+                        현재 <span x-text="emailSettings.recipients.length"></span>명의 수신자가 등록되어 있습니다.
+                    </div>
+                </div>
+
+                <!-- Notification Settings -->
+                <div style="margin-top:20px;">
+                    <h4 style="margin:0 0 12px 0; font-size:13px; color:#fff;">알림 설정</h4>
+
+                    <div class="email-notification-toggles" style="display:flex; flex-direction:column; gap:12px;">
+                        <!-- Critical Issue -->
+                        <label class="email-toggle-item" style="display:flex; align-items:center; justify-content:space-between; padding:10px 12px; background:#0d1117; border:1px solid var(--border-color); border-radius:6px; cursor:pointer;">
+                            <div>
+                                <div style="font-size:12px; color:#fff;">🚨 Critical 이슈 생성</div>
+                                <div style="font-size:10px; color:#8b949e;">심각도가 Critical인 이슈가 등록될 때</div>
+                            </div>
+                            <input type="checkbox" x-model="emailSettings.notifications.criticalIssue"
+                                   style="width:18px; height:18px; cursor:pointer;">
+                        </label>
+
+                        <!-- Status Delay -->
+                        <label class="email-toggle-item" style="display:flex; align-items:center; justify-content:space-between; padding:10px 12px; background:#0d1117; border:1px solid var(--border-color); border-radius:6px; cursor:pointer;">
+                            <div>
+                                <div style="font-size:12px; color:#fff;">⏳ 지연 상태 변경</div>
+                                <div style="font-size:10px; color:#8b949e;">기둥 상태가 "delay"로 변경될 때</div>
+                            </div>
+                            <input type="checkbox" x-model="emailSettings.notifications.statusDelay"
+                                   style="width:18px; height:18px; cursor:pointer;">
+                        </label>
+
+                        <!-- Status Blocked/Hold -->
+                        <label class="email-toggle-item" style="display:flex; align-items:center; justify-content:space-between; padding:10px 12px; background:#0d1117; border:1px solid var(--border-color); border-radius:6px; cursor:pointer;">
+                            <div>
+                                <div style="font-size:12px; color:#fff;">🚫 중단/보류 상태 변경</div>
+                                <div style="font-size:10px; color:#8b949e;">기둥 상태가 "blocked" 또는 "hold"로 변경될 때</div>
+                            </div>
+                            <input type="checkbox" x-model="emailSettings.notifications.statusBlocked"
+                                   style="width:18px; height:18px; cursor:pointer;">
+                        </label>
+
+                        <!-- Bulk Update -->
+                        <label class="email-toggle-item" style="display:flex; align-items:center; justify-content:space-between; padding:10px 12px; background:#0d1117; border:1px solid var(--border-color); border-radius:6px; cursor:pointer;">
+                            <div>
+                                <div style="font-size:12px; color:#fff;">📦 대량 상태 변경</div>
+                                <div style="font-size:10px; color:#8b949e;">10개 이상의 기둥이 일괄 변경될 때</div>
+                            </div>
+                            <input type="checkbox" x-model="emailSettings.notifications.bulkUpdate"
+                                   style="width:18px; height:18px; cursor:pointer;">
+                        </label>
+
+                        <!-- Weekly Summary -->
+                        <label class="email-toggle-item" style="display:flex; align-items:center; justify-content:space-between; padding:10px 12px; background:#0d1117; border:1px solid var(--border-color); border-radius:6px; cursor:pointer;">
+                            <div>
+                                <div style="font-size:12px; color:#fff;">📊 주간 진행률 요약</div>
+                                <div style="font-size:10px; color:#8b949e;">주간 진행률 요약 리포트 (트리거 필요)</div>
+                            </div>
+                            <input type="checkbox" x-model="emailSettings.notifications.weeklySummary"
+                                   style="width:18px; height:18px; cursor:pointer;">
+                        </label>
+
+                        <!-- Issue Resolved -->
+                        <label class="email-toggle-item" style="display:flex; align-items:center; justify-content:space-between; padding:10px 12px; background:#0d1117; border:1px solid var(--border-color); border-radius:6px; cursor:pointer;">
+                            <div>
+                                <div style="font-size:12px; color:#fff;">✅ 이슈 해결</div>
+                                <div style="font-size:10px; color:#8b949e;">이슈가 해결 상태로 변경될 때</div>
+                            </div>
+                            <input type="checkbox" x-model="emailSettings.notifications.issueResolved"
+                                   style="width:18px; height:18px; cursor:pointer;">
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div style="display:flex; gap:10px; margin-top:20px; flex-wrap:wrap;">
+                    <button class="btn btn-success" @click="saveEmailSettings()" :disabled="emailSettings.saving">
+                        <span x-show="!emailSettings.saving">💾 설정 저장</span>
+                        <span x-show="emailSettings.saving">저장 중...</span>
+                    </button>
+                    <button class="btn" @click="testEmailNotification()"
+                            :disabled="emailSettings.testing || emailSettings.recipients.length === 0">
+                        <span x-show="!emailSettings.testing">🧪 테스트 이메일 전송</span>
+                        <span x-show="emailSettings.testing">전송 중...</span>
+                    </button>
+                    <button class="btn" @click="clearAllEmailRecipients()"
+                            x-show="emailSettings.recipients.length > 0"
+                            style="color:#da3633;">
+                        🗑️ 전체 삭제
+                    </button>
+                </div>
+
+                <!-- Status Message -->
+                <div x-show="emailSettings.message"
+                     :class="{'success': emailSettings.messageType === 'success', 'error': emailSettings.messageType === 'error'}"
+                     style="margin-top:15px; padding:10px 12px; border-radius:6px; font-size:12px;"
+                     :style="emailSettings.messageType === 'success' ? 'background:#0d1117; border:1px solid #238636; color:#3fb950;' : 'background:#0d1117; border:1px solid #da3633; color:#f85149;'">
+                    <span x-text="emailSettings.message"></span>
+                </div>
+
+                <!-- Help Section -->
+                <div style="margin-top:20px; padding:15px; background:#0d1117; border:1px solid var(--border-color); border-radius:8px;">
+                    <h4 style="margin:0 0 10px 0; font-size:12px; color:#fff;">📖 Email 알림 설정 안내</h4>
+                    <ul style="margin:0; padding-left:20px; font-size:11px; color:#8b949e; line-height:1.8;">
+                        <li>수신자 이메일 주소를 추가하면 해당 이메일로 알림이 발송됩니다.</li>
+                        <li>Google Apps Script의 MailApp을 통해 발송되며, 발신자는 스크립트 소유자입니다.</li>
+                        <li>주간 요약 리포트는 Apps Script 트리거 설정이 필요합니다.</li>
+                        <li>"테스트 이메일 전송" 버튼으로 이메일 수신을 확인해주세요.</li>
+                    </ul>
                 </div>
             </div>
         </div>
@@ -5661,6 +6251,19 @@ function dashboard() {
         // Admin Panel State
         adminTab: 'zones',
 
+        // MGT Import State
+        mgtImportStatus: {
+            loading: false,
+            success: false,
+            message: '',
+            nodes: 0,
+            elements: 0,
+            cols: 0,
+            rows: 0,
+            excludedCols: [],
+            parsedData: null
+        },
+
         // Phase 6: Workflow Filter
         workflowFilter: null,  // null = show all, or stage code like 'hmb_fab'
 
@@ -5683,11 +6286,14 @@ function dashboard() {
         },
         analysisPollingInterval: null,
 
-        // Phase 7: 층-절주 구조 (11층 × 8절주)
-        floors: [],           // 11개 층 데이터 (API에서 로드)
-        jeoljuList: [],       // 8개 절주 데이터 (API에서 로드)
-        selectedFloor: 'F01', // 현재 선택된 층 (F01-F10, RF)
-        selectedJeolju: null, // 선택된 절주 필터 (null = 전체)
+        // Phase 7: 층-절주 구조
+        // ★ 절주 = 수직 분절 (층 그룹), 열 구간 = 수평 분절 (컬럼 범위)
+        floors: [],              // 11개 층 데이터 (API에서 로드)
+        jeoljuConfig: [],        // 절주 = 층 그룹 (수직 분절, 1절주~4절주)
+        columnSegments: [],      // 열 구간 = 컬럼 범위 (수평 분절, S1~S8)
+        jeoljuList: [],          // 하위 호환: columnSegments 참조
+        selectedFloor: 'F1',     // 현재 선택된 층 (F1~F10, RF 레거시 형식)
+        selectedJeolju: null,    // 선택된 절주 필터 (null = 전체)
         elevationViewOpen: true, // 입면 뷰어 표시 여부
         floorSelectorOpen: false, // 층 선택기 드롭다운 열림 상태
         lastFloorLoad: null, // 마지막 층 데이터 로드 정보
@@ -5748,6 +6354,44 @@ function dashboard() {
 
         // Phase 7: 키보드 단축키 모달
         shortcutsModalOpen: false, // 단축키 도움말 모달 열림 상태
+
+        // Phase 11: Slack Integration State
+        slackSettings: {
+            webhookUrl: '',              // 새로 입력할 Webhook URL
+            webhookConfigured: false,    // 서버에 Webhook이 설정되어 있는지
+            webhookUrlMasked: '',        // 마스킹된 현재 Webhook URL
+            showWebhookUrl: false,       // URL 표시/숨기기 토글
+            notifications: {
+                criticalIssue: true,     // Critical 이슈 생성 시
+                statusDelay: true,       // delay 상태 변경 시
+                statusBlocked: true,     // blocked/hold 상태 변경 시
+                bulkUpdate: true,        // 대량 업데이트 (10개 이상) 시
+                dailySummary: false,     // 일일 요약 (트리거 필요)
+                issueResolved: false     // 이슈 해결 시
+            },
+            saving: false,               // 저장 중 상태
+            testing: false,              // 테스트 전송 중 상태
+            message: '',                 // 상태 메시지
+            messageType: ''              // 'success' | 'error'
+        },
+
+        // Phase 12: Email Integration State
+        emailSettings: {
+            recipients: [],              // 수신자 이메일 목록
+            newRecipient: '',            // 새로 추가할 이메일
+            notifications: {
+                criticalIssue: true,     // Critical 이슈 생성 시
+                statusDelay: true,       // delay 상태 변경 시
+                statusBlocked: true,     // blocked/hold 상태 변경 시
+                bulkUpdate: true,        // 대량 업데이트 (10개 이상) 시
+                weeklySummary: false,    // 주간 요약 (트리거 필요)
+                issueResolved: false     // 이슈 해결 시
+            },
+            saving: false,               // 저장 중 상태
+            testing: false,              // 테스트 전송 중 상태
+            message: '',                 // 상태 메시지
+            messageType: ''              // 'success' | 'error'
+        },
 
         // Phase 7: 필터링된 히스토리 (computed)
         get filteredHistory() {
@@ -5884,35 +6528,49 @@ function dashboard() {
         },
 
         // Phase 7: 층-절주 데이터 초기화
+        // ⚠️ 중요: "절주" = 수직 분절 (층 그룹), "열 구간" = 수평 분절 (컬럼 범위)
         initFloorJeoljuData() {
-            // 기본 층 데이터 (11개 층)
+            // 기본 층 데이터 (11개 층) - 레거시 ID 형식 (F1, F2, ...)
             this.floors = [
-                { floorId: 'F01', label: '1층', order: 1, hasVariation: false },
-                { floorId: 'F02', label: '2층', order: 2, hasVariation: false },
-                { floorId: 'F03', label: '3층', order: 3, hasVariation: false },
-                { floorId: 'F04', label: '4층', order: 4, hasVariation: false },
-                { floorId: 'F05', label: '5층', order: 5, hasVariation: true, variationNote: '부분 차이' },
-                { floorId: 'F06', label: '6층', order: 6, hasVariation: false },
-                { floorId: 'F07', label: '7층', order: 7, hasVariation: false },
-                { floorId: 'F08', label: '8층', order: 8, hasVariation: true, variationNote: '부분 차이' },
-                { floorId: 'F09', label: '9층', order: 9, hasVariation: false },
+                { floorId: 'F1', label: '1층', order: 1, hasVariation: false },
+                { floorId: 'F2', label: '2층', order: 2, hasVariation: false },
+                { floorId: 'F3', label: '3층', order: 3, hasVariation: false },
+                { floorId: 'F4', label: '4층', order: 4, hasVariation: false },
+                { floorId: 'F5', label: '5층', order: 5, hasVariation: true, variationNote: '부분 차이' },
+                { floorId: 'F6', label: '6층', order: 6, hasVariation: false },
+                { floorId: 'F7', label: '7층', order: 7, hasVariation: false },
+                { floorId: 'F8', label: '8층', order: 8, hasVariation: true, variationNote: '부분 차이' },
+                { floorId: 'F9', label: '9층', order: 9, hasVariation: false },
                 { floorId: 'F10', label: '10층', order: 10, hasVariation: false },
                 { floorId: 'RF', label: 'RF층', order: 11, hasVariation: true, variationNote: '지붕층' }
             ];
 
-            // 기본 절주 데이터 (8개 절주)
-            this.jeoljuList = [
-                { jeoljuId: 'J1', label: '절주1', startColumn: 1, endColumn: 9, columnCount: 9, priority: 1 },
-                { jeoljuId: 'J2', label: '절주2', startColumn: 10, endColumn: 18, columnCount: 9, priority: 2 },
-                { jeoljuId: 'J3', label: '절주3', startColumn: 19, endColumn: 27, columnCount: 9, priority: 3 },
-                { jeoljuId: 'J4', label: '절주4', startColumn: 28, endColumn: 36, columnCount: 9, priority: 4 },
-                { jeoljuId: 'J5', label: '절주5', startColumn: 37, endColumn: 45, columnCount: 9, priority: 5 },
-                { jeoljuId: 'J6', label: '절주6', startColumn: 46, endColumn: 54, columnCount: 9, priority: 6 },
-                { jeoljuId: 'J7', label: '절주7', startColumn: 55, endColumn: 62, columnCount: 8, priority: 7 },
-                { jeoljuId: 'J8', label: '절주8', startColumn: 63, endColumn: 69, columnCount: 7, priority: 8 }
+            // ★ 절주 (수직 분절 - 층 그룹) - production_status_import.js와 정합
+            // 절주 = 기둥이 몇 개 층을 관통하는지에 따른 분절
+            this.jeoljuConfig = [
+                { jeoljuId: '1절주', label: '1절주', floors: ['F1', 'F2', 'F3'], heightRange: '1F~3F', columnRange: 'X36~X57', description: '1절주 제작 현황' },
+                { jeoljuId: '2절주', label: '2절주', floors: ['F4', 'F5', 'F6'], heightRange: '4F~6F', columnRange: 'X42~X49', description: '2절주 제작 현황 (코어제외)' },
+                { jeoljuId: '3절주', label: '3절주', floors: ['F7', 'F8', 'F9'], heightRange: '7F~9F', columnRange: '', description: '3절주 제작 현황' },
+                { jeoljuId: '4절주', label: '4절주', floors: ['F10', 'RF'], heightRange: '10F~RF', columnRange: '', description: '4절주 제작 현황' }
             ];
 
-            console.log('[Phase 7] Floor-Jeolju data initialized:', this.floors.length, 'floors,', this.jeoljuList.length, 'jeolju');
+            // ★ 열 구간 (수평 분절 - 컬럼 범위) - 기존 jeoljuList를 명칭 변경
+            // 그리드 뷰어에서 컬럼 범위별 필터링/하이라이트 용도
+            this.columnSegments = [
+                { segmentId: 'S1', label: '1구간', startColumn: 1, endColumn: 9, columnCount: 9, priority: 1 },
+                { segmentId: 'S2', label: '2구간', startColumn: 10, endColumn: 18, columnCount: 9, priority: 2 },
+                { segmentId: 'S3', label: '3구간', startColumn: 19, endColumn: 27, columnCount: 9, priority: 3 },
+                { segmentId: 'S4', label: '4구간', startColumn: 28, endColumn: 36, columnCount: 9, priority: 4 },
+                { segmentId: 'S5', label: '5구간', startColumn: 37, endColumn: 45, columnCount: 9, priority: 5 },
+                { segmentId: 'S6', label: '6구간', startColumn: 46, endColumn: 54, columnCount: 9, priority: 6 },
+                { segmentId: 'S7', label: '7구간', startColumn: 55, endColumn: 62, columnCount: 8, priority: 7 },
+                { segmentId: 'S8', label: '8구간', startColumn: 63, endColumn: 69, columnCount: 7, priority: 8 }
+            ];
+
+            // 하위 호환성: jeoljuList를 columnSegments로 매핑 (기존 코드 호환)
+            this.jeoljuList = this.columnSegments;
+
+            console.log('[Phase 7] Floor-Jeolju data initialized:', this.floors.length, 'floors,', this.jeoljuConfig.length, 'jeolju(수직),', this.columnSegments.length, 'segments(수평)');
             
             // 층별 통계 초기화 (API 호출 전 기본값)
             this.floorStats = {};
@@ -8803,7 +9461,366 @@ function dashboard() {
             this.saveToLocalStorage();
             this.showToast('Settings saved', 'success');
         },
-        
+
+        // ===== Phase 11: Slack Integration Methods =====
+
+        /**
+         * Load Slack settings from API
+         */
+        async loadSlackSettings() {
+            if (!this.apiUrl) {
+                this.slackSettings.message = 'API URL이 설정되지 않았습니다.';
+                this.slackSettings.messageType = 'error';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${this.apiUrl}?action=getSlackSettings`);
+                const data = await response.json();
+
+                if (data.success) {
+                    this.slackSettings.webhookConfigured = data.webhookConfigured;
+                    this.slackSettings.webhookUrlMasked = data.webhookUrlMasked || '';
+                    if (data.settings) {
+                        this.slackSettings.notifications = {
+                            ...this.slackSettings.notifications,
+                            ...data.settings
+                        };
+                    }
+                    // Clear any new input - show masked URL instead
+                    this.slackSettings.webhookUrl = '';
+                    this.slackSettings.message = '';
+                } else {
+                    console.warn('[Slack] Failed to load settings:', data.error);
+                }
+            } catch (error) {
+                console.error('[Slack] Error loading settings:', error);
+                this.slackSettings.message = '설정을 불러오는 데 실패했습니다.';
+                this.slackSettings.messageType = 'error';
+            }
+        },
+
+        /**
+         * Save Slack settings to API
+         */
+        async saveSlackSettings() {
+            if (!this.apiUrl) {
+                this.slackSettings.message = 'API URL이 설정되지 않았습니다.';
+                this.slackSettings.messageType = 'error';
+                return;
+            }
+
+            this.slackSettings.saving = true;
+            this.slackSettings.message = '';
+
+            try {
+                const payload = {
+                    action: 'saveSlackSettings',
+                    settings: this.slackSettings.notifications
+                };
+
+                // Only include webhookUrl if user entered a new one
+                if (this.slackSettings.webhookUrl) {
+                    payload.webhookUrl = this.slackSettings.webhookUrl;
+                }
+
+                const response = await fetch(this.apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    this.slackSettings.message = 'Slack 설정이 저장되었습니다.';
+                    this.slackSettings.messageType = 'success';
+                    // Reload settings to get updated masked URL
+                    await this.loadSlackSettings();
+                    this.showToast('Slack 설정 저장 완료', 'success');
+                } else {
+                    this.slackSettings.message = data.error || '설정 저장에 실패했습니다.';
+                    this.slackSettings.messageType = 'error';
+                }
+            } catch (error) {
+                console.error('[Slack] Error saving settings:', error);
+                this.slackSettings.message = '저장 중 오류가 발생했습니다: ' + error.message;
+                this.slackSettings.messageType = 'error';
+            } finally {
+                this.slackSettings.saving = false;
+            }
+        },
+
+        /**
+         * Send Slack test notification
+         */
+        async testSlackNotification() {
+            if (!this.apiUrl) {
+                this.slackSettings.message = 'API URL이 설정되지 않았습니다.';
+                this.slackSettings.messageType = 'error';
+                return;
+            }
+
+            // Must have webhook configured or entered
+            if (!this.slackSettings.webhookConfigured && !this.slackSettings.webhookUrl) {
+                this.slackSettings.message = 'Webhook URL을 먼저 저장해주세요.';
+                this.slackSettings.messageType = 'error';
+                return;
+            }
+
+            this.slackSettings.testing = true;
+            this.slackSettings.message = '';
+
+            try {
+                // If user entered new URL, save it first
+                if (this.slackSettings.webhookUrl) {
+                    await this.saveSlackSettings();
+                }
+
+                const response = await fetch(this.apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'testSlackNotification' })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    this.slackSettings.message = '테스트 알림이 전송되었습니다. Slack 채널을 확인해주세요.';
+                    this.slackSettings.messageType = 'success';
+                    this.showToast('Slack 테스트 알림 전송 완료', 'success');
+                } else {
+                    this.slackSettings.message = data.error || '테스트 알림 전송에 실패했습니다.';
+                    this.slackSettings.messageType = 'error';
+                }
+            } catch (error) {
+                console.error('[Slack] Error sending test notification:', error);
+                this.slackSettings.message = '테스트 중 오류가 발생했습니다: ' + error.message;
+                this.slackSettings.messageType = 'error';
+            } finally {
+                this.slackSettings.testing = false;
+            }
+        },
+
+        /**
+         * Clear Slack webhook URL
+         */
+        async clearSlackWebhook() {
+            if (!confirm('Slack Webhook URL을 삭제하시겠습니까?\n삭제 후에는 알림이 전송되지 않습니다.')) {
+                return;
+            }
+
+            this.slackSettings.saving = true;
+
+            try {
+                const response = await fetch(this.apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'saveSlackSettings',
+                        webhookUrl: ''  // Empty string to delete
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    this.slackSettings.webhookUrl = '';
+                    this.slackSettings.webhookConfigured = false;
+                    this.slackSettings.webhookUrlMasked = '';
+                    this.slackSettings.message = 'Webhook URL이 삭제되었습니다.';
+                    this.slackSettings.messageType = 'success';
+                    this.showToast('Slack Webhook 삭제 완료', 'success');
+                } else {
+                    this.slackSettings.message = data.error || 'Webhook 삭제에 실패했습니다.';
+                    this.slackSettings.messageType = 'error';
+                }
+            } catch (error) {
+                console.error('[Slack] Error clearing webhook:', error);
+                this.slackSettings.message = '삭제 중 오류가 발생했습니다.';
+                this.slackSettings.messageType = 'error';
+            } finally {
+                this.slackSettings.saving = false;
+            }
+        },
+
+        // ===== Phase 12: Email Integration Methods =====
+
+        /**
+         * Load email settings from server
+         */
+        async loadEmailSettings() {
+            if (!this.apiUrl) {
+                this.emailSettings.message = 'API URL이 설정되지 않았습니다.';
+                this.emailSettings.messageType = 'error';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${this.apiUrl}?action=getEmailSettings`);
+                const data = await response.json();
+
+                if (data.success) {
+                    this.emailSettings.recipients = data.recipients || [];
+                    if (data.settings) {
+                        this.emailSettings.notifications = {
+                            ...this.emailSettings.notifications,
+                            ...data.settings
+                        };
+                    }
+                    this.emailSettings.message = '';
+                } else {
+                    console.warn('[Email] Failed to load settings:', data.error);
+                }
+            } catch (error) {
+                console.error('[Email] Error loading settings:', error);
+                this.emailSettings.message = '설정을 불러오는 데 실패했습니다.';
+                this.emailSettings.messageType = 'error';
+            }
+        },
+
+        /**
+         * Add email recipient
+         */
+        addEmailRecipient() {
+            const email = this.emailSettings.newRecipient.trim().toLowerCase();
+
+            // Basic email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                this.emailSettings.message = '올바른 이메일 형식이 아닙니다.';
+                this.emailSettings.messageType = 'error';
+                return;
+            }
+
+            // Check for duplicates
+            if (this.emailSettings.recipients.includes(email)) {
+                this.emailSettings.message = '이미 등록된 이메일입니다.';
+                this.emailSettings.messageType = 'error';
+                return;
+            }
+
+            this.emailSettings.recipients.push(email);
+            this.emailSettings.newRecipient = '';
+            this.emailSettings.message = `${email} 추가됨 (저장 버튼을 눌러주세요)`;
+            this.emailSettings.messageType = 'success';
+        },
+
+        /**
+         * Remove email recipient by index
+         */
+        removeEmailRecipient(index) {
+            const removed = this.emailSettings.recipients.splice(index, 1);
+            this.emailSettings.message = `${removed[0]} 제거됨 (저장 버튼을 눌러주세요)`;
+            this.emailSettings.messageType = 'success';
+        },
+
+        /**
+         * Clear all email recipients
+         */
+        async clearAllEmailRecipients() {
+            if (!confirm('모든 이메일 수신자를 삭제하시겠습니까?\n삭제 후에는 이메일 알림이 전송되지 않습니다.')) {
+                return;
+            }
+
+            this.emailSettings.recipients = [];
+            this.emailSettings.message = '모든 수신자가 제거되었습니다. 저장 버튼을 눌러주세요.';
+            this.emailSettings.messageType = 'success';
+        },
+
+        /**
+         * Save email settings to server
+         */
+        async saveEmailSettings() {
+            if (!this.apiUrl) {
+                this.emailSettings.message = 'API URL이 설정되지 않았습니다.';
+                this.emailSettings.messageType = 'error';
+                return;
+            }
+
+            this.emailSettings.saving = true;
+            this.emailSettings.message = '';
+
+            try {
+                const payload = {
+                    action: 'saveEmailSettings',
+                    recipients: this.emailSettings.recipients,
+                    settings: this.emailSettings.notifications
+                };
+
+                const response = await fetch(this.apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    this.emailSettings.message = `이메일 설정이 저장되었습니다. (${data.recipientCount}명)`;
+                    this.emailSettings.messageType = 'success';
+                    this.showToast('이메일 설정 저장 완료', 'success');
+                } else {
+                    this.emailSettings.message = data.error || '설정 저장에 실패했습니다.';
+                    this.emailSettings.messageType = 'error';
+                }
+            } catch (error) {
+                console.error('[Email] Error saving settings:', error);
+                this.emailSettings.message = '저장 중 오류가 발생했습니다: ' + error.message;
+                this.emailSettings.messageType = 'error';
+            } finally {
+                this.emailSettings.saving = false;
+            }
+        },
+
+        /**
+         * Send email test notification
+         */
+        async testEmailNotification() {
+            if (!this.apiUrl) {
+                this.emailSettings.message = 'API URL이 설정되지 않았습니다.';
+                this.emailSettings.messageType = 'error';
+                return;
+            }
+
+            if (this.emailSettings.recipients.length === 0) {
+                this.emailSettings.message = '먼저 수신자를 추가하고 저장해주세요.';
+                this.emailSettings.messageType = 'error';
+                return;
+            }
+
+            this.emailSettings.testing = true;
+            this.emailSettings.message = '';
+
+            try {
+                // First save current settings
+                await this.saveEmailSettings();
+
+                const response = await fetch(this.apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'testEmailNotification' })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    this.emailSettings.message = `테스트 이메일이 전송되었습니다. (${data.sentCount}명에게 발송)`;
+                    this.emailSettings.messageType = 'success';
+                    this.showToast('테스트 이메일 전송 완료', 'success');
+                } else {
+                    this.emailSettings.message = data.error || '테스트 이메일 전송에 실패했습니다.';
+                    this.emailSettings.messageType = 'error';
+                }
+            } catch (error) {
+                console.error('[Email] Error sending test notification:', error);
+                this.emailSettings.message = '테스트 중 오류가 발생했습니다: ' + error.message;
+                this.emailSettings.messageType = 'error';
+            } finally {
+                this.emailSettings.testing = false;
+            }
+        },
+
         /**
          * Export to CSV
          */
@@ -8833,14 +9850,1053 @@ function dashboard() {
         },
         
         /**
-         * Export to Excel (simplified - use SheetJS for full support)
+         * Export to Excel with SheetJS
+         * @param {Object} options - Export options
+         * @param {string} options.scope - 'all' | 'filtered' | 'selected' | 'floor' | 'zone'
+         * @param {string} options.floorId - Floor ID for floor-specific export
+         * @param {string} options.zoneId - Zone ID for zone-specific export
          */
-        exportToExcel() {
-            // For now, use CSV with .xlsx extension hint
-            this.showToast('Excel export - use CSV for now', 'success');
-            this.exportToCSV();
+        exportToExcel(options = { scope: 'all' }) {
+            // Check if SheetJS is loaded
+            if (typeof XLSX === 'undefined') {
+                this.showToast('Excel 라이브러리 로드 중... 잠시 후 다시 시도해주세요.', 'error');
+                return;
+            }
+
+            try {
+                // Show loading state
+                this.isLoading = true;
+                this.loadingMessage = 'Excel 파일 생성 중...';
+
+                // Generate filename with timestamp
+                const now = new Date();
+                const timestamp = now.toISOString().replace(/[-:]/g, '').slice(0, 15);
+                const filename = `P5_Dashboard_Export_${timestamp}.xlsx`;
+
+                // Create workbook
+                const wb = XLSX.utils.book_new();
+
+                // Get data based on scope
+                const columnsData = this.getExportColumnsData(options);
+                const issuesData = this.getExportIssuesData(options);
+                const summaryData = this.getExportSummaryData(columnsData, issuesData);
+
+                // Sheet 1: Columns (기둥 현황)
+                const columnsSheet = this.createColumnsSheet(columnsData);
+                XLSX.utils.book_append_sheet(wb, columnsSheet, '기둥 현황');
+
+                // Sheet 2: Issues (이슈 목록)
+                const issuesSheet = this.createIssuesSheet(issuesData);
+                XLSX.utils.book_append_sheet(wb, issuesSheet, '이슈 목록');
+
+                // Sheet 3: Summary (요약 통계)
+                const summarySheet = this.createSummarySheet(summaryData);
+                XLSX.utils.book_append_sheet(wb, summarySheet, '요약 통계');
+
+                // Sheet 4: Stage Progress (공정별 진행률) - optional
+                const stageSheet = this.createStageProgressSheet(columnsData);
+                XLSX.utils.book_append_sheet(wb, stageSheet, '공정별 진행률');
+
+                // Download file
+                XLSX.writeFile(wb, filename);
+
+                this.showToast(`Excel 파일이 다운로드되었습니다: ${filename}`, 'success');
+                console.log('[Excel Export] Success:', { scope: options.scope, columns: columnsData.length, issues: issuesData.length });
+
+            } catch (error) {
+                console.error('[Excel Export] Error:', error);
+                this.showToast('Excel 내보내기 중 오류가 발생했습니다: ' + error.message, 'error');
+            } finally {
+                this.isLoading = false;
+                this.loadingMessage = '';
+            }
         },
-        
+
+        /**
+         * Get columns data based on export scope
+         */
+        getExportColumnsData(options) {
+            let columns = Object.values(this.columns);
+
+            switch (options.scope) {
+                case 'selected':
+                    // Export only selected cells
+                    const selectedUids = new Set(this.selectedCells.map(c => c.uid));
+                    columns = columns.filter(c => selectedUids.has(c.uid));
+                    break;
+
+                case 'filtered':
+                    // Export based on current filters (jeolju, workflow, search)
+                    if (this.selectedJeolju) {
+                        const jeolju = this.jeoljuList.find(j => j.jeoljuId === this.selectedJeolju);
+                        if (jeolju) {
+                            columns = columns.filter(c => {
+                                const colNum = parseInt(c.location?.column);
+                                return colNum >= jeolju.startColumn && colNum <= jeolju.endColumn;
+                            });
+                        }
+                    }
+                    if (this.workflowFilter) {
+                        columns = columns.filter(c => c.stage?.code === this.workflowFilter);
+                    }
+                    break;
+
+                case 'floor':
+                    // Export specific floor
+                    const floorId = options.floorId || this.selectedFloor;
+                    columns = columns.filter(c => c.floor === floorId || c.floorId === floorId);
+                    break;
+
+                case 'zone':
+                    // Export specific zone
+                    if (options.zoneId) {
+                        columns = columns.filter(c => c.zone?.id === options.zoneId);
+                    }
+                    break;
+
+                case 'all':
+                default:
+                    // All columns - no filtering
+                    break;
+            }
+
+            return columns;
+        },
+
+        /**
+         * Get issues data based on export scope
+         */
+        getExportIssuesData(options) {
+            let issues = [...this.issues];
+
+            if (options.scope === 'selected' && this.selectedCells.length > 0) {
+                const selectedUids = new Set(this.selectedCells.map(c => c.uid));
+                issues = issues.filter(i =>
+                    i.affectedColumns?.some(uid => selectedUids.has(uid)) ||
+                    selectedUids.has(i.columnUid)
+                );
+            }
+
+            return issues;
+        },
+
+        /**
+         * Get summary statistics
+         */
+        getExportSummaryData(columnsData, issuesData) {
+            const statusCounts = {};
+            const stageCounts = {};
+
+            columnsData.forEach(col => {
+                const status = col.status?.code || 'pending';
+                const stage = col.stage?.code || 'none';
+
+                statusCounts[status] = (statusCounts[status] || 0) + 1;
+                stageCounts[stage] = (stageCounts[stage] || 0) + 1;
+            });
+
+            const completedCount = statusCounts['installed'] || statusCounts['completed'] || 0;
+            const progressRate = columnsData.length > 0
+                ? Math.round((completedCount / columnsData.length) * 100)
+                : 0;
+
+            return {
+                totalColumns: columnsData.length,
+                statusCounts,
+                stageCounts,
+                progressRate,
+                openIssues: issuesData.filter(i => i.status === 'open' || i.status === 'in_progress').length,
+                resolvedIssues: issuesData.filter(i => i.status === 'resolved').length,
+                criticalIssues: issuesData.filter(i => i.severity === 'critical').length,
+                exportedAt: new Date().toISOString(),
+                selectedFloor: this.selectedFloor,
+                selectedJeolju: this.selectedJeolju
+            };
+        },
+
+        /**
+         * Create Columns sheet with formatting
+         */
+        createColumnsSheet(columnsData) {
+            // Prepare data rows
+            const rows = columnsData.map(col => ({
+                'UID': col.uid || '',
+                '층': col.floor || col.floorId || this.selectedFloor || '',
+                '행(Row)': col.location?.row || '',
+                '열(Column)': col.location?.column || '',
+                'Zone': col.zone?.name || col.zone?.displayName || '',
+                '상태(Status)': this.getStatusLabel(col.status?.code),
+                '공정(Stage)': this.getStageLabel(col.stage?.code),
+                '진행률(%)': col.progress || 0,
+                '잠금': col.status?.isLocked ? 'Y' : 'N',
+                '최종수정': col.status?.updatedAt || col.updatedAt || ''
+            }));
+
+            // Create worksheet
+            const ws = XLSX.utils.json_to_sheet(rows);
+
+            // Apply column widths
+            ws['!cols'] = [
+                { wch: 20 },  // UID
+                { wch: 8 },   // 층
+                { wch: 6 },   // 행
+                { wch: 8 },   // 열
+                { wch: 15 },  // Zone
+                { wch: 12 },  // 상태
+                { wch: 12 },  // 공정
+                { wch: 10 },  // 진행률
+                { wch: 6 },   // 잠금
+                { wch: 20 }   // 최종수정
+            ];
+
+            // Apply header styling (SheetJS community edition - basic styling)
+            this.applyHeaderStyle(ws, 10);
+
+            return ws;
+        },
+
+        /**
+         * Create Issues sheet with formatting
+         */
+        createIssuesSheet(issuesData) {
+            const rows = issuesData.map(issue => ({
+                'Issue ID': issue.id || '',
+                '기둥 UID': issue.columnUid || (issue.affectedColumns?.join(', ') || ''),
+                '유형': this.getIssueTypeLabel(issue.type),
+                '심각도': this.getSeverityLabel(issue.severity),
+                '상태': this.getIssueStatusLabel(issue.status),
+                '제목': issue.title || '',
+                '설명': issue.description || '',
+                '담당자': issue.assignedTo || '',
+                '생성일': issue.createdAt || '',
+                '해결일': issue.resolvedAt || '',
+                '근본원인': issue.rootCause || '',
+                '조치계획': issue.mitigationPlan || ''
+            }));
+
+            const ws = XLSX.utils.json_to_sheet(rows);
+
+            // Apply column widths
+            ws['!cols'] = [
+                { wch: 15 },  // Issue ID
+                { wch: 25 },  // 기둥 UID
+                { wch: 10 },  // 유형
+                { wch: 10 },  // 심각도
+                { wch: 10 },  // 상태
+                { wch: 30 },  // 제목
+                { wch: 40 },  // 설명
+                { wch: 12 },  // 담당자
+                { wch: 18 },  // 생성일
+                { wch: 18 },  // 해결일
+                { wch: 30 },  // 근본원인
+                { wch: 30 }   // 조치계획
+            ];
+
+            this.applyHeaderStyle(ws, 12);
+
+            return ws;
+        },
+
+        /**
+         * Create Summary sheet
+         */
+        createSummarySheet(summaryData) {
+            const rows = [
+                { '항목': '전체 기둥 수', '값': summaryData.totalColumns },
+                { '항목': '진행률 (%)', '값': summaryData.progressRate + '%' },
+                { '항목': '', '값': '' },
+                { '항목': '=== 상태별 현황 ===', '값': '' }
+            ];
+
+            // Add status counts
+            Object.entries(summaryData.statusCounts).forEach(([status, count]) => {
+                rows.push({ '항목': this.getStatusLabel(status), '값': count });
+            });
+
+            rows.push({ '항목': '', '값': '' });
+            rows.push({ '항목': '=== 공정별 현황 ===', '값': '' });
+
+            // Add stage counts
+            Object.entries(summaryData.stageCounts).forEach(([stage, count]) => {
+                rows.push({ '항목': this.getStageLabel(stage), '값': count });
+            });
+
+            rows.push({ '항목': '', '값': '' });
+            rows.push({ '항목': '=== 이슈 현황 ===', '값': '' });
+            rows.push({ '항목': '진행중 이슈', '값': summaryData.openIssues });
+            rows.push({ '항목': '해결된 이슈', '값': summaryData.resolvedIssues });
+            rows.push({ '항목': 'Critical 이슈', '값': summaryData.criticalIssues });
+
+            rows.push({ '항목': '', '값': '' });
+            rows.push({ '항목': '=== 내보내기 정보 ===', '값': '' });
+            rows.push({ '항목': '내보내기 시간', '값': new Date(summaryData.exportedAt).toLocaleString('ko-KR') });
+            rows.push({ '항목': '선택된 층', '값': summaryData.selectedFloor || 'ALL' });
+            rows.push({ '항목': '선택된 절주', '값': summaryData.selectedJeolju || 'ALL' });
+
+            const ws = XLSX.utils.json_to_sheet(rows);
+
+            ws['!cols'] = [
+                { wch: 25 },  // 항목
+                { wch: 30 }   // 값
+            ];
+
+            this.applyHeaderStyle(ws, 2);
+
+            return ws;
+        },
+
+        /**
+         * Create Stage Progress sheet
+         */
+        createStageProgressSheet(columnsData) {
+            const stageProgress = {};
+
+            // Calculate progress per stage
+            this.stageConfigs.forEach(stage => {
+                const stageColumns = columnsData.filter(c => c.stage?.code === stage.code);
+                const total = stageColumns.length;
+                const completed = stageColumns.filter(c =>
+                    c.status?.code === 'installed' || c.status?.code === 'completed'
+                ).length;
+
+                stageProgress[stage.code] = {
+                    label: stage.label,
+                    total,
+                    completed,
+                    rate: total > 0 ? Math.round((completed / total) * 100) : 0
+                };
+            });
+
+            const rows = Object.entries(stageProgress).map(([code, data]) => ({
+                '공정코드': code,
+                '공정명': data.label,
+                '전체': data.total,
+                '완료': data.completed,
+                '진행률(%)': data.rate
+            }));
+
+            const ws = XLSX.utils.json_to_sheet(rows);
+
+            ws['!cols'] = [
+                { wch: 15 },  // 공정코드
+                { wch: 15 },  // 공정명
+                { wch: 10 },  // 전체
+                { wch: 10 },  // 완료
+                { wch: 12 }   // 진행률
+            ];
+
+            this.applyHeaderStyle(ws, 5);
+
+            return ws;
+        },
+
+        /**
+         * Apply header styling (basic - SheetJS community edition)
+         */
+        applyHeaderStyle(ws, numCols) {
+            // Get header range
+            const range = XLSX.utils.decode_range(ws['!ref']);
+
+            // Note: Full styling requires SheetJS Pro or xlsx-style
+            // For community edition, we can set basic properties
+            // Styling will be applied when the user opens in Excel
+
+            // Add autofilter to header row
+            ws['!autofilter'] = { ref: ws['!ref'] };
+        },
+
+        /**
+         * Get human-readable status label
+         */
+        getStatusLabel(code) {
+            const labels = {
+                'pending': '대기',
+                'in_progress': '진행중',
+                'completed': '완료',
+                'installed': '설치완료',
+                'delay': '지연',
+                'blocked': '차단',
+                'hold': '보류',
+                'tc_hold': 'TC 보류',
+                'ok': '정상',
+                'shipping': '출하중',
+                'design': '설계중'
+            };
+            return labels[code] || code || '-';
+        },
+
+        /**
+         * Get human-readable stage label
+         */
+        getStageLabel(code) {
+            const stage = this.stageConfigs.find(s => s.code === code);
+            return stage?.label || code || '-';
+        },
+
+        /**
+         * Get human-readable issue type label
+         */
+        getIssueTypeLabel(type) {
+            const labels = {
+                'tc': 'TC 이슈',
+                'design': '설계 이슈',
+                'delay': '지연',
+                'quality': '품질',
+                'safety': '안전',
+                'other': '기타'
+            };
+            return labels[type] || type || '-';
+        },
+
+        /**
+         * Get human-readable severity label
+         */
+        getSeverityLabel(severity) {
+            const labels = {
+                'critical': '심각',
+                'high': '높음',
+                'medium': '보통',
+                'low': '낮음'
+            };
+            return labels[severity] || severity || '-';
+        },
+
+        /**
+         * Get human-readable issue status label
+         */
+        getIssueStatusLabel(status) {
+            const labels = {
+                'open': '진행중',
+                'in_progress': '처리중',
+                'resolved': '해결됨',
+                'closed': '종료'
+            };
+            return labels[status] || status || '-';
+        },
+
+        /**
+         * Export with specific options - UI helper
+         */
+        exportExcelWithOptions(scope) {
+            this.exportToExcel({ scope });
+        },
+
+        // ===== PDF Report Generation =====
+
+        /**
+         * PDF Report Modal State
+         */
+        pdfReportModalOpen: false,
+        pdfReportType: 'summary', // 'summary' | 'detailed' | 'issues'
+        pdfGenerating: false,
+
+        /**
+         * Open PDF Report Modal
+         */
+        openPdfReportModal() {
+            this.pdfReportModalOpen = true;
+            this.pdfReportType = 'summary';
+        },
+
+        /**
+         * Close PDF Report Modal
+         */
+        closePdfReportModal() {
+            this.pdfReportModalOpen = false;
+        },
+
+        /**
+         * Generate PDF Report
+         * @param {string} type - Report type: 'summary' | 'detailed' | 'issues'
+         */
+        async generatePDFReport(type = 'summary') {
+            // Check if jsPDF is loaded
+            if (typeof window.jspdf === 'undefined') {
+                this.showToast('PDF 라이브러리 로드 중... 잠시 후 다시 시도해주세요.', 'error');
+                return;
+            }
+
+            this.pdfGenerating = true;
+            this.showToast('PDF 보고서 생성 중...', 'info');
+
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF('p', 'mm', 'a4');
+                const pageWidth = doc.internal.pageSize.getWidth();
+                const pageHeight = doc.internal.pageSize.getHeight();
+                const margin = 15;
+                const contentWidth = pageWidth - (margin * 2);
+
+                // Generate timestamp
+                const now = new Date();
+                const timestamp = now.toLocaleString('ko-KR', {
+                    year: 'numeric', month: '2-digit', day: '2-digit',
+                    hour: '2-digit', minute: '2-digit'
+                });
+                const fileTimestamp = now.toISOString().replace(/[-:]/g, '').slice(0, 15);
+
+                // === Page 1: Cover Page ===
+                this.addPdfCoverPage(doc, timestamp, type);
+
+                // === Page 2: Summary Dashboard ===
+                doc.addPage();
+                this.addPdfSummaryPage(doc, margin, contentWidth);
+
+                // === Detailed Report: Floor-by-Floor Pages ===
+                if (type === 'detailed') {
+                    this.addPdfDetailedPages(doc, margin, contentWidth);
+                }
+
+                // === Issues Report ===
+                if (type === 'issues' || type === 'detailed') {
+                    doc.addPage();
+                    this.addPdfIssuesPage(doc, margin, contentWidth);
+                }
+
+                // Add page numbers to all pages
+                this.addPdfPageNumbers(doc);
+
+                // Generate filename and save
+                const reportTypeLabel = {
+                    'summary': '요약',
+                    'detailed': '상세',
+                    'issues': '이슈'
+                }[type] || '요약';
+
+                const filename = `P5_구조관리_${reportTypeLabel}_보고서_${fileTimestamp}.pdf`;
+                doc.save(filename);
+
+                this.showToast(`PDF 보고서가 생성되었습니다: ${filename}`, 'success');
+                this.pdfReportModalOpen = false;
+
+            } catch (error) {
+                console.error('[PDF Report] Error:', error);
+                this.showToast('PDF 생성 중 오류가 발생했습니다: ' + error.message, 'error');
+            } finally {
+                this.pdfGenerating = false;
+            }
+        },
+
+        /**
+         * Add Cover Page to PDF
+         */
+        addPdfCoverPage(doc, timestamp, reportType) {
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const pageHeight = doc.internal.pageSize.getHeight();
+            const centerX = pageWidth / 2;
+
+            // Background header bar
+            doc.setFillColor(31, 111, 235); // Primary blue
+            doc.rect(0, 0, pageWidth, 60, 'F');
+
+            // Project badge
+            doc.setFillColor(35, 134, 54); // Green
+            doc.roundedRect(centerX - 30, 15, 60, 12, 3, 3, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(10);
+            doc.text('P5 FAB PROJECT', centerX, 23, { align: 'center' });
+
+            // Main title
+            doc.setFontSize(24);
+            doc.setTextColor(255, 255, 255);
+            doc.text('P5 복합동 구조 통합 관리', centerX, 45, { align: 'center' });
+
+            // Subtitle with report type
+            const reportTypeLabels = {
+                'summary': '요약 보고서',
+                'detailed': '상세 보고서',
+                'issues': '이슈 보고서'
+            };
+            doc.setFontSize(16);
+            doc.text(reportTypeLabels[reportType] || '요약 보고서', centerX, 55, { align: 'center' });
+
+            // Project info section
+            doc.setTextColor(100, 100, 100);
+            doc.setFontSize(11);
+
+            const infoY = 90;
+            const lineHeight = 10;
+
+            // Statistics summary box
+            const totalColumns = Object.keys(this.columns).length;
+            const completedCount = Object.values(this.columns).filter(c => c.status === 'installed').length;
+            const progressRate = totalColumns > 0 ? ((completedCount / totalColumns) * 100).toFixed(1) : 0;
+            const openIssues = this.issues.filter(i => i.status === 'open' || i.status === 'in_progress').length;
+
+            // Info box
+            doc.setDrawColor(200, 200, 200);
+            doc.setFillColor(248, 249, 250);
+            doc.roundedRect(30, infoY - 5, pageWidth - 60, 55, 3, 3, 'FD');
+
+            doc.setTextColor(60, 60, 60);
+            doc.setFontSize(10);
+            doc.text('프로젝트 정보', 40, infoY + 5);
+
+            doc.setTextColor(100, 100, 100);
+            doc.setFontSize(9);
+            doc.text(`총 기둥 수: ${totalColumns.toLocaleString()}개 (11개 층 x 828개 기둥/층)`, 40, infoY + 15);
+            doc.text(`전체 진행률: ${progressRate}%`, 40, infoY + 23);
+            doc.text(`완료: ${completedCount.toLocaleString()}개 | 미해결 이슈: ${openIssues}건`, 40, infoY + 31);
+            doc.text(`보고서 생성일시: ${timestamp}`, 40, infoY + 39);
+
+            // Floor and Jeolju context
+            const floorContext = this.selectedFloor || 'ALL';
+            const jeoljuContext = this.selectedJeolju || '전체';
+            doc.text(`현재 조회 범위: ${floorContext}층 / ${jeoljuContext}절주`, 40, infoY + 47);
+
+            // Footer
+            doc.setFontSize(8);
+            doc.setTextColor(150, 150, 150);
+            doc.text('Generated by P5 Live Grid Dashboard v2.3', centerX, pageHeight - 20, { align: 'center' });
+            doc.text('PSRC/HMB 공법 기반 반도체 FAB 구조 관리 시스템', centerX, pageHeight - 14, { align: 'center' });
+        },
+
+        /**
+         * Add Summary Dashboard Page to PDF
+         */
+        addPdfSummaryPage(doc, margin, contentWidth) {
+            const pageWidth = doc.internal.pageSize.getWidth();
+            let yPos = 20;
+
+            // Page header
+            doc.setFillColor(31, 111, 235);
+            doc.rect(0, 0, pageWidth, 15, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(12);
+            doc.text('요약 대시보드', margin, 10);
+
+            yPos = 25;
+
+            // === Key Metrics Section ===
+            doc.setTextColor(60, 60, 60);
+            doc.setFontSize(11);
+            doc.text('핵심 지표', margin, yPos);
+            yPos += 8;
+
+            // Calculate metrics
+            const totalColumns = Object.keys(this.columns).length;
+            const statusCounts = {};
+            Object.values(this.columns).forEach(col => {
+                const status = col.status || 'pending';
+                statusCounts[status] = (statusCounts[status] || 0) + 1;
+            });
+
+            const completedCount = statusCounts['installed'] || 0;
+            const activeCount = statusCounts['active'] || 0;
+            const holdCount = (statusCounts['hold_tc'] || 0) + (statusCounts['hold_design'] || 0);
+            const progressRate = totalColumns > 0 ? ((completedCount / totalColumns) * 100).toFixed(1) : 0;
+
+            // Metrics table
+            const metricsData = [
+                ['전체 기둥', totalColumns.toLocaleString() + '개'],
+                ['설치 완료', completedCount.toLocaleString() + '개 (' + progressRate + '%)'],
+                ['진행중', activeCount.toLocaleString() + '개'],
+                ['Hold (TC/설계)', holdCount.toLocaleString() + '개'],
+                ['미해결 이슈', this.issues.filter(i => i.status !== 'resolved' && i.status !== 'closed').length + '건']
+            ];
+
+            doc.autoTable({
+                startY: yPos,
+                head: [['항목', '값']],
+                body: metricsData,
+                margin: { left: margin, right: margin },
+                headStyles: { fillColor: [31, 111, 235], fontSize: 9 },
+                bodyStyles: { fontSize: 9 },
+                columnStyles: { 0: { cellWidth: 60 }, 1: { cellWidth: 60 } },
+                tableWidth: 130
+            });
+
+            yPos = doc.lastAutoTable.finalY + 15;
+
+            // === Floor Progress Section ===
+            doc.setTextColor(60, 60, 60);
+            doc.setFontSize(11);
+            doc.text('층별 진행률', margin, yPos);
+            yPos += 8;
+
+            // Calculate floor progress
+            const floorProgress = this.calculateFloorProgress();
+            const floorData = Object.entries(floorProgress).map(([floorId, data]) => [
+                floorId,
+                data.total.toString(),
+                data.completed.toString(),
+                data.active.toString(),
+                data.hold.toString(),
+                data.progress + '%'
+            ]);
+
+            doc.autoTable({
+                startY: yPos,
+                head: [['층', '전체', '완료', '진행중', 'Hold', '진행률']],
+                body: floorData,
+                margin: { left: margin, right: margin },
+                headStyles: { fillColor: [31, 111, 235], fontSize: 8 },
+                bodyStyles: { fontSize: 8 },
+                alternateRowStyles: { fillColor: [248, 249, 250] },
+                columnStyles: {
+                    0: { cellWidth: 20 },
+                    1: { cellWidth: 25, halign: 'right' },
+                    2: { cellWidth: 25, halign: 'right' },
+                    3: { cellWidth: 25, halign: 'right' },
+                    4: { cellWidth: 25, halign: 'right' },
+                    5: { cellWidth: 25, halign: 'right' }
+                }
+            });
+
+            yPos = doc.lastAutoTable.finalY + 15;
+
+            // === Status Distribution Section ===
+            doc.setTextColor(60, 60, 60);
+            doc.setFontSize(11);
+            doc.text('상태별 분포', margin, yPos);
+            yPos += 8;
+
+            const statusData = Object.entries(this.statusCodes).map(([code, info]) => {
+                const count = statusCounts[code] || 0;
+                const percent = totalColumns > 0 ? ((count / totalColumns) * 100).toFixed(1) : 0;
+                return [info.label || code, count.toString(), percent + '%'];
+            });
+
+            doc.autoTable({
+                startY: yPos,
+                head: [['상태', '개수', '비율']],
+                body: statusData,
+                margin: { left: margin, right: margin },
+                headStyles: { fillColor: [31, 111, 235], fontSize: 8 },
+                bodyStyles: { fontSize: 8 },
+                alternateRowStyles: { fillColor: [248, 249, 250] }
+            });
+        },
+
+        /**
+         * Calculate floor progress data
+         */
+        calculateFloorProgress() {
+            const floorIds = ['F01', 'F02', 'F03', 'F04', 'F05', 'F06', 'F07', 'F08', 'F09', 'F10', 'RF'];
+            const progress = {};
+
+            floorIds.forEach(floorId => {
+                const floorColumns = Object.values(this.columns).filter(c =>
+                    c.floor === floorId || c.floorId === floorId
+                );
+
+                const total = floorColumns.length || 828; // Default expected count
+                const completed = floorColumns.filter(c => c.status === 'installed').length;
+                const active = floorColumns.filter(c => c.status === 'active').length;
+                const hold = floorColumns.filter(c =>
+                    c.status === 'hold_tc' || c.status === 'hold_design'
+                ).length;
+
+                progress[floorId] = {
+                    total,
+                    completed,
+                    active,
+                    hold,
+                    progress: total > 0 ? ((completed / total) * 100).toFixed(1) : '0.0'
+                };
+            });
+
+            return progress;
+        },
+
+        /**
+         * Add Detailed Floor Pages to PDF
+         */
+        addPdfDetailedPages(doc, margin, contentWidth) {
+            const floorIds = ['F01', 'F02', 'F03', 'F04', 'F05', 'F06', 'F07', 'F08', 'F09', 'F10', 'RF'];
+            const pageWidth = doc.internal.pageSize.getWidth();
+
+            floorIds.forEach(floorId => {
+                doc.addPage();
+                let yPos = 20;
+
+                // Page header
+                doc.setFillColor(31, 111, 235);
+                doc.rect(0, 0, pageWidth, 15, 'F');
+                doc.setTextColor(255, 255, 255);
+                doc.setFontSize(12);
+                doc.text(`${floorId} 층 상세 현황`, margin, 10);
+
+                yPos = 25;
+
+                // Get floor columns
+                const floorColumns = Object.values(this.columns).filter(c =>
+                    c.floor === floorId || c.floorId === floorId
+                );
+
+                // Zone-based summary
+                doc.setTextColor(60, 60, 60);
+                doc.setFontSize(10);
+                doc.text('Zone별 현황', margin, yPos);
+                yPos += 6;
+
+                const zoneData = this.zones.map(zone => {
+                    const zoneCols = floorColumns.filter(c => c.zone?.id === zone.id || c.zoneId === zone.id);
+                    const completed = zoneCols.filter(c => c.status === 'installed').length;
+                    const active = zoneCols.filter(c => c.status === 'active').length;
+                    const hold = zoneCols.filter(c => c.status === 'hold_tc' || c.status === 'hold_design').length;
+                    const blocked = zoneCols.filter(c => c.status === 'hold_tc').length;
+
+                    return [
+                        zone.name || zone.id,
+                        zoneCols.length.toString(),
+                        completed.toString(),
+                        active.toString(),
+                        hold.toString(),
+                        blocked.toString()
+                    ];
+                });
+
+                doc.autoTable({
+                    startY: yPos,
+                    head: [['Zone', '전체', '완료', '진행중', '지연', '블록']],
+                    body: zoneData,
+                    margin: { left: margin, right: margin },
+                    headStyles: { fillColor: [31, 111, 235], fontSize: 8 },
+                    bodyStyles: { fontSize: 8 },
+                    alternateRowStyles: { fillColor: [248, 249, 250] }
+                });
+
+                yPos = doc.lastAutoTable.finalY + 12;
+
+                // Stage-based progress
+                doc.setTextColor(60, 60, 60);
+                doc.setFontSize(10);
+                doc.text('공정(Stage)별 진행률', margin, yPos);
+                yPos += 6;
+
+                const stages = ['FA', 'SB', 'TC', 'TB', 'WD', 'CP'];
+                const stageLabels = {
+                    'FA': '철골(FA)',
+                    'SB': '데크(SB)',
+                    'TC': 'T/C 설치(TC)',
+                    'TB': 'T/B 설치(TB)',
+                    'WD': '용접(WD)',
+                    'CP': '완료(CP)'
+                };
+
+                const stageData = stages.map(stage => {
+                    const stageComplete = floorColumns.filter(c => {
+                        const stageStatus = c.stages?.[stage];
+                        return stageStatus === 'complete' || stageStatus === 'installed';
+                    }).length;
+                    const progress = floorColumns.length > 0
+                        ? ((stageComplete / floorColumns.length) * 100).toFixed(1)
+                        : '0.0';
+                    return [stageLabels[stage] || stage, stageComplete.toString(), progress + '%'];
+                });
+
+                doc.autoTable({
+                    startY: yPos,
+                    head: [['공정', '완료', '진행률']],
+                    body: stageData,
+                    margin: { left: margin, right: margin },
+                    headStyles: { fillColor: [35, 134, 54], fontSize: 8 },
+                    bodyStyles: { fontSize: 8 },
+                    alternateRowStyles: { fillColor: [248, 249, 250] },
+                    tableWidth: 100
+                });
+
+                // Floor Issues Summary
+                const floorIssues = this.issues.filter(issue =>
+                    issue.floorId === floorId || issue.floor === floorId
+                );
+
+                if (floorIssues.length > 0) {
+                    yPos = doc.lastAutoTable.finalY + 12;
+                    doc.setTextColor(60, 60, 60);
+                    doc.setFontSize(10);
+                    doc.text(`이슈 현황 (${floorIssues.length}건)`, margin, yPos);
+                    yPos += 6;
+
+                    const issueData = floorIssues.slice(0, 10).map(issue => [
+                        issue.id?.slice(-6) || '-',
+                        this.getSeverityLabel(issue.severity),
+                        (issue.title || issue.description || '-').slice(0, 30),
+                        this.getIssueStatusLabel(issue.status)
+                    ]);
+
+                    doc.autoTable({
+                        startY: yPos,
+                        head: [['ID', '심각도', '제목', '상태']],
+                        body: issueData,
+                        margin: { left: margin, right: margin },
+                        headStyles: { fillColor: [218, 54, 51], fontSize: 8 },
+                        bodyStyles: { fontSize: 7 },
+                        alternateRowStyles: { fillColor: [248, 249, 250] }
+                    });
+                }
+            });
+        },
+
+        /**
+         * Add Issues Page to PDF
+         */
+        addPdfIssuesPage(doc, margin, contentWidth) {
+            const pageWidth = doc.internal.pageSize.getWidth();
+            let yPos = 20;
+
+            // Page header
+            doc.setFillColor(218, 54, 51); // Red for issues
+            doc.rect(0, 0, pageWidth, 15, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(12);
+            doc.text('이슈 요약', margin, 10);
+
+            yPos = 25;
+
+            // Issue statistics
+            const openIssues = this.issues.filter(i => i.status === 'open');
+            const inProgressIssues = this.issues.filter(i => i.status === 'in_progress');
+            const resolvedIssues = this.issues.filter(i => i.status === 'resolved');
+            const criticalIssues = this.issues.filter(i => i.severity === 'critical');
+            const highIssues = this.issues.filter(i => i.severity === 'high');
+
+            doc.setTextColor(60, 60, 60);
+            doc.setFontSize(10);
+            doc.text('이슈 통계', margin, yPos);
+            yPos += 6;
+
+            const statsData = [
+                ['전체 이슈', this.issues.length.toString()],
+                ['미해결 (Open)', openIssues.length.toString()],
+                ['처리중 (In Progress)', inProgressIssues.length.toString()],
+                ['해결됨 (Resolved)', resolvedIssues.length.toString()],
+                ['Critical 등급', criticalIssues.length.toString()],
+                ['High 등급', highIssues.length.toString()]
+            ];
+
+            doc.autoTable({
+                startY: yPos,
+                head: [['항목', '건수']],
+                body: statsData,
+                margin: { left: margin, right: margin },
+                headStyles: { fillColor: [218, 54, 51], fontSize: 9 },
+                bodyStyles: { fontSize: 9 },
+                tableWidth: 100
+            });
+
+            yPos = doc.lastAutoTable.finalY + 15;
+
+            // Severity distribution
+            doc.setTextColor(60, 60, 60);
+            doc.setFontSize(10);
+            doc.text('심각도별 분포', margin, yPos);
+            yPos += 6;
+
+            const severityCounts = {};
+            this.issues.forEach(issue => {
+                const sev = issue.severity || 'low';
+                severityCounts[sev] = (severityCounts[sev] || 0) + 1;
+            });
+
+            const severityData = [
+                ['Critical (긴급)', (severityCounts['critical'] || 0).toString()],
+                ['High (높음)', (severityCounts['high'] || 0).toString()],
+                ['Medium (보통)', (severityCounts['medium'] || 0).toString()],
+                ['Low (낮음)', (severityCounts['low'] || 0).toString()]
+            ];
+
+            doc.autoTable({
+                startY: yPos,
+                head: [['심각도', '건수']],
+                body: severityData,
+                margin: { left: margin, right: margin },
+                headStyles: { fillColor: [210, 153, 34], fontSize: 9 },
+                bodyStyles: { fontSize: 9 },
+                tableWidth: 100
+            });
+
+            yPos = doc.lastAutoTable.finalY + 15;
+
+            // Unresolved issues list
+            const unresolvedIssues = this.issues.filter(i =>
+                i.status !== 'resolved' && i.status !== 'closed'
+            );
+
+            if (unresolvedIssues.length > 0) {
+                doc.setTextColor(60, 60, 60);
+                doc.setFontSize(10);
+                doc.text(`미해결 이슈 목록 (${unresolvedIssues.length}건)`, margin, yPos);
+                yPos += 6;
+
+                const issueTableData = unresolvedIssues.slice(0, 20).map(issue => [
+                    issue.id?.slice(-8) || '-',
+                    issue.floorId || issue.floor || '-',
+                    this.getSeverityLabel(issue.severity),
+                    (issue.title || issue.description || '-').slice(0, 25),
+                    this.getIssueStatusLabel(issue.status),
+                    issue.createdAt ? new Date(issue.createdAt).toLocaleDateString('ko-KR') : '-'
+                ]);
+
+                doc.autoTable({
+                    startY: yPos,
+                    head: [['ID', '층', '심각도', '제목', '상태', '생성일']],
+                    body: issueTableData,
+                    margin: { left: margin, right: margin },
+                    headStyles: { fillColor: [218, 54, 51], fontSize: 7 },
+                    bodyStyles: { fontSize: 7 },
+                    alternateRowStyles: { fillColor: [248, 249, 250] },
+                    columnStyles: {
+                        0: { cellWidth: 22 },
+                        1: { cellWidth: 15 },
+                        2: { cellWidth: 20 },
+                        3: { cellWidth: 50 },
+                        4: { cellWidth: 20 },
+                        5: { cellWidth: 25 }
+                    }
+                });
+
+                if (unresolvedIssues.length > 20) {
+                    const remaining = unresolvedIssues.length - 20;
+                    doc.setFontSize(8);
+                    doc.setTextColor(100, 100, 100);
+                    doc.text(`... 외 ${remaining}건`, margin, doc.lastAutoTable.finalY + 8);
+                }
+            }
+        },
+
+        /**
+         * Get severity label in Korean
+         */
+        getSeverityLabel(severity) {
+            const labels = {
+                'critical': '긴급',
+                'high': '높음',
+                'medium': '보통',
+                'low': '낮음'
+            };
+            return labels[severity] || severity || '-';
+        },
+
+        /**
+         * Add page numbers to all pages
+         */
+        addPdfPageNumbers(doc) {
+            const totalPages = doc.internal.getNumberOfPages();
+            const pageHeight = doc.internal.pageSize.getHeight();
+            const pageWidth = doc.internal.pageSize.getWidth();
+
+            for (let i = 1; i <= totalPages; i++) {
+                doc.setPage(i);
+                doc.setFontSize(8);
+                doc.setTextColor(150, 150, 150);
+
+                // Page number
+                doc.text(`${i} / ${totalPages}`, pageWidth / 2, pageHeight - 8, { align: 'center' });
+
+                // Footer line
+                doc.setDrawColor(200, 200, 200);
+                doc.line(15, pageHeight - 12, pageWidth - 15, pageHeight - 12);
+
+                // Generation timestamp on first page footer
+                if (i > 1) {
+                    doc.text('P5 Dashboard Report', 15, pageHeight - 8);
+                    doc.text(new Date().toLocaleDateString('ko-KR'), pageWidth - 15, pageHeight - 8, { align: 'right' });
+                }
+            }
+        },
+
         /**
          * Handle file import
          */
@@ -8857,6 +10913,249 @@ function dashboard() {
             event.target.classList.remove('dragover');
             const file = event.dataTransfer.files[0];
             if (file) this.processImportFile(file);
+        },
+        
+        // ===== MGT Import Handlers =====
+        
+        /**
+         * Handle MGT file input change
+         */
+        handleMgtImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            this.processMgtFile(file);
+        },
+        
+        /**
+         * Handle MGT file drop
+         */
+        handleMgtDrop(event) {
+            event.target.classList.remove('dragover');
+            const file = event.dataTransfer.files[0];
+            if (file && file.name.endsWith('.mgt')) {
+                this.processMgtFile(file);
+            } else {
+                this.showToast('MGT 파일만 지원됩니다', 'error');
+            }
+        },
+        
+        /**
+         * Process MGT file
+         */
+        async processMgtFile(file) {
+            this.mgtImportStatus = {
+                loading: true,
+                success: false,
+                message: 'MGT 파일 읽는 중...',
+                nodes: 0,
+                elements: 0,
+                cols: 0,
+                rows: 0,
+                excludedCols: [],
+                parsedData: null
+            };
+            
+            try {
+                const content = await file.text();
+                this.mgtImportStatus.message = '노드 데이터 파싱 중...';
+                
+                // Parse MGT inline (simplified version of mgt-parser.js)
+                const parsed = this.parseMgtContent(content);
+                
+                this.mgtImportStatus = {
+                    loading: false,
+                    success: true,
+                    message: '파싱 완료',
+                    nodes: parsed.meta.totalNodes,
+                    elements: parsed.meta.totalElements,
+                    cols: parsed.gridConfig.cols,
+                    rows: parsed.gridConfig.rows,
+                    floors: parsed.gridConfig.floors,
+                    excludedCols: parsed.gridConfig.excludedColumns,
+                    parsedData: parsed
+                };
+                
+                this.showToast(`MGT 파싱 완료: ${parsed.meta.totalNodes}개 노드, ${parsed.gridConfig.floors}개 층`, 'success');
+                
+            } catch (err) {
+                this.mgtImportStatus.loading = false;
+                this.mgtImportStatus.success = false;
+                this.showToast('MGT 파싱 실패: ' + err.message, 'error');
+            }
+        },
+        
+        /**
+         * Parse MGT content (inline parser)
+         */
+        parseMgtContent(content) {
+            const lines = content.split('\n');
+            const nodes = [];
+            const elements = [];
+            let inNodeSection = false;
+            let inElementSection = false;
+            
+            for (const line of lines) {
+                const trimmed = line.trim();
+                
+                // Section detection
+                if (trimmed.startsWith('*NODE')) {
+                    inNodeSection = true;
+                    inElementSection = false;
+                    continue;
+                }
+                if (trimmed.startsWith('*ELEMENT')) {
+                    inNodeSection = false;
+                    inElementSection = true;
+                    continue;
+                }
+                if (trimmed.startsWith('*') && !trimmed.startsWith(';')) {
+                    inNodeSection = false;
+                    inElementSection = false;
+                    continue;
+                }
+                
+                // Parse nodes
+                if (inNodeSection && /^\s*\d+/.test(trimmed)) {
+                    const parts = trimmed.split(',').map(p => p.trim());
+                    if (parts.length >= 4) {
+                        const id = parseInt(parts[0]);
+                        const x = parseFloat(parts[1]);
+                        const y = parseFloat(parts[2]);
+                        const z = parseFloat(parts[3]);
+                        if (!isNaN(id) && !isNaN(x) && !isNaN(y) && !isNaN(z)) {
+                            nodes.push({ id, x, y, z });
+                        }
+                    }
+                }
+                
+                // Parse elements
+                if (inElementSection && /^\s*\d+/.test(trimmed)) {
+                    const parts = trimmed.split(',').map(p => p.trim());
+                    if (parts.length >= 6) {
+                        const id = parseInt(parts[0]);
+                        const type = parts[1].replace(/\s+/g, '');
+                        const n1 = parseInt(parts[4]);
+                        const n2 = parseInt(parts[5]);
+                        if (!isNaN(id)) {
+                            elements.push({ id, type, nodes: [n1, n2] });
+                        }
+                    }
+                }
+            }
+            
+            // Calculate grid config
+            const xValues = [...new Set(nodes.map(n => n.x))].sort((a, b) => a - b);
+            const yValues = [...new Set(nodes.map(n => n.y))].sort((a, b) => a - b);
+            const zValues = [...new Set(nodes.map(n => n.z))].sort((a, b) => a - b);
+            
+            const minX = xValues[0] || 0;
+            const excludedColumns = minX > 15 ? [1, 2] : [];
+            
+            // Generate floor mapping from Z values (F01~F10, RF)
+            const floorLabels = ['F01', 'F02', 'F03', 'F04', 'F05', 'F06', 'F07', 'F08', 'F09', 'F10', 'RF'];
+            const floorMapping = {};
+            zValues.forEach((z, idx) => {
+                // Use predefined labels for first 11 floors, then generate dynamically
+                const floorId = idx < floorLabels.length ? floorLabels[idx] : `F${String(idx + 1).padStart(2, '0')}`;
+                floorMapping[z] = floorId;
+            });
+            
+            return {
+                nodes,
+                elements,
+                gridConfig: {
+                    cols: xValues.length,
+                    rows: yValues.length,
+                    floors: zValues.length,
+                    excludedColumns,
+                    xValues,
+                    yValues,
+                    zValues,
+                    floorMapping
+                },
+                meta: {
+                    totalNodes: nodes.length,
+                    totalElements: elements.length,
+                    parsedAt: new Date().toISOString()
+                }
+            };
+        },
+        
+        /**
+         * Apply parsed MGT config to dashboard
+         */
+        applyMgtConfig() {
+            const parsed = this.mgtImportStatus.parsedData;
+            if (!parsed) {
+                this.showToast('적용할 데이터가 없습니다', 'error');
+                return;
+            }
+            
+            // Update grid config
+            this.gridConfig.cols = parsed.gridConfig.cols;
+            this.gridConfig.rows = parsed.gridConfig.rows;
+            
+            // Generate floors from Z values (F01~RF)
+            const { zValues, floorMapping } = parsed.gridConfig;
+            const floorLabels = ['F01', 'F02', 'F03', 'F04', 'F05', 'F06', 'F07', 'F08', 'F09', 'F10', 'RF'];
+            this.floors = zValues.map((z, idx) => ({
+                floorId: floorMapping[z],
+                label: floorLabels[idx] || `F${String(idx + 1).padStart(2, '0')}`,
+                zLevel: z,
+                hasVariation: false,
+                columnSize: '' // Can be populated later with actual section data
+            }));
+            
+            // Update selected floor to first available
+            if (this.floors.length > 0) {
+                this.selectedFloor = this.floors[0].floorId;
+                this.currentFloorLabel = this.floors[0].label;
+            }
+            
+            // Generate zones from parsed data
+            const totalCols = parsed.gridConfig.cols;
+            const zoneSize = Math.ceil(totalCols / 3);
+            
+            this.zones = [
+                {
+                    id: 'zone_a',
+                    name: 'ZONE A',
+                    displayName: 'FAB',
+                    description: 'Utility Support',
+                    range: { startColumn: 3, endColumn: 3 + zoneSize - 1, startRow: 0, endRow: parsed.gridConfig.rows - 1 },
+                    style: { primaryColor: '#238636', backgroundColor: 'rgba(35, 134, 54, 0.1)' }
+                },
+                {
+                    id: 'zone_b',
+                    name: 'ZONE B',
+                    displayName: 'CUB',
+                    description: 'Main Link',
+                    range: { startColumn: 3 + zoneSize, endColumn: 3 + zoneSize * 2 - 1, startRow: 0, endRow: parsed.gridConfig.rows - 1 },
+                    style: { primaryColor: '#1f6feb', backgroundColor: 'rgba(31, 111, 235, 0.1)' }
+                },
+                {
+                    id: 'zone_c',
+                    name: 'ZONE C',
+                    displayName: 'COMPLEX',
+                    description: 'Office/Amenity - 복합동',
+                    range: { startColumn: 3 + zoneSize * 2, endColumn: totalCols + 2, startRow: 0, endRow: parsed.gridConfig.rows - 1 },
+                    style: { primaryColor: '#d29922', backgroundColor: 'rgba(210, 153, 34, 0.1)' }
+                }
+            ];
+            
+            // Save to local storage
+            this.saveToLocalStorage();
+            
+            // Reset import status
+            this.mgtImportStatus.success = false;
+            this.mgtImportStatus.parsedData = null;
+            
+            // Close admin panel
+            this.showAdminPanel = false;
+            
+            const floorCount = this.floors.length;
+            this.showToast(`그리드 설정 적용 완료: ${totalCols}열 × ${parsed.gridConfig.rows}행, ${floorCount}개 층`, 'success');
+            console.log('[MGT] Config applied:', { cols: totalCols, rows: parsed.gridConfig.rows, floors: floorCount, zones: this.zones.length });
         },
         
         /**

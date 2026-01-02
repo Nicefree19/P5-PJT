@@ -13,18 +13,24 @@
  * GET  ?action=getJeolju         - 절주 목록 조회 (Phase 7)
  * GET  ?action=getFloorData&floorId=F01 - 특정 층 전체 데이터 (Phase 7)
  * GET  ?action=getFloorStats     - 전체 층 통계 (Phase 7+)
+ * GET  ?action=getSlackSettings  - Slack 알림 설정 조회 (Phase 11)
+ * GET  ?action=getEmailSettings  - Email 알림 설정 조회 (Phase 12)
  * POST ?action=updateColumn      - 기둥 상태 업데이트
  * POST ?action=bulkUpdate        - 다중 기둥 일괄 업데이트
  * POST ?action=createIssue       - 이슈 등록
  * POST ?action=resolveIssue      - 이슈 해결
  * POST ?action=triggerAnalysis   - 이메일 분석 트리거 (Phase 5)
+ * POST ?action=saveSlackSettings - Slack 알림 설정 저장 (Phase 11)
+ * POST ?action=testSlackNotification - Slack 테스트 알림 전송 (Phase 11)
+ * POST ?action=saveEmailSettings - Email 알림 설정 저장 (Phase 12)
+ * POST ?action=testEmailNotification - Email 테스트 알림 전송 (Phase 12)
  *
  * Migration Functions (Apps Script에서 직접 실행):
  * - migrateAddFloorIdColumn()    - 기존 데이터에 floorId 컬럼 추가
  * - generateAllFloorData()       - 11층 전체 데이터 생성
  * - initializeFloorJeoljuSheets() - Floors/Jeolju 시트 초기화
  *
- * @version 2.1 (Phase 7+ 층-절주 구조)
+ * @version 2.3 (Phase 12 Email Integration)
  * @author P5 Dashboard Team
  */
 
@@ -326,6 +332,16 @@ function doGet(e) {
         result = getAllFloorStats();
         break;
 
+      // Slack Integration (Phase 11)
+      case "getSlackSettings":
+        result = getSlackSettings();
+        break;
+
+      // Email Integration (Phase 12)
+      case "getEmailSettings":
+        result = getEmailSettings();
+        break;
+
       default:
         result = {
           success: false,
@@ -503,6 +519,24 @@ function doPost(e) {
 
       case "getAnalysisStatus":
         result = getAnalysisJobStatus();
+        break;
+
+      // Slack Integration (Phase 11)
+      case "saveSlackSettings":
+        result = saveSlackSettings(payload);
+        break;
+
+      case "testSlackNotification":
+        result = sendSlackTestNotification();
+        break;
+
+      // Email Integration (Phase 12)
+      case "saveEmailSettings":
+        result = saveEmailSettings(payload);
+        break;
+
+      case "testEmailNotification":
+        result = sendEmailTestNotification();
         break;
 
       default:
@@ -1377,6 +1411,59 @@ function bulkUpdateColumns(uids, data, user) {
     results.details.push({ uid, retries, ...result });
   }
 
+  // Phase 11: Slack 알림 트리거 (대량 업데이트 10개 이상)
+  if (results.success >= 10) {
+    try {
+      triggerSlackNotification_("bulkUpdate", {
+        updateCount: results.success,
+        updateType: "status",
+        newValue: data.status || "multiple",
+        user: user
+      });
+    } catch (slackError) {
+      console.warn("[Slack] Failed to send bulk update notification:", slackError);
+    }
+
+    // Phase 12: Email 알림 트리거 (대량 업데이트 10개 이상)
+    try {
+      triggerEmailNotification_("bulkUpdate", {
+        updateCount: results.success,
+        updateType: "status",
+        newValue: data.status || "multiple",
+        user: user
+      });
+    } catch (emailError) {
+      console.warn("[Email] Failed to send bulk update notification:", emailError);
+    }
+  }
+
+  // Phase 11: Slack 알림 트리거 (hold 상태로 변경)
+  if (data.status && (data.status === "blocked" || data.status.startsWith("hold"))) {
+    try {
+      const successUids = results.details.filter(d => d.success).map(d => d.uid);
+      if (successUids.length > 0) {
+        triggerSlackNotification_("statusChange", {
+          newStatus: data.status,
+          affectedColumns: successUids,
+          user: user
+        });
+
+        // Phase 12: Email 알림 트리거 (blocked/hold 상태 변경)
+        try {
+          triggerEmailNotification_("statusChange", {
+            newStatus: data.status,
+            affectedColumns: successUids,
+            user: user
+          });
+        } catch (emailError) {
+          console.warn("[Email] Failed to send status change notification:", emailError);
+        }
+      }
+    } catch (slackError) {
+      console.warn("[Slack] Failed to send status change notification:", slackError);
+    }
+  }
+
   return {
     success: results.failed === 0,
     summary: `Updated: ${results.success}, Locked: ${results.locked}, Failed: ${results.failed}, Retried: ${results.retried}`,
@@ -1623,6 +1710,30 @@ function createIssue(issueData, user) {
       },
       user
     );
+
+    // Phase 11: Slack 알림 트리거 (Critical 이슈)
+    if (issueData.severity === "critical") {
+      try {
+        triggerSlackNotification_("criticalIssue", {
+          severity: issueData.severity,
+          issueData: issueData,
+          issueId: issueId
+        });
+      } catch (slackError) {
+        console.warn("[Slack] Failed to send critical issue notification:", slackError);
+      }
+
+      // Phase 12: Email 알림 트리거 (Critical 이슈)
+      try {
+        triggerEmailNotification_("criticalIssue", {
+          severity: issueData.severity,
+          issueData: issueData,
+          issueId: issueId
+        });
+      } catch (emailError) {
+        console.warn("[Email] Failed to send critical issue notification:", emailError);
+      }
+    }
 
     return {
       success: true,
@@ -2863,6 +2974,1523 @@ function getFloorColumnCount(floorId) {
   };
 }
 
+// ===== Slack Webhook Integration =====
+
+/**
+ * Slack 알림 설정 객체
+ * PropertiesService에서 설정값을 로드
+ */
+const SLACK_CONFIG = {
+  // Webhook URL (암호화된 형태로 저장)
+  getWebhookUrl: function() {
+    return PropertiesService.getUserProperties().getProperty("SLACK_WEBHOOK_URL") || "";
+  },
+
+  // 알림 활성화 여부
+  getNotificationSettings: function() {
+    const settingsJson = PropertiesService.getUserProperties().getProperty("SLACK_NOTIFICATION_SETTINGS");
+    const defaults = {
+      criticalIssue: true,        // Critical 이슈 생성 시
+      statusDelay: true,          // 기둥 상태가 "delay"로 변경 시
+      statusBlocked: true,        // 기둥 상태가 "blocked"로 변경 시
+      bulkUpdate: true,           // 대량 상태 변경 (10개 이상) 시
+      dailySummary: false,        // 일일 진행률 요약
+      issueResolved: false        // 이슈 해결 시
+    };
+
+    if (!settingsJson) return defaults;
+
+    try {
+      return { ...defaults, ...JSON.parse(settingsJson) };
+    } catch (e) {
+      console.warn("[Slack] Failed to parse notification settings:", e);
+      return defaults;
+    }
+  },
+
+  // Dashboard URL (알림에서 바로가기용)
+  getDashboardUrl: function() {
+    return PropertiesService.getScriptProperties().getProperty("DASHBOARD_URL") ||
+           ScriptApp.getService().getUrl() ||
+           "https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec";
+  }
+};
+
+/**
+ * Slack Webhook으로 알림 전송
+ * @param {string} webhookUrl - Slack Webhook URL
+ * @param {Object} payload - Slack Block Kit 형식의 payload
+ * @returns {Object} 전송 결과
+ */
+function sendSlackNotification(webhookUrl, payload) {
+  if (!webhookUrl) {
+    return { success: false, error: "Webhook URL is not configured" };
+  }
+
+  try {
+    const options = {
+      method: "post",
+      contentType: "application/json",
+      payload: JSON.stringify(payload),
+      muteHttpExceptions: true
+    };
+
+    const response = UrlFetchApp.fetch(webhookUrl, options);
+    const responseCode = response.getResponseCode();
+
+    if (responseCode === 200) {
+      console.log("[Slack] Notification sent successfully");
+      return { success: true, responseCode };
+    } else {
+      console.error("[Slack] Failed to send notification:", response.getContentText());
+      return {
+        success: false,
+        error: `HTTP ${responseCode}: ${response.getContentText()}`,
+        responseCode
+      };
+    }
+  } catch (e) {
+    console.error("[Slack] Error sending notification:", e);
+    return { success: false, error: e.message };
+  }
+}
+
+/**
+ * Slack Block Kit 메시지 생성 - Critical 이슈 알림
+ * @param {Object} issueData - 이슈 데이터
+ * @param {string} issueId - 생성된 이슈 ID
+ * @returns {Object} Slack Block Kit payload
+ */
+function createCriticalIssueSlackPayload_(issueData, issueId) {
+  const dashboardUrl = SLACK_CONFIG.getDashboardUrl();
+  const timestamp = getKSTTimestamp_();
+
+  const severityEmoji = {
+    critical: ":rotating_light:",
+    high: ":warning:",
+    medium: ":large_yellow_circle:",
+    low: ":white_circle:"
+  };
+
+  const typeLabel = {
+    tc: "T/C Hold",
+    design: "Design Change",
+    material: "Material Issue",
+    schedule: "Schedule Delay",
+    other: "Other"
+  };
+
+  return {
+    blocks: [
+      {
+        type: "header",
+        text: {
+          type: "plain_text",
+          text: `${severityEmoji[issueData.severity] || ":warning:"} P5 Dashboard Alert`,
+          emoji: true
+        }
+      },
+      {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `*Event*: Critical Issue Created\n*Issue ID*: \`${issueId}\``
+        }
+      },
+      {
+        type: "section",
+        fields: [
+          {
+            type: "mrkdwn",
+            text: `*Type:*\n${typeLabel[issueData.type] || issueData.type}`
+          },
+          {
+            type: "mrkdwn",
+            text: `*Severity:*\n${(issueData.severity || "medium").toUpperCase()}`
+          },
+          {
+            type: "mrkdwn",
+            text: `*Title:*\n${issueData.title || "Untitled"}`
+          },
+          {
+            type: "mrkdwn",
+            text: `*Affected Columns:*\n${(issueData.affectedColumns || []).length}개`
+          }
+        ]
+      },
+      {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `*Description:*\n${issueData.description || "_No description provided_"}`
+        }
+      },
+      {
+        type: "context",
+        elements: [
+          {
+            type: "mrkdwn",
+            text: `*Timestamp:* ${timestamp} | *Reported by:* ${issueData.reportedBy || "System"}`
+          }
+        ]
+      },
+      {
+        type: "divider"
+      },
+      {
+        type: "actions",
+        elements: [
+          {
+            type: "button",
+            text: {
+              type: "plain_text",
+              text: ":chart_with_upwards_trend: Open Dashboard",
+              emoji: true
+            },
+            url: dashboardUrl,
+            style: "primary"
+          }
+        ]
+      }
+    ]
+  };
+}
+
+/**
+ * Slack Block Kit 메시지 생성 - 상태 변경 알림 (delay/blocked)
+ * @param {string} eventType - 이벤트 타입 (delay, blocked)
+ * @param {Array} affectedColumns - 영향받은 기둥 UID 배열
+ * @param {string} user - 변경한 사용자
+ * @returns {Object} Slack Block Kit payload
+ */
+function createStatusChangeSlackPayload_(eventType, affectedColumns, user) {
+  const dashboardUrl = SLACK_CONFIG.getDashboardUrl();
+  const timestamp = getKSTTimestamp_();
+
+  const eventConfig = {
+    delay: { emoji: ":clock3:", label: "Delay Status", color: "#d29922" },
+    blocked: { emoji: ":no_entry:", label: "Blocked Status", color: "#da3633" },
+    hold_tc: { emoji: ":octagonal_sign:", label: "T/C Hold", color: "#da3633" },
+    hold_design: { emoji: ":pencil2:", label: "Design Hold", color: "#d29922" },
+    hold_material: { emoji: ":package:", label: "Material Hold", color: "#8957e5" }
+  };
+
+  const config = eventConfig[eventType] || { emoji: ":warning:", label: eventType, color: "#484f58" };
+
+  return {
+    blocks: [
+      {
+        type: "header",
+        text: {
+          type: "plain_text",
+          text: `${config.emoji} P5 Status Change Alert`,
+          emoji: true
+        }
+      },
+      {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `*Event*: Column Status Changed to *${config.label}*`
+        }
+      },
+      {
+        type: "section",
+        fields: [
+          {
+            type: "mrkdwn",
+            text: `*Affected Columns:*\n${affectedColumns.length}개`
+          },
+          {
+            type: "mrkdwn",
+            text: `*Changed by:*\n${user}`
+          }
+        ]
+      },
+      {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `*Column UIDs:*\n\`${affectedColumns.slice(0, 10).join("`, `")}\`${affectedColumns.length > 10 ? ` _...and ${affectedColumns.length - 10} more_` : ""}`
+        }
+      },
+      {
+        type: "context",
+        elements: [
+          {
+            type: "mrkdwn",
+            text: `*Timestamp:* ${timestamp}`
+          }
+        ]
+      },
+      {
+        type: "divider"
+      },
+      {
+        type: "actions",
+        elements: [
+          {
+            type: "button",
+            text: {
+              type: "plain_text",
+              text: ":chart_with_upwards_trend: Open Dashboard",
+              emoji: true
+            },
+            url: dashboardUrl,
+            style: "primary"
+          }
+        ]
+      }
+    ]
+  };
+}
+
+/**
+ * Slack Block Kit 메시지 생성 - 대량 업데이트 알림
+ * @param {number} updateCount - 업데이트된 기둥 수
+ * @param {string} updateType - 업데이트 타입 (status, stage 등)
+ * @param {string} newValue - 새 값
+ * @param {string} user - 변경한 사용자
+ * @returns {Object} Slack Block Kit payload
+ */
+function createBulkUpdateSlackPayload_(updateCount, updateType, newValue, user) {
+  const dashboardUrl = SLACK_CONFIG.getDashboardUrl();
+  const timestamp = getKSTTimestamp_();
+
+  return {
+    blocks: [
+      {
+        type: "header",
+        text: {
+          type: "plain_text",
+          text: ":arrows_counterclockwise: P5 Bulk Update Alert",
+          emoji: true
+        }
+      },
+      {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `*Event*: Bulk Update Completed`
+        }
+      },
+      {
+        type: "section",
+        fields: [
+          {
+            type: "mrkdwn",
+            text: `*Columns Updated:*\n${updateCount}개`
+          },
+          {
+            type: "mrkdwn",
+            text: `*Update Type:*\n${updateType}`
+          },
+          {
+            type: "mrkdwn",
+            text: `*New Value:*\n${newValue}`
+          },
+          {
+            type: "mrkdwn",
+            text: `*Changed by:*\n${user}`
+          }
+        ]
+      },
+      {
+        type: "context",
+        elements: [
+          {
+            type: "mrkdwn",
+            text: `*Timestamp:* ${timestamp}`
+          }
+        ]
+      },
+      {
+        type: "divider"
+      },
+      {
+        type: "actions",
+        elements: [
+          {
+            type: "button",
+            text: {
+              type: "plain_text",
+              text: ":chart_with_upwards_trend: Open Dashboard",
+              emoji: true
+            },
+            url: dashboardUrl
+          }
+        ]
+      }
+    ]
+  };
+}
+
+/**
+ * Slack Block Kit 메시지 생성 - 일일 진행률 요약
+ * @param {Object} stats - 진행률 통계
+ * @returns {Object} Slack Block Kit payload
+ */
+function createDailySummarySlackPayload_(stats) {
+  const dashboardUrl = SLACK_CONFIG.getDashboardUrl();
+  const timestamp = getKSTTimestamp_();
+
+  const progressBar = (percent) => {
+    const filled = Math.floor(percent / 10);
+    const empty = 10 - filled;
+    return ":large_green_square:".repeat(filled) + ":white_large_square:".repeat(empty);
+  };
+
+  return {
+    blocks: [
+      {
+        type: "header",
+        text: {
+          type: "plain_text",
+          text: ":bar_chart: P5 Daily Progress Summary",
+          emoji: true
+        }
+      },
+      {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `*Date:* ${timestamp.split(" ")[0]}`
+        }
+      },
+      {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `*Overall Progress:* ${stats.overallProgress || 0}%\n${progressBar(stats.overallProgress || 0)}`
+        }
+      },
+      {
+        type: "section",
+        fields: [
+          {
+            type: "mrkdwn",
+            text: `*Total Columns:*\n${stats.totalColumns || 0}`
+          },
+          {
+            type: "mrkdwn",
+            text: `*Installed:*\n${stats.byStatus?.installed || 0}`
+          },
+          {
+            type: "mrkdwn",
+            text: `*In Progress:*\n${stats.byStatus?.active || 0}`
+          },
+          {
+            type: "mrkdwn",
+            text: `*On Hold:*\n${stats.byStatus?.hold || 0}`
+          }
+        ]
+      },
+      {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `*Open Issues:* ${stats.openIssues || 0} | *Critical:* ${stats.criticalIssues || 0}`
+        }
+      },
+      {
+        type: "context",
+        elements: [
+          {
+            type: "mrkdwn",
+            text: `_Generated automatically by P5 Dashboard_`
+          }
+        ]
+      },
+      {
+        type: "divider"
+      },
+      {
+        type: "actions",
+        elements: [
+          {
+            type: "button",
+            text: {
+              type: "plain_text",
+              text: ":chart_with_upwards_trend: View Full Dashboard",
+              emoji: true
+            },
+            url: dashboardUrl,
+            style: "primary"
+          }
+        ]
+      }
+    ]
+  };
+}
+
+/**
+ * 조건에 따라 Slack 알림 전송 (내부 트리거 함수)
+ * @param {string} eventType - 이벤트 타입
+ * @param {Object} eventData - 이벤트 데이터
+ */
+function triggerSlackNotification_(eventType, eventData) {
+  const webhookUrl = SLACK_CONFIG.getWebhookUrl();
+  const settings = SLACK_CONFIG.getNotificationSettings();
+
+  if (!webhookUrl) {
+    console.log("[Slack] Webhook URL not configured, skipping notification");
+    return;
+  }
+
+  let payload = null;
+  let shouldSend = false;
+
+  switch (eventType) {
+    case "criticalIssue":
+      shouldSend = settings.criticalIssue && eventData.severity === "critical";
+      if (shouldSend) {
+        payload = createCriticalIssueSlackPayload_(eventData.issueData, eventData.issueId);
+      }
+      break;
+
+    case "statusChange":
+      const isDelay = settings.statusDelay && eventData.newStatus === "delay";
+      const isBlocked = settings.statusBlocked &&
+                        (eventData.newStatus === "blocked" || eventData.newStatus.startsWith("hold"));
+      shouldSend = isDelay || isBlocked;
+      if (shouldSend) {
+        payload = createStatusChangeSlackPayload_(
+          eventData.newStatus,
+          eventData.affectedColumns || [eventData.uid],
+          eventData.user
+        );
+      }
+      break;
+
+    case "bulkUpdate":
+      shouldSend = settings.bulkUpdate && eventData.updateCount >= 10;
+      if (shouldSend) {
+        payload = createBulkUpdateSlackPayload_(
+          eventData.updateCount,
+          eventData.updateType,
+          eventData.newValue,
+          eventData.user
+        );
+      }
+      break;
+
+    case "dailySummary":
+      shouldSend = settings.dailySummary;
+      if (shouldSend) {
+        payload = createDailySummarySlackPayload_(eventData.stats);
+      }
+      break;
+
+    case "issueResolved":
+      shouldSend = settings.issueResolved;
+      if (shouldSend) {
+        payload = createIssueResolvedSlackPayload_(eventData.issueId, eventData.resolution, eventData.user);
+      }
+      break;
+
+    default:
+      console.log(`[Slack] Unknown event type: ${eventType}`);
+      return;
+  }
+
+  if (shouldSend && payload) {
+    const result = sendSlackNotification(webhookUrl, payload);
+    if (!result.success) {
+      console.error(`[Slack] Failed to send ${eventType} notification:`, result.error);
+    }
+  }
+}
+
+/**
+ * Slack Block Kit 메시지 생성 - 이슈 해결 알림
+ * @param {string} issueId - 이슈 ID
+ * @param {Object} resolution - 해결 정보
+ * @param {string} user - 처리자
+ * @returns {Object} Slack Block Kit payload
+ */
+function createIssueResolvedSlackPayload_(issueId, resolution, user) {
+  const dashboardUrl = SLACK_CONFIG.getDashboardUrl();
+  const timestamp = getKSTTimestamp_();
+
+  return {
+    blocks: [
+      {
+        type: "header",
+        text: {
+          type: "plain_text",
+          text: ":white_check_mark: P5 Issue Resolved",
+          emoji: true
+        }
+      },
+      {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `*Issue ID:* \`${issueId}\` has been resolved`
+        }
+      },
+      {
+        type: "section",
+        fields: [
+          {
+            type: "mrkdwn",
+            text: `*Resolved by:*\n${user}`
+          },
+          {
+            type: "mrkdwn",
+            text: `*Timestamp:*\n${timestamp}`
+          }
+        ]
+      },
+      {
+        type: "context",
+        elements: [
+          {
+            type: "mrkdwn",
+            text: resolution.notes ? `*Notes:* ${resolution.notes}` : "_No resolution notes provided_"
+          }
+        ]
+      },
+      {
+        type: "divider"
+      },
+      {
+        type: "actions",
+        elements: [
+          {
+            type: "button",
+            text: {
+              type: "plain_text",
+              text: ":chart_with_upwards_trend: Open Dashboard",
+              emoji: true
+            },
+            url: dashboardUrl
+          }
+        ]
+      }
+    ]
+  };
+}
+
+/**
+ * Slack Webhook 설정 저장 (POST API)
+ * @param {Object} payload - { webhookUrl, settings }
+ * @returns {Object} 저장 결과
+ */
+function saveSlackSettings(payload) {
+  try {
+    const userProps = PropertiesService.getUserProperties();
+
+    // Webhook URL 저장 (마스킹 없이 저장, UI에서만 마스킹)
+    if (payload.webhookUrl !== undefined) {
+      if (payload.webhookUrl === "") {
+        userProps.deleteProperty("SLACK_WEBHOOK_URL");
+      } else {
+        userProps.setProperty("SLACK_WEBHOOK_URL", payload.webhookUrl);
+      }
+    }
+
+    // 알림 설정 저장
+    if (payload.settings) {
+      userProps.setProperty("SLACK_NOTIFICATION_SETTINGS", JSON.stringify(payload.settings));
+    }
+
+    return {
+      success: true,
+      message: "Slack settings saved successfully",
+      timestamp: getKSTTimestamp_()
+    };
+  } catch (e) {
+    return {
+      success: false,
+      error: `Failed to save Slack settings: ${e.message}`
+    };
+  }
+}
+
+/**
+ * Slack Webhook 설정 조회 (GET API)
+ * @returns {Object} 현재 설정 (Webhook URL은 마스킹 처리)
+ */
+function getSlackSettings() {
+  const webhookUrl = SLACK_CONFIG.getWebhookUrl();
+  const settings = SLACK_CONFIG.getNotificationSettings();
+
+  // Webhook URL 마스킹 (앞 20자 + *** + 마지막 10자)
+  let maskedUrl = "";
+  if (webhookUrl) {
+    if (webhookUrl.length > 35) {
+      maskedUrl = webhookUrl.substring(0, 25) + "***" + webhookUrl.substring(webhookUrl.length - 10);
+    } else {
+      maskedUrl = webhookUrl.substring(0, 10) + "***";
+    }
+  }
+
+  return {
+    success: true,
+    webhookConfigured: !!webhookUrl,
+    webhookUrlMasked: maskedUrl,
+    settings: settings,
+    timestamp: getKSTTimestamp_()
+  };
+}
+
+/**
+ * Slack 테스트 알림 전송 (POST API)
+ * @returns {Object} 전송 결과
+ */
+function sendSlackTestNotification() {
+  const webhookUrl = SLACK_CONFIG.getWebhookUrl();
+
+  if (!webhookUrl) {
+    return {
+      success: false,
+      error: "Webhook URL is not configured. Please save your Webhook URL first."
+    };
+  }
+
+  const testPayload = {
+    blocks: [
+      {
+        type: "header",
+        text: {
+          type: "plain_text",
+          text: ":test_tube: P5 Dashboard Test Notification",
+          emoji: true
+        }
+      },
+      {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: "This is a test notification from P5 Dashboard.\n\n:white_check_mark: *Slack integration is working correctly!*"
+        }
+      },
+      {
+        type: "context",
+        elements: [
+          {
+            type: "mrkdwn",
+            text: `*Timestamp:* ${getKSTTimestamp_()}`
+          }
+        ]
+      },
+      {
+        type: "divider"
+      },
+      {
+        type: "actions",
+        elements: [
+          {
+            type: "button",
+            text: {
+              type: "plain_text",
+              text: ":chart_with_upwards_trend: Open Dashboard",
+              emoji: true
+            },
+            url: SLACK_CONFIG.getDashboardUrl(),
+            style: "primary"
+          }
+        ]
+      }
+    ]
+  };
+
+  return sendSlackNotification(webhookUrl, testPayload);
+}
+
+/**
+ * 일일 진행률 요약 전송 (시간 기반 트리거용)
+ * Apps Script 트리거에서 매일 특정 시간에 호출
+ */
+function sendDailyProgressSummary() {
+  const settings = SLACK_CONFIG.getNotificationSettings();
+
+  if (!settings.dailySummary) {
+    console.log("[Slack] Daily summary is disabled");
+    return { success: false, error: "Daily summary is disabled" };
+  }
+
+  // 전체 통계 조회
+  const floorStats = getAllFloorStats();
+  if (!floorStats.success) {
+    return { success: false, error: "Failed to get floor stats" };
+  }
+
+  // 이슈 통계 조회
+  const issuesResult = getIssues("open");
+  const openIssues = issuesResult.issues || [];
+  const criticalIssues = openIssues.filter(i => i.severity === "critical").length;
+
+  const stats = {
+    ...floorStats.summary,
+    openIssues: openIssues.length,
+    criticalIssues: criticalIssues
+  };
+
+  triggerSlackNotification_("dailySummary", { stats });
+
+  return {
+    success: true,
+    message: "Daily summary sent",
+    stats
+  };
+}
+
+// ===== Phase 12: Email Notification Integration =====
+
+/**
+ * Email 알림 설정 (PropertiesService 사용)
+ */
+const EMAIL_CONFIG = {
+  // 수신자 이메일 목록 조회
+  getRecipients: function() {
+    const recipientsJson = PropertiesService.getUserProperties().getProperty("EMAIL_RECIPIENTS");
+    return recipientsJson ? JSON.parse(recipientsJson) : [];
+  },
+
+  // 알림 활성화 여부 조회
+  getNotificationSettings: function() {
+    const settingsJson = PropertiesService.getUserProperties().getProperty("EMAIL_NOTIFICATION_SETTINGS");
+    const defaults = {
+      criticalIssue: true,        // Critical 이슈 생성 시
+      statusDelay: true,          // 기둥 상태가 "delay"로 변경 시
+      statusBlocked: true,        // 기둥 상태가 "blocked"로 변경 시
+      bulkUpdate: true,           // 대량 상태 변경 (10개 이상) 시
+      weeklySummary: false,       // 주간 진행률 요약 리포트
+      issueResolved: false        // 이슈 해결 시
+    };
+
+    if (settingsJson) {
+      return { ...defaults, ...JSON.parse(settingsJson) };
+    }
+    return defaults;
+  },
+
+  // 대시보드 URL
+  getDashboardUrl: function() {
+    return PropertiesService.getScriptProperties().getProperty("DASHBOARD_URL") ||
+           "https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec";
+  }
+};
+
+/**
+ * HTML 이메일 템플릿 기본 레이아웃
+ * @param {string} title - 이메일 제목
+ * @param {string} content - 본문 내용 (HTML)
+ * @param {string} accentColor - 강조 색상 (hex)
+ * @returns {string} HTML 이메일 템플릿
+ */
+function createEmailTemplate_(title, content, accentColor = "#238636") {
+  const dashboardUrl = EMAIL_CONFIG.getDashboardUrl();
+  const timestamp = getKSTTimestamp_();
+
+  return `<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${title}</title>
+  <!--[if mso]>
+  <noscript>
+    <xml>
+      <o:OfficeDocumentSettings>
+        <o:PixelsPerInch>96</o:PixelsPerInch>
+      </o:OfficeDocumentSettings>
+    </xml>
+  </noscript>
+  <![endif]-->
+</head>
+<body style="margin:0; padding:0; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color:#0d1117; color:#c9d1d9;">
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color:#0d1117;">
+    <tr>
+      <td align="center" style="padding:20px 10px;">
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="max-width:600px; background-color:#161b22; border:1px solid #30363d; border-radius:12px; overflow:hidden;">
+          <!-- Header -->
+          <tr>
+            <td style="background:linear-gradient(135deg, ${accentColor} 0%, #1a2735 100%); padding:24px 32px; text-align:center;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td>
+                    <h1 style="margin:0; font-size:24px; font-weight:700; color:#ffffff; letter-spacing:-0.5px;">
+                      P5 Dashboard
+                    </h1>
+                    <p style="margin:8px 0 0 0; font-size:12px; color:rgba(255,255,255,0.8);">
+                      복합동 구조 통합 관리 시스템
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Title Bar -->
+          <tr>
+            <td style="background-color:#21262d; padding:16px 32px; border-bottom:1px solid #30363d;">
+              <h2 style="margin:0; font-size:18px; font-weight:600; color:#ffffff;">
+                ${title}
+              </h2>
+            </td>
+          </tr>
+
+          <!-- Content -->
+          <tr>
+            <td style="padding:24px 32px;">
+              ${content}
+            </td>
+          </tr>
+
+          <!-- Action Button -->
+          <tr>
+            <td style="padding:0 32px 24px;">
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                <tr>
+                  <td style="border-radius:6px; background-color:${accentColor};">
+                    <a href="${dashboardUrl}" target="_blank" style="display:inline-block; padding:12px 24px; font-size:14px; font-weight:600; color:#ffffff; text-decoration:none;">
+                      대시보드 열기 &rarr;
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color:#0d1117; padding:20px 32px; border-top:1px solid #30363d;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td style="font-size:11px; color:#8b949e;">
+                    <p style="margin:0;">
+                      이 알림은 P5 Dashboard에서 자동으로 발송되었습니다.
+                    </p>
+                    <p style="margin:8px 0 0 0;">
+                      발송 시각: ${timestamp}
+                    </p>
+                  </td>
+                  <td style="text-align:right; font-size:11px; color:#8b949e;">
+                    <a href="${dashboardUrl}#settings" style="color:#58a6ff; text-decoration:none;">
+                      알림 설정 변경
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
+/**
+ * Critical 이슈 이메일 생성
+ */
+function createCriticalIssueEmailContent_(issueData, issueId) {
+  const severityColors = {
+    critical: "#da3633",
+    high: "#d29922",
+    medium: "#2f81f7",
+    low: "#238636"
+  };
+
+  const severityLabels = {
+    critical: "긴급 (Critical)",
+    high: "높음 (High)",
+    medium: "중간 (Medium)",
+    low: "낮음 (Low)"
+  };
+
+  const severityColor = severityColors[issueData.severity] || "#8b949e";
+  const severityLabel = severityLabels[issueData.severity] || issueData.severity;
+
+  const affectedCount = issueData.affectedColumns?.length || 0;
+  const affectedList = issueData.affectedColumns?.slice(0, 5).join(", ") || "-";
+  const moreCount = affectedCount > 5 ? ` 외 ${affectedCount - 5}개` : "";
+
+  return `
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom:20px;">
+      <tr>
+        <td style="padding:16px; background-color:#21262d; border-radius:8px; border-left:4px solid ${severityColor};">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+            <tr>
+              <td>
+                <span style="display:inline-block; padding:4px 12px; background-color:${severityColor}; color:#ffffff; font-size:11px; font-weight:600; border-radius:4px; text-transform:uppercase;">
+                  ${severityLabel}
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding-top:12px;">
+                <h3 style="margin:0; font-size:16px; color:#ffffff; font-weight:600;">
+                  ${issueData.title || "새로운 이슈"}
+                </h3>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding-top:8px;">
+                <p style="margin:0; font-size:13px; color:#8b949e; line-height:1.5;">
+                  ${issueData.description || "설명이 없습니다."}
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom:16px;">
+      <tr>
+        <td style="padding:12px 16px; background-color:#0d1117; border:1px solid #30363d; border-radius:6px;">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+            <tr>
+              <td style="padding:8px 0; border-bottom:1px solid #21262d;">
+                <span style="font-size:12px; color:#8b949e;">이슈 ID</span>
+                <span style="float:right; font-size:12px; color:#c9d1d9; font-family:monospace;">${issueId}</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:8px 0; border-bottom:1px solid #21262d;">
+                <span style="font-size:12px; color:#8b949e;">이슈 유형</span>
+                <span style="float:right; font-size:12px; color:#c9d1d9;">${issueData.type || "-"}</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:8px 0; border-bottom:1px solid #21262d;">
+                <span style="font-size:12px; color:#8b949e;">영향 기둥</span>
+                <span style="float:right; font-size:12px; color:#c9d1d9;">${affectedCount}개</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:8px 0;">
+                <span style="font-size:12px; color:#8b949e;">기둥 목록</span>
+                <div style="margin-top:4px; font-size:11px; color:#58a6ff; font-family:monospace;">
+                  ${affectedList}${moreCount}
+                </div>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+
+    <p style="margin:0; font-size:12px; color:#8b949e;">
+      즉시 조치가 필요합니다. 대시보드에서 상세 내용을 확인하세요.
+    </p>
+  `;
+}
+
+/**
+ * 상태 변경 이메일 생성
+ */
+function createStatusChangeEmailContent_(eventType, affectedColumns, user) {
+  const eventConfig = {
+    delay: { emoji: "⏳", label: "지연 (Delay)", color: "#d29922" },
+    blocked: { emoji: "🚫", label: "중단 (Blocked)", color: "#da3633" },
+    hold: { emoji: "⏸️", label: "보류 (Hold)", color: "#6e7681" }
+  };
+
+  const config = eventConfig[eventType] || eventConfig.delay;
+  const affectedCount = affectedColumns?.length || 0;
+  const affectedList = affectedColumns?.slice(0, 10).join(", ") || "-";
+  const moreCount = affectedCount > 10 ? ` 외 ${affectedCount - 10}개` : "";
+
+  return `
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom:20px;">
+      <tr>
+        <td style="padding:16px; background-color:#21262d; border-radius:8px; border-left:4px solid ${config.color};">
+          <h3 style="margin:0; font-size:16px; color:#ffffff;">
+            ${config.emoji} 기둥 상태 변경 알림
+          </h3>
+          <p style="margin:8px 0 0 0; font-size:13px; color:#8b949e;">
+            ${affectedCount}개 기둥이 <strong style="color:${config.color};">${config.label}</strong> 상태로 변경되었습니다.
+          </p>
+        </td>
+      </tr>
+    </table>
+
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom:16px;">
+      <tr>
+        <td style="padding:12px 16px; background-color:#0d1117; border:1px solid #30363d; border-radius:6px;">
+          <p style="margin:0 0 8px 0; font-size:11px; color:#8b949e; text-transform:uppercase; letter-spacing:0.5px;">
+            영향받은 기둥
+          </p>
+          <p style="margin:0; font-size:12px; color:#58a6ff; font-family:monospace; line-height:1.6;">
+            ${affectedList}${moreCount}
+          </p>
+        </td>
+      </tr>
+    </table>
+
+    <p style="margin:0; font-size:12px; color:#8b949e;">
+      변경자: <strong style="color:#c9d1d9;">${user || "System"}</strong>
+    </p>
+  `;
+}
+
+/**
+ * 대량 업데이트 이메일 생성
+ */
+function createBulkUpdateEmailContent_(updateCount, updateType, newValue, user) {
+  return `
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom:20px;">
+      <tr>
+        <td style="padding:16px; background-color:#21262d; border-radius:8px; border-left:4px solid #2f81f7;">
+          <h3 style="margin:0; font-size:16px; color:#ffffff;">
+            📦 대량 업데이트 알림
+          </h3>
+          <p style="margin:8px 0 0 0; font-size:13px; color:#8b949e;">
+            <strong style="color:#58a6ff;">${updateCount}개</strong> 기둥이 일괄 업데이트되었습니다.
+          </p>
+        </td>
+      </tr>
+    </table>
+
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom:16px;">
+      <tr>
+        <td style="padding:12px 16px; background-color:#0d1117; border:1px solid #30363d; border-radius:6px;">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+            <tr>
+              <td style="padding:8px 0; border-bottom:1px solid #21262d;">
+                <span style="font-size:12px; color:#8b949e;">업데이트 유형</span>
+                <span style="float:right; font-size:12px; color:#c9d1d9;">${updateType}</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:8px 0; border-bottom:1px solid #21262d;">
+                <span style="font-size:12px; color:#8b949e;">새 값</span>
+                <span style="float:right; font-size:12px; color:#58a6ff;">${newValue}</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:8px 0;">
+                <span style="font-size:12px; color:#8b949e;">변경자</span>
+                <span style="float:right; font-size:12px; color:#c9d1d9;">${user || "System"}</span>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  `;
+}
+
+/**
+ * 주간 요약 이메일 생성
+ */
+function createWeeklySummaryEmailContent_(stats) {
+  const progressPercent = stats.progressPercent || 0;
+  const progressBarWidth = Math.min(100, Math.max(0, progressPercent));
+
+  const progressColor = progressPercent >= 80 ? "#238636" :
+                        progressPercent >= 50 ? "#d29922" : "#da3633";
+
+  return `
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom:20px;">
+      <tr>
+        <td style="padding:16px; background-color:#21262d; border-radius:8px;">
+          <h3 style="margin:0 0 16px 0; font-size:16px; color:#ffffff;">
+            📊 주간 진행률 요약
+          </h3>
+
+          <!-- Progress Bar -->
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+            <tr>
+              <td style="background-color:#0d1117; border-radius:4px; padding:2px;">
+                <table role="presentation" cellspacing="0" cellpadding="0" style="width:${progressBarWidth}%; min-width:1%;">
+                  <tr>
+                    <td style="background-color:${progressColor}; height:24px; border-radius:3px; text-align:center;">
+                      <span style="font-size:12px; font-weight:600; color:#ffffff;">
+                        ${progressPercent.toFixed(1)}%
+                      </span>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom:16px;">
+      <tr>
+        <td style="padding:12px 16px; background-color:#0d1117; border:1px solid #30363d; border-radius:6px;">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+            <tr>
+              <td style="padding:8px 0; border-bottom:1px solid #21262d;">
+                <span style="font-size:12px; color:#8b949e;">전체 기둥</span>
+                <span style="float:right; font-size:12px; color:#c9d1d9;">${stats.totalColumns || 0}개</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:8px 0; border-bottom:1px solid #21262d;">
+                <span style="font-size:12px; color:#8b949e;">완료</span>
+                <span style="float:right; font-size:12px; color:#238636;">${stats.completedColumns || 0}개</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:8px 0; border-bottom:1px solid #21262d;">
+                <span style="font-size:12px; color:#8b949e;">진행 중</span>
+                <span style="float:right; font-size:12px; color:#2f81f7;">${stats.inProgressColumns || 0}개</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:8px 0; border-bottom:1px solid #21262d;">
+                <span style="font-size:12px; color:#8b949e;">지연/중단</span>
+                <span style="float:right; font-size:12px; color:#da3633;">${stats.delayedColumns || 0}개</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:8px 0;">
+                <span style="font-size:12px; color:#8b949e;">미해결 이슈</span>
+                <span style="float:right; font-size:12px; color:#d29922;">${stats.openIssues || 0}개</span>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+
+    <p style="margin:0; font-size:12px; color:#8b949e;">
+      대시보드에서 상세 현황을 확인하세요.
+    </p>
+  `;
+}
+
+/**
+ * 이메일 알림 전송
+ * @param {string} subject - 이메일 제목
+ * @param {string} htmlBody - HTML 본문
+ * @param {Array<string>} recipients - 수신자 목록 (optional, 기본값: 설정된 수신자)
+ * @returns {Object} 전송 결과
+ */
+function sendEmailNotification(subject, htmlBody, recipients = null) {
+  const recipientList = recipients || EMAIL_CONFIG.getRecipients();
+
+  if (!recipientList || recipientList.length === 0) {
+    return { success: false, error: "No email recipients configured" };
+  }
+
+  const results = {
+    success: 0,
+    failed: 0,
+    errors: []
+  };
+
+  recipientList.forEach(email => {
+    try {
+      MailApp.sendEmail({
+        to: email,
+        subject: `[P5 Dashboard] ${subject}`,
+        htmlBody: htmlBody,
+        name: "P5 Dashboard Alert"
+      });
+      results.success++;
+      console.log(`[Email] Sent to ${email}`);
+    } catch (e) {
+      results.failed++;
+      results.errors.push({ email, error: e.message });
+      console.error(`[Email] Failed to send to ${email}:`, e);
+    }
+  });
+
+  return {
+    success: results.success > 0,
+    sentCount: results.success,
+    failedCount: results.failed,
+    errors: results.errors
+  };
+}
+
+/**
+ * 이벤트 기반 이메일 알림 트리거
+ * @param {string} eventType - 이벤트 유형
+ * @param {Object} eventData - 이벤트 데이터
+ */
+function triggerEmailNotification_(eventType, eventData) {
+  const recipients = EMAIL_CONFIG.getRecipients();
+  const settings = EMAIL_CONFIG.getNotificationSettings();
+
+  if (!recipients || recipients.length === 0) {
+    console.log("[Email] No recipients configured, skipping notification");
+    return;
+  }
+
+  let subject = "";
+  let content = "";
+  let accentColor = "#238636";
+  let shouldSend = false;
+
+  switch (eventType) {
+    case "criticalIssue":
+      shouldSend = settings.criticalIssue && eventData.severity === "critical";
+      if (shouldSend) {
+        subject = "긴급 이슈 발생";
+        accentColor = "#da3633";
+        content = createCriticalIssueEmailContent_(eventData.issueData, eventData.issueId);
+      }
+      break;
+
+    case "statusChange":
+      const isDelay = settings.statusDelay && eventData.newStatus === "delay";
+      const isBlocked = settings.statusBlocked &&
+                        (eventData.newStatus === "blocked" || eventData.newStatus.startsWith("hold"));
+      shouldSend = isDelay || isBlocked;
+      if (shouldSend) {
+        subject = `기둥 상태 변경: ${eventData.newStatus.toUpperCase()}`;
+        accentColor = eventData.newStatus === "blocked" ? "#da3633" : "#d29922";
+        content = createStatusChangeEmailContent_(
+          eventData.newStatus,
+          eventData.affectedColumns || [eventData.uid],
+          eventData.user
+        );
+      }
+      break;
+
+    case "bulkUpdate":
+      shouldSend = settings.bulkUpdate && eventData.updateCount >= 10;
+      if (shouldSend) {
+        subject = `대량 업데이트: ${eventData.updateCount}개 기둥`;
+        accentColor = "#2f81f7";
+        content = createBulkUpdateEmailContent_(
+          eventData.updateCount,
+          eventData.updateType,
+          eventData.newValue,
+          eventData.user
+        );
+      }
+      break;
+
+    case "weeklySummary":
+      shouldSend = settings.weeklySummary;
+      if (shouldSend) {
+        subject = "주간 진행률 요약 리포트";
+        accentColor = "#238636";
+        content = createWeeklySummaryEmailContent_(eventData.stats);
+      }
+      break;
+
+    case "issueResolved":
+      shouldSend = settings.issueResolved;
+      if (shouldSend) {
+        subject = `이슈 해결: ${eventData.issueId}`;
+        accentColor = "#238636";
+        content = createIssueResolvedEmailContent_(eventData.issueId, eventData.resolution, eventData.user);
+      }
+      break;
+  }
+
+  if (shouldSend && content) {
+    const htmlBody = createEmailTemplate_(subject, content, accentColor);
+    const result = sendEmailNotification(subject, htmlBody, recipients);
+    if (!result.success) {
+      console.error(`[Email] Failed to send ${eventType} notification:`, result.errors);
+    }
+  }
+}
+
+/**
+ * 이슈 해결 이메일 생성
+ */
+function createIssueResolvedEmailContent_(issueId, resolution, user) {
+  return `
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom:20px;">
+      <tr>
+        <td style="padding:16px; background-color:#21262d; border-radius:8px; border-left:4px solid #238636;">
+          <h3 style="margin:0; font-size:16px; color:#ffffff;">
+            ✅ 이슈가 해결되었습니다
+          </h3>
+          <p style="margin:8px 0 0 0; font-size:13px; color:#8b949e;">
+            이슈 ID: <strong style="color:#58a6ff; font-family:monospace;">${issueId}</strong>
+          </p>
+        </td>
+      </tr>
+    </table>
+
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom:16px;">
+      <tr>
+        <td style="padding:12px 16px; background-color:#0d1117; border:1px solid #30363d; border-radius:6px;">
+          <p style="margin:0 0 8px 0; font-size:11px; color:#8b949e; text-transform:uppercase; letter-spacing:0.5px;">
+            해결 내용
+          </p>
+          <p style="margin:0; font-size:13px; color:#c9d1d9; line-height:1.5;">
+            ${resolution || "상세 내용이 없습니다."}
+          </p>
+        </td>
+      </tr>
+    </table>
+
+    <p style="margin:0; font-size:12px; color:#8b949e;">
+      해결자: <strong style="color:#c9d1d9;">${user || "System"}</strong>
+    </p>
+  `;
+}
+
+/**
+ * Email 설정 저장
+ * @param {Object} payload - 설정 데이터
+ * @returns {Object} 저장 결과
+ */
+function saveEmailSettings(payload) {
+  try {
+    const userProps = PropertiesService.getUserProperties();
+
+    // 수신자 목록 저장
+    if (payload.recipients !== undefined) {
+      if (Array.isArray(payload.recipients)) {
+        // 이메일 형식 검증
+        const validEmails = payload.recipients.filter(email => {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          return emailRegex.test(email);
+        });
+        userProps.setProperty("EMAIL_RECIPIENTS", JSON.stringify(validEmails));
+      } else if (payload.recipients === "") {
+        userProps.deleteProperty("EMAIL_RECIPIENTS");
+      }
+    }
+
+    // 알림 설정 저장
+    if (payload.settings) {
+      userProps.setProperty("EMAIL_NOTIFICATION_SETTINGS", JSON.stringify(payload.settings));
+    }
+
+    return {
+      success: true,
+      message: "Email settings saved successfully",
+      recipientCount: EMAIL_CONFIG.getRecipients().length
+    };
+  } catch (e) {
+    console.error("[Email] Error saving settings:", e);
+    return { success: false, error: e.message };
+  }
+}
+
+/**
+ * Email 설정 조회
+ * @returns {Object} 현재 설정
+ */
+function getEmailSettings() {
+  const recipients = EMAIL_CONFIG.getRecipients();
+  const settings = EMAIL_CONFIG.getNotificationSettings();
+
+  return {
+    success: true,
+    recipientCount: recipients.length,
+    recipients: recipients, // 전체 목록 반환 (보안 상 마스킹 필요시 수정)
+    settings: settings
+  };
+}
+
+/**
+ * 테스트 이메일 전송
+ * @returns {Object} 전송 결과
+ */
+function sendEmailTestNotification() {
+  const recipients = EMAIL_CONFIG.getRecipients();
+
+  if (!recipients || recipients.length === 0) {
+    return {
+      success: false,
+      error: "No email recipients configured. Please add recipients first."
+    };
+  }
+
+  const testContent = `
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom:20px;">
+      <tr>
+        <td style="padding:16px; background-color:#21262d; border-radius:8px; border-left:4px solid #238636;">
+          <h3 style="margin:0; font-size:16px; color:#ffffff;">
+            🧪 테스트 알림
+          </h3>
+          <p style="margin:8px 0 0 0; font-size:13px; color:#8b949e;">
+            이 메시지가 보인다면 이메일 알림이 정상적으로 작동하고 있습니다!
+          </p>
+        </td>
+      </tr>
+    </table>
+
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom:16px;">
+      <tr>
+        <td style="padding:12px 16px; background-color:#0d1117; border:1px solid #30363d; border-radius:6px;">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+            <tr>
+              <td style="padding:8px 0; border-bottom:1px solid #21262d;">
+                <span style="font-size:12px; color:#8b949e;">수신자 수</span>
+                <span style="float:right; font-size:12px; color:#c9d1d9;">${recipients.length}명</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:8px 0;">
+                <span style="font-size:12px; color:#8b949e;">설정 상태</span>
+                <span style="float:right; font-size:12px; color:#238636;">✓ 정상</span>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+
+    <p style="margin:0; font-size:12px; color:#8b949e;">
+      실제 이벤트 발생 시 이와 유사한 형식의 알림이 전송됩니다.
+    </p>
+  `;
+
+  const htmlBody = createEmailTemplate_("테스트 알림", testContent, "#238636");
+
+  return sendEmailNotification("테스트 알림", htmlBody, recipients);
+}
+
+/**
+ * 주간 진행률 요약 이메일 전송 (시간 기반 트리거용)
+ * Apps Script 트리거에서 매주 특정 요일/시간에 호출
+ */
+function sendWeeklyProgressSummaryEmail() {
+  const settings = EMAIL_CONFIG.getNotificationSettings();
+
+  if (!settings.weeklySummary) {
+    console.log("[Email] Weekly summary is disabled");
+    return { success: false, error: "Weekly summary is disabled" };
+  }
+
+  // 통계 데이터 수집
+  const allColumns = getColumns_(null).filter(col => col.status);
+  const totalColumns = allColumns.length;
+  const completedColumns = allColumns.filter(col =>
+    col.status === "completed" || col.status === "done"
+  ).length;
+  const inProgressColumns = allColumns.filter(col =>
+    col.status === "in_progress" || col.status === "ongoing"
+  ).length;
+  const delayedColumns = allColumns.filter(col =>
+    col.status === "delay" || col.status === "blocked" || col.status.startsWith("hold")
+  ).length;
+
+  const issues = getIssues_();
+  const openIssues = issues.filter(issue => issue.status === "open").length;
+
+  const progressPercent = totalColumns > 0 ? (completedColumns / totalColumns) * 100 : 0;
+
+  const stats = {
+    totalColumns,
+    completedColumns,
+    inProgressColumns,
+    delayedColumns,
+    openIssues,
+    progressPercent
+  };
+
+  triggerEmailNotification_("weeklySummary", { stats });
+
+  return {
+    success: true,
+    message: "Weekly summary email sent",
+    stats
+  };
+}
+
 // ===== Apps Script UI Integration =====
 
 /**
@@ -2876,5 +4504,11 @@ function onOpen() {
     .addItem("🛠️ Generate All Floor Data (11F)", "generateAllFloorData")
     .addSeparator()
     .addItem("📊 Initialize Floor/Jeolju Sheets", "initializeFloorJeoljuSheets")
+    .addSeparator()
+    .addItem("🔔 Send Slack Test Notification", "sendSlackTestNotification")
+    .addItem("📧 Send Email Test Notification", "sendEmailTestNotification")
+    .addSeparator()
+    .addItem("📈 Send Daily Progress Summary (Slack)", "sendDailyProgressSummary")
+    .addItem("📊 Send Weekly Progress Summary (Email)", "sendWeeklyProgressSummaryEmail")
     .addToUi();
 }
