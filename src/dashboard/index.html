@@ -21,15 +21,13 @@
     <!-- Google Identity Services (GIS) SDK -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     
-    <!-- Alpine.js CDN (버전 고정 - 보안 강화) -->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"
-            integrity="sha384-qGOyNQ6J9KF2vZUd4Fxl1xoC3B5V4zGvJHbTKQfRNNBEO8r/6I1M9WQrO8dJqNkX"
-            crossorigin="anonymous"></script>
+    <!-- Alpine.js (Core) -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
     
     <!-- P5 Modules -->
-    <script src="js/auth.js"></script>
-    <script src="js/api.js"></script>
-    <script src="js/sync-module.js"></script>
+    <script type="module" src="./js/auth.js"></script>
+    <script type="module" src="./js/api.js"></script>
+    <script type="module" src="./js/sync-module.js"></script>
     
     <style>
         /* === Design System: High-Tech Fab Theme === */
