@@ -1,0 +1,11 @@
+# Ignore HTML files (keep index.html for web app)
+# dashboard/index.html
+
+# Ignore data files
+dashboard/data/**
+
+# Ignore markdown
+**/*.md
+
+# Ignore CSS and JS (non-GS)
+**/*.css

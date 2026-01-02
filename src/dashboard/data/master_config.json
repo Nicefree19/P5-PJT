@@ -1,0 +1,240 @@
+{
+  "zones": [
+    {
+      "id": "zone_a",
+      "name": "ZONE A",
+      "displayName": "FAB",
+      "description": "Utility Support - 유틸리티 지원 시설",
+      "range": {
+        "startColumn": 1,
+        "endColumn": 23,
+        "startRow": 0,
+        "endRow": 11
+      },
+      "style": {
+        "primaryColor": "#238636",
+        "backgroundColor": "rgba(35, 134, 54, 0.1)",
+        "progressPercent": 0
+      },
+      "metadata": {
+        "createdAt": "2025-12-29",
+        "updatedAt": "2025-12-29",
+        "createdBy": "system"
+      }
+    },
+    {
+      "id": "zone_b",
+      "name": "ZONE B",
+      "displayName": "CUB",
+      "description": "Main Link - CUB 연결 구간",
+      "range": {
+        "startColumn": 24,
+        "endColumn": 45,
+        "startRow": 0,
+        "endRow": 11
+      },
+      "style": {
+        "primaryColor": "#1f6feb",
+        "backgroundColor": "rgba(31, 111, 235, 0.1)",
+        "progressPercent": 0
+      },
+      "metadata": {
+        "createdAt": "2025-12-29",
+        "updatedAt": "2025-12-29",
+        "createdBy": "system"
+      }
+    },
+    {
+      "id": "zone_c",
+      "name": "ZONE C",
+      "displayName": "COMPLEX",
+      "description": "Office/Amenity - 복합동 사무/편의시설",
+      "range": {
+        "startColumn": 46,
+        "endColumn": 69,
+        "startRow": 0,
+        "endRow": 11
+      },
+      "style": {
+        "primaryColor": "#d29922",
+        "backgroundColor": "rgba(210, 153, 34, 0.1)",
+        "progressPercent": 0
+      },
+      "metadata": {
+        "createdAt": "2025-12-29",
+        "updatedAt": "2025-12-29",
+        "createdBy": "system"
+      }
+    }
+  ],
+  "statusCodes": {
+    "pending": {
+      "label": "대기",
+      "labelEn": "Pending",
+      "color": "#484f58",
+      "shape": "circle",
+      "opacity": 0.5,
+      "order": 0
+    },
+    "active": {
+      "label": "진행중",
+      "labelEn": "Active",
+      "color": "#1f6feb",
+      "shape": "circle",
+      "opacity": 1.0,
+      "order": 1
+    },
+    "installed": {
+      "label": "설치완료",
+      "labelEn": "Installed",
+      "color": "#238636",
+      "shape": "circle",
+      "opacity": 1.0,
+      "order": 2
+    },
+    "hold_tc": {
+      "label": "T/C Hold",
+      "labelEn": "Tower Crane Hold",
+      "color": "#da3633",
+      "shape": "square",
+      "opacity": 1.0,
+      "order": 10
+    },
+    "hold_design": {
+      "label": "설계 변경",
+      "labelEn": "Design Hold",
+      "color": "#d29922",
+      "shape": "circle",
+      "borderWidth": 2,
+      "opacity": 1.0,
+      "order": 11
+    },
+    "hold_material": {
+      "label": "자재 대기",
+      "labelEn": "Material Hold",
+      "color": "#8957e5",
+      "shape": "circle",
+      "opacity": 1.0,
+      "order": 12
+    },
+    "hold_safety": {
+      "label": "안전 점검",
+      "labelEn": "Safety Hold",
+      "color": "#f85149",
+      "shape": "triangle",
+      "opacity": 1.0,
+      "order": 13
+    }
+  },
+  "memberTypes": [
+    {
+      "code": "SRC_COL",
+      "label": "SRC Column",
+      "description": "철골철근콘크리트 기둥"
+    },
+    { "code": "STEEL_BEAM", "label": "Steel Beam", "description": "철골 보" },
+    { "code": "PC_GIRDER", "label": "PC Girder", "description": "PC 거더" },
+    { "code": "PC_SLAB", "label": "PC Slab", "description": "PC 슬래브" }
+  ],
+  "materials": [
+    { "code": "SM490", "label": "SM490", "grade": "일반 구조용" },
+    { "code": "SM490Y", "label": "SM490Y", "grade": "고강도 구조용" },
+    { "code": "SN490B", "label": "SN490B", "grade": "건축 구조용" },
+    { "code": "HSA800", "label": "HSA800", "grade": "초고강도" }
+  ],
+  "issueTypes": [
+    { "code": "tc", "label": "T/C 간섭", "color": "#da3633", "icon": "⛔" },
+    {
+      "code": "design",
+      "label": "설계 변경",
+      "color": "#d29922",
+      "icon": "⚠️"
+    },
+    {
+      "code": "material",
+      "label": "자재 이슈",
+      "color": "#8957e5",
+      "icon": "📦"
+    },
+    {
+      "code": "safety",
+      "label": "안전 이슈",
+      "color": "#f85149",
+      "icon": "🛑"
+    },
+    {
+      "code": "quality",
+      "label": "품질 이슈",
+      "color": "#f778ba",
+      "icon": "🔍"
+    }
+  ],
+  "severityLevels": [
+    { "code": "critical", "label": "Critical", "color": "#da3633", "order": 0 },
+    { "code": "high", "label": "High", "color": "#d29922", "order": 1 },
+    { "code": "medium", "label": "Medium", "color": "#1f6feb", "order": 2 },
+    { "code": "low", "label": "Low", "color": "#238636", "order": 3 }
+  ],
+  "productionStages": [
+    {
+      "code": "hmb_fab",
+      "label": "HMB제작",
+      "labelEn": "HMB Fabrication",
+      "order": 1,
+      "color": "#1f6feb",
+      "description": "HMB 부재 제작",
+      "gridPosition": { "row": 0, "col": 0 }
+    },
+    {
+      "code": "pre_assem",
+      "label": "면조립",
+      "labelEn": "Pre-Assembly",
+      "order": 2,
+      "color": "#8957e5",
+      "description": "연결부 조립",
+      "gridPosition": { "row": 0, "col": 1 }
+    },
+    {
+      "code": "main_assem",
+      "label": "대조립",
+      "labelEn": "Main Assembly",
+      "order": 3,
+      "color": "#d29922",
+      "description": "본체 조립",
+      "gridPosition": { "row": 0, "col": 2 }
+    },
+    {
+      "code": "hmb_psrc",
+      "label": "HMB+PSRC",
+      "labelEn": "HMB+PSRC Insert",
+      "order": 4,
+      "color": "#238636",
+      "description": "HMB+PSRC 삽입",
+      "gridPosition": { "row": 1, "col": 0 }
+    },
+    {
+      "code": "form",
+      "label": "FORM",
+      "labelEn": "Formwork",
+      "order": 5,
+      "color": "#da3633",
+      "description": "거푸집 설치",
+      "gridPosition": { "row": 1, "col": 1 }
+    },
+    {
+      "code": "embed",
+      "label": "앰베드",
+      "labelEn": "Embed",
+      "order": 6,
+      "color": "#f85149",
+      "description": "매립 및 마감",
+      "gridPosition": { "row": 1, "col": 2 }
+    }
+  ],
+  "contractors": [
+    { "code": "SAMSUNG", "name": "삼성E&A", "domain": "@samsung.com" },
+    { "code": "SAMOO", "name": "삼우종합건축", "domain": "@samoo.com" },
+    { "code": "EANDI", "name": "이앤디몰", "domain": "naver.com" },
+    { "code": "SENKUZO", "name": "센구조", "domain": "@senkuzo.com" }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "name": "11.p5_pjt",
+  "version": "1.0.0",
+  "description": "**Gmail-Gemini-Sheet-Dashboard Integration for 센구조 EPC팀**",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.57.0",
+    "@types/node": "^25.0.3",
+    "terser": "^5.44.1",
+    "vite": "^7.3.0"
+  }
+}

@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>P5 Project - Full Scale Dashboard (X1~X69)</title>
+    <style>
+      /* --- [Design System: High-Tech Fab Theme] --- */
+      :root {
+        --bg-color: #0d1117;
+        --panel-bg: #161b22;
+        --border-color: #30363d;
+        --grid-line: #21262d;
+        --text-main: #c9d1d9;
+        --text-sub: #8b949e;
+
+        /* Status Colors */
+        --status-ok: #238636; /* Installed */
+        --status-active: #1f6feb; /* Active/Fabrication */
+        --status-tc-hold: #da3633; /* T/C Hold (Red) */
+        --status-design: #d29922; /* Design Issue (Yellow) */
+        --status-shipping: #8957e5; /* Shipping */
+
+        /* Zone Backgrounds */
+        --zone-fab-bg: rgba(31, 111, 235, 0.05);
+        --zone-cub-bg: rgba(218, 54, 51, 0.05);
+        --zone-complex-bg: rgba(210, 153, 34, 0.05);
+      }
+
+      * {
+        box-sizing: border-box;
+        outline: none;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui,
+          Roboto, sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-main);
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      /* --- [Header] --- */
+      header {
+        height: 55px;
+        background-color: var(--panel-bg);
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 20px;
+        z-index: 20;
+        flex-shrink: 0;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .brand h1 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 700;
+        color: #fff;
+      }
+
+      .project-tag {
+        background: #238636;
+        color: #fff;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+      }
+
+      .controls {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+
+      .stat-box {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+      }
+      .stat-label {
+        font-size: 10px;
+        color: var(--text-sub);
+      }
+      .stat-val {
+        font-size: 12px;
+        font-weight: bold;
+        color: var(--text-main);
+      }
+
+      .btn-sync {
+        background: var(--border-color);
+        color: var(--text-main);
+        border: 1px solid var(--border-color);
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+      .btn-sync:hover {
+        background: #30363d;
+      }
+
+      /* --- [Main Layout] --- */
+      .main-container {
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+      }
+
+      /* Sidebar */
+      .sidebar {
+        width: 240px;
+        background: var(--panel-bg);
+        border-right: 1px solid var(--border-color);
+        display: flex;
+        flex-direction: column;
+        padding: 15px;
+        gap: 20px;
+        flex-shrink: 0;
+        z-index: 10;
+      }
+
+      .zone-legend {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 12px;
+        color: var(--text-sub);
+        cursor: pointer;
+      }
+      .legend-item:hover {
+        color: var(--text-main);
+      }
+      .color-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+      }
+
+      .zone-summary {
+        background: #0d1117;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        padding: 10px;
+      }
+      .zone-title {
+        font-size: 11px;
+        font-weight: bold;
+        color: #fff;
+        margin-bottom: 5px;
+        display: flex;
+        justify-content: space-between;
+      }
+      .progress-bar {
+        height: 4px;
+        background: #30363d;
+        border-radius: 2px;
+        overflow: hidden;
+        margin-top: 4px;
+      }
+      .progress-fill {
+        height: 100%;
+      }
+
+      /* Canvas Area */
+      .canvas-area {
+        flex: 1;
+        overflow: hidden;
+        position: relative;
+        background: var(--bg-color);
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Minimap / Zone Indicator Bar */
+      .zone-indicator-bar {
+        height: 30px;
+        display: flex;
+        border-bottom: 1px solid var(--border-color);
+        background: #0d1117;
+        flex-shrink: 0;
+        overflow-x: hidden;
+      }
+
+      .zone-segment {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: bold;
+        color: var(--text-sub);
+        border-right: 1px solid var(--border-color);
+      }
+      .zone-a {
+        width: 33.3%;
+        background: rgba(35, 134, 54, 0.1);
+        color: #238636;
+      } /* X1~X23 */
+      .zone-b {
+        width: 31.8%;
+        background: rgba(31, 111, 235, 0.1);
+        color: #1f6feb;
+      } /* X24~X45 */
+      .zone-c {
+        width: 34.9%;
+        background: rgba(210, 153, 34, 0.1);
+        color: #d29922;
+      } /* X46~X69 */
+
+      /* Scrollable Grid Container */
+      .grid-scroll-view {
+        flex: 1;
+        overflow: auto;
+        padding: 40px;
+        cursor: grab;
+      }
+      .grid-scroll-view:active {
+        cursor: grabbing;
+      }
+
+      .grid-container {
+        display: grid;
+        /* X1 to X69 + Header */
+        grid-template-columns: 40px repeat(69, 28px);
+        grid-template-rows: 30px repeat(12, 28px); /* Y1~Y12 (A~L) */
+        gap: 2px;
+        width: fit-content;
+      }
+
+      /* Grid Elements */
+      .grid-cell-header {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 9px;
+        color: #484f58;
+        font-family: monospace;
+      }
+
+      .grid-cell {
+        position: relative;
+        border: 1px solid var(--grid-line);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #10141a;
+      }
+
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        transition: transform 0.1s;
+        cursor: pointer;
+      }
+      .dot:hover {
+        transform: scale(1.8);
+        z-index: 10;
+        border: 1px solid #fff;
+      }
+      .dot.active {
+        transform: scale(1.5);
+        border: 1px solid #fff;
+        box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+        z-index: 9;
+      }
+
+      /* Specific Status Styles */
+      .st-ok {
+        background: var(--status-ok);
+      } /* Installed */
+      .st-active {
+        background: var(--status-active);
+      } /* Active */
+      .st-hold {
+        background: var(--status-tc-hold);
+        border-radius: 2px;
+      } /* Square for HOLD */
+      .st-design {
+        background: var(--status-design);
+        border: 2px solid #fff;
+      } /* Design Issue */
+
+      /* Overlay Zones (Absolute on Grid) */
+      .overlay-zone {
+        position: absolute;
+        pointer-events: none;
+        border: 2px dashed;
+        z-index: 5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: bold;
+        text-shadow: 0 1px 3px #000;
+      }
+
+      /* --- [Detail Panel] --- */
+      .detail-panel {
+        width: 320px;
+        background: var(--panel-bg);
+        border-left: 1px solid var(--border-color);
+        display: flex;
+        flex-direction: column;
+        transform: translateX(100%);
+        transition: transform 0.3s;
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        z-index: 30;
+        box-shadow: -5px 0 20px rgba(0, 0, 0, 0.5);
+      }
+      .detail-panel.open {
+        transform: translateX(0);
+      }
+
+      .panel-header {
+        padding: 15px;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #21262d;
+      }
+
+      .panel-content {
+        padding: 20px;
+        overflow-y: auto;
+        flex: 1;
+      }
+
+      .issue-card {
+        background: rgba(218, 54, 51, 0.1);
+        border: 1px solid rgba(218, 54, 51, 0.3);
+        border-radius: 6px;
+        padding: 12px;
+        margin-bottom: 15px;
+      }
+      .issue-title {
+        color: #ff7b72;
+        font-size: 12px;
+        font-weight: bold;
+        margin-bottom: 5px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .prop-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        margin-bottom: 8px;
+        color: var(--text-sub);
+      }
+      .prop-val {
+        color: var(--text-main);
+        font-weight: 500;
+      }
+
+      .chat-bubble {
+        background: #21262d;
+        padding: 10px;
+        border-radius: 6px;
+        font-size: 11px;
+        color: var(--text-main);
+        margin-bottom: 8px;
+        line-height: 1.4;
+      }
+      .chat-user {
+        color: #58a6ff;
+        font-weight: bold;
+        margin-bottom: 2px;
+        display: block;
+      }
+      .chat-system {
+        color: #d29922;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="brand">
+        <h1>P5 Live Grid</h1>
+        <span class="project-tag">PH-2 Integrated</span>
+      </div>
+      <div class="controls">
+        <div class="stat-box">
+          <span class="stat-label">Total Columns</span>
+          <span class="stat-val">828 EA</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">Design Hold</span>
+          <span class="stat-val" style="color: #d29922">42 EA</span>
+        </div>
+        <button class="btn-sync" onclick="resetView()">Reset View</button>
+      </div>
+    </header>
+
+    <div class="main-container">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="zone-legend">
+          <h3 style="font-size: 12px; color: #fff; margin: 0 0 10px 0">
+            STATUS LEGEND
+          </h3>
+          <div class="legend-item">
+            <div class="color-dot st-ok"></div>
+            Installed (Zone A)
+          </div>
+          <div class="legend-item">
+            <div class="color-dot st-active"></div>
+            Erection (Zone B)
+          </div>
+          <div class="legend-item">
+            <div class="color-dot st-hold"></div>
+            T/C Hold (Blocked)
+          </div>
+          <div class="legend-item">
+            <div class="color-dot st-design"></div>
+            Design Issue (Zone C)
+          </div>
+        </div>
+
+        <hr style="border-color: #30363d; margin: 0" />
+
+        <div class="zone-summary">
+          <div class="zone-title">
+            ZONE A: FAB <span style="color: #238636">92%</span>
+          </div>
+          <div style="font-size: 10px; color: #8b949e">
+            X1 ~ X23 (Utility Support)
+          </div>
+          <div class="progress-bar">
+            <div
+              class="progress-fill"
+              style="width: 92%; background: #238636"
+            ></div>
+          </div>
+        </div>
+
+        <div class="zone-summary">
+          <div class="zone-title">
+            ZONE B: CUB <span style="color: #1f6feb">45%</span>
+          </div>
+          <div style="font-size: 10px; color: #8b949e">
+            X24 ~ X45 (Main Link)
+          </div>
+          <div class="progress-bar">
+            <div
+              class="progress-fill"
+              style="width: 45%; background: #1f6feb"
+            ></div>
+          </div>
+        </div>
+
+        <div class="zone-summary">
+          <div class="zone-title" style="color: #d29922">
+            ZONE C: COMPLEX <span style="color: #d29922">5%</span>
+          </div>
+          <div style="font-size: 10px; color: #8b949e">
+            X46 ~ X69 (Office/Amenity)
+          </div>
+          <div style="font-size: 10px; color: #ff7b72; margin-top: 4px">
+            ⚠️ Design Change Pending
+          </div>
+          <div class="progress-bar">
+            <div
+              class="progress-fill"
+              style="width: 5%; background: #d29922"
+            ></div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Canvas Area -->
+      <div class="canvas-area">
+        <!-- Zone Indicators Top Bar -->
+        <div class="zone-indicator-bar">
+          <div class="zone-segment zone-a">ZONE A (FAB)</div>
+          <div class="zone-segment zone-b">ZONE B (CUB/LINK)</div>
+          <div class="zone-segment zone-c">ZONE C (COMPLEX BLDG)</div>
+        </div>
+
+        <div class="grid-scroll-view" id="scrollView">
+          <div class="grid-container" id="gridMap">
+            <!-- Grid Generated via JS -->
+          </div>
+
+          <!-- T/C Overlay -->
+          <div
+            class="overlay-zone"
+            style="
+              border-color: #da3633;
+              color: #da3633;
+              background: rgba(218, 54, 51, 0.1);
+              top: calc(40px + 30px + 28px * 2);
+              left: calc(40px + 40px + 28px * 30);
+              width: calc(28px * 6);
+              height: calc(28px * 6);
+            "
+          >
+            ⛔ T/C #5<br />Interference
+          </div>
+
+          <!-- Complex Building Mega Truss Zone -->
+          <div
+            class="overlay-zone"
+            style="
+              border-color: #d29922;
+              color: #d29922;
+              background: rgba(210, 153, 34, 0.05);
+              top: calc(40px + 30px + 28px * 4);
+              left: calc(40px + 40px + 28px * 55);
+              width: calc(28px * 10);
+              height: calc(28px * 4);
+            "
+          >
+            ⚠️ Design Change<br />(Mega Truss)
+          </div>
+        </div>
+      </div>
+
+      <!-- Detail Panel -->
+      <div class="detail-panel" id="detailPanel">
+        <div class="panel-header">
+          <h2 style="margin: 0; font-size: 14px; color: #fff" id="pUid">UID</h2>
+          <button
+            onclick="closePanel()"
+            style="
+              background: none;
+              border: none;
+              color: #8b949e;
+              cursor: pointer;
+            "
+          >
+            ✕
+          </button>
+        </div>
+        <div class="panel-content">
+          <div class="prop-row">
+            <span>Location</span>
+            <span class="prop-val" id="pZone">Zone A</span>
+          </div>
+          <div class="prop-row">
+            <span>Member Type</span>
+            <span class="prop-val">SRC Column (High-Strength)</span>
+          </div>
+          <div class="prop-row">
+            <span>Current Status</span>
+            <span class="prop-val" id="pStatus" style="color: #fff">-</span>
+          </div>
+
+          <hr style="border-color: #30363d; margin: 15px 0" />
+
+          <!-- Dynamic Issue Card -->
+          <div id="issueCard" style="display: none">
+            <div class="issue-card">
+              <div class="issue-title">
+                <span id="issueIcon">⚠️</span>
+                <span id="issueTitle">Design Hold</span>
+              </div>
+              <div
+                style="font-size: 11px; color: #c9d1d9; line-height: 1.4"
+                id="issueDesc"
+              >
+                Structure revision pending due to loading change in Complex
+                Building 3F server room.
+              </div>
+            </div>
+          </div>
+
+          <!-- Chat / History -->
+          <h3 style="font-size: 11px; color: #8b949e; margin-bottom: 10px">
+            ACTIVITY LOG
+          </h3>
+          <div id="chatBox">
+            <!-- Chat populated by JS -->
+          </div>
+
+          <button
+            style="
+              width: 100%;
+              margin-top: 20px;
+              padding: 8px;
+              background: #238636;
+              border: none;
+              border-radius: 4px;
+              color: white;
+              font-size: 12px;
+              cursor: pointer;
+            "
+          >
+            View 2D Drawing (PDF)
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const gridMap = document.getElementById("gridMap");
+      const detailPanel = document.getElementById("detailPanel");
+
+      const cols = 69; // X1 ~ X69
+      const rows = 12; // A ~ L
+      const rowLabels = [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "K",
+        "L",
+      ];
+
+      function initGrid() {
+        // 1. Header Row (X Axis)
+        gridMap.appendChild(createDiv("grid-cell-header", "")); // Corner
+        for (let c = 1; c <= cols; c++) {
+          gridMap.appendChild(createDiv("grid-cell-header", c));
+        }
+
+        // 2. Grid Body
+        for (let r = 0; r < rows; r++) {
+          // Row Header (Y Axis)
+          gridMap.appendChild(createDiv("grid-cell-header", rowLabels[r]));
+
+          for (let c = 1; c <= cols; c++) {
+            const cell = document.createElement("div");
+            cell.className = "grid-cell";
+
+            // --- [Logic: Zoning & Issues] ---
+            let statusClass = "st-ok";
+            let zoneName = "Zone A (FAB)";
+            let issueType = null;
+
+            // Zone A (1~23): Mostly Installed
+            if (c <= 23) {
+              statusClass = "st-ok";
+              zoneName = "Zone A (FAB)";
+            }
+            // Zone B (24~45): Active & T/C Issue
+            else if (c <= 45) {
+              zoneName = "Zone B (CUB)";
+              // Simulate T/C Interference (X30~X35, Rows C~H)
+              if (c >= 30 && c <= 35 && r >= 2 && r <= 7) {
+                statusClass = "st-hold";
+                issueType = "tc";
+              } else {
+                statusClass = "st-active";
+              }
+            }
+            // Zone C (46~69): Complex Building (Design Issues)
+            else {
+              zoneName = "Zone C (COMPLEX)";
+              // Simulate Design Hold (Scattered in Complex Zone)
+              if (
+                (c >= 55 && c <= 60 && r >= 4 && r <= 7) ||
+                Math.random() > 0.85
+              ) {
+                statusClass = "st-design";
+                issueType = "design";
+              } else {
+                statusClass = "st-active";
+                cell.style.opacity = "0.5"; // Dimmed (Not started)
+              }
+            }
+
+            // Create Dot
+            const dot = document.createElement("div");
+            dot.className = `dot ${statusClass}`;
+
+            // Metadata
+            dot.dataset.uid = `${rowLabels[r]} - X${c}`;
+            dot.dataset.zone = zoneName;
+            dot.dataset.issue = issueType;
+            dot.onclick = () => openDetail(dot);
+
+            cell.appendChild(dot);
+            gridMap.appendChild(cell);
+          }
+        }
+      }
+
+      function createDiv(className, text) {
+        const d = document.createElement("div");
+        d.className = className;
+        d.innerText = text;
+        return d;
+      }
+
+      function openDetail(dot) {
+        // Reset actives
+        document
+          .querySelectorAll(".dot")
+          .forEach((d) => d.classList.remove("active"));
+        dot.classList.add("active");
+
+        // Bind Data
+        document.getElementById("pUid").innerText = dot.dataset.uid;
+        document.getElementById("pZone").innerText = dot.dataset.zone;
+
+        const issueCard = document.getElementById("issueCard");
+        const chatBox = document.getElementById("chatBox");
+        chatBox.innerHTML = ""; // Clear chat
+
+        // Status & Issue Logic
+        if (dot.dataset.issue === "tc") {
+          document.getElementById("pStatus").innerText = "BLOCKED (T/C)";
+          document.getElementById("pStatus").style.color = "#da3633";
+          issueCard.style.display = "block";
+          document.getElementById("issueTitle").innerText =
+            "T/C #5 Interference";
+          document.getElementById("issueTitle").style.color = "#da3633";
+          document.getElementById("issueDesc").innerText =
+            "Dismantling scheduled for 2025-11-15. Construction blocked until clearance.";
+
+          addChat("System", "Auto-detected T/C conflict.", true);
+          addChat(
+            "Site Manager",
+            "Prioritize X40 line first. X30 line is on hold."
+          );
+        } else if (dot.dataset.issue === "design") {
+          document.getElementById("pStatus").innerText = "DESIGN HOLD";
+          document.getElementById("pStatus").style.color = "#d29922";
+          issueCard.style.display = "block";
+          document.getElementById("issueTitle").innerText = "Rev.D Mismatch";
+          document.getElementById("issueTitle").style.color = "#d29922";
+          document.getElementById("issueDesc").innerText =
+            "Column size changed from H-400 to H-500 series. Shop drawing revision required.";
+
+          addChat(
+            "System",
+            "BIM Check: Model vs Drawing mismatch detected.",
+            true
+          );
+          addChat(
+            "Structural Eng",
+            "Design change for Complex Bldg Mega Truss loading issued. Please check Rev.D."
+          );
+        } else {
+          document.getElementById("pStatus").innerText = "Normal / On Track";
+          document.getElementById("pStatus").style.color = "#238636";
+          issueCard.style.display = "none";
+          addChat("System", "No issues reported.");
+        }
+
+        detailPanel.classList.add("open");
+      }
+
+      function addChat(user, msg, isSystem = false) {
+        const box = document.getElementById("chatBox");
+        const d = document.createElement("div");
+        d.className = "chat-bubble";
+        d.innerHTML = `<span class="chat-user ${
+          isSystem ? "chat-system" : ""
+        }">${user}</span>${msg}`;
+        box.appendChild(d);
+      }
+
+      function closePanel() {
+        detailPanel.classList.remove("open");
+        document
+          .querySelectorAll(".dot")
+          .forEach((d) => d.classList.remove("active"));
+      }
+
+      function resetView() {
+        document.getElementById("scrollView").scrollLeft = 0;
+      }
+
+      // Run
+      initGrid();
+    </script>
+  </body>
+</html>

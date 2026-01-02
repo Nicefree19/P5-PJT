@@ -1,0 +1,11 @@
+# Gemini File Search RAG System Requirements
+
+# Google Generative AI SDK
+google-generativeai>=0.8.0
+
+# File type detection
+python-magic-bin>=0.4.14  # Windows용
+# python-magic>=0.4.27  # Linux/Mac용
+
+# Utilities
+pathlib>=1.0.1

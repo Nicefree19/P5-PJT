@@ -1,0 +1,598 @@
+/**
+ * ============================================================
+ * P5 복합동 메일 분석 시스템 - Gemini AI 분석 모듈
+ * ============================================================
+ *
+ * 파일: GeminiAnalyzer.gs
+ * 목적: Gemini 1.5 Flash API 연동 및 메일 분석
+ * 버전: 1.0.0
+ * 작성일: 2025-12-29
+ *
+ * 주요 기능:
+ *   - Gemini API 호출 (JSON 응답)
+ *   - PSRC/HMB 공법 전문가 페르소나 프롬프트
+ *   - 응답 파싱 및 검증
+ */
+
+// ============================================================
+// Zone 컨텍스트 (Grid 매핑 정보)
+// ============================================================
+
+const ZONE_CONTEXT = `
+# 그리드 매핑 정보
+
+## Zone 정의
+| Zone ID | Zone명 | X축 범위 | 설명 |
+|---------|--------|---------|------|
+| zone_a | ZONE A (FAB) | X1 ~ X23 | FAB 영역 기둥 |
+| zone_b | ZONE B (CUB) | X24 ~ X45 | CUB 영역 기둥 |
+| zone_c | ZONE C (COMPLEX) | X46 ~ X69 | 복합동 영역 기둥 |
+
+## 행 라벨
+A, B, C, D, E, F, G, H, I, J, K, L (총 12개 행)
+
+## UID(기둥 고유 식별자) 형식
+- 형식: "{행라벨}-X{열번호}"
+- 예시: A-X23, B-X30, L-X45
+
+## 메일에서 기둥 위치 추출 규칙
+1. "X23~X30열" 언급 시 → 해당 열 범위의 모든 행 기둥을 추출
+   - 예: X30~X35 → A-X30, B-X30, ..., L-X30, A-X31, ..., L-X35
+2. "C열 X23~X30" 언급 시 → C행의 해당 열 범위만 추출
+   - 예: C열 X23~X30 → C-X23, C-X24, ..., C-X30
+3. 특정 기둥 언급 시 → 해당 UID 그대로 추출
+   - 예: "C-X30 기둥" → C-X30
+
+## Zone 자동 추론
+- X1~X23 → zone_a
+- X24~X45 → zone_b
+- X46~X69 → zone_c
+`;
+
+// ============================================================
+// 페르소나 프롬프트
+// ============================================================
+
+const PERSONA_PROMPT = `
+# 역할 설정
+당신은 **PSRC(프리캐스트 철근 콘크리트 기둥)** 및 **HMB(하프 슬래브 보)** 공법의
+총괄 엔지니어이자, 대형 반도체 FAB 프로젝트 구조 설계를 검토하는 전문가입니다.
+
+# 분석 목표
+다음 메일을 분석하여:
+1. 공법적 리스크를 식별
+2. 접합부 간섭 이슈를 추출
+3. 설계 변경 사항을 파악
+4. 이해관계자 간 책임 경계를 명확히
+5. **영향받는 기둥 위치(UID)를 추출**
+
+${ZONE_CONTEXT}
+
+# 발생원 추론 규칙
+| 이메일 패턴 | 발생원 |
+|------------|--------|
+| @samoo.com | 삼우(원설계) |
+| @samsung.com | ENA(시공/PM) |
+| vickysong1@naver.com | 이앤디몰(PC설계) |
+| dhkim2630@naver.com | 이앤디몰(PC설계) |
+| @senkuzo.com | 센코어(전환설계) |
+| @senvex.net | 센코어(전환설계) |
+
+# 긴급도 평가 기준
+| 조건 | 긴급도 |
+|------|--------|
+| Shop Drawing 제작 완료 후 변경 요청 | **Showstopper** |
+| 0.75fpu 인장 강도 오류 발견 | **Showstopper** |
+| 변단면 상세 설계 오류 | **Critical** |
+| 접합부 간섭 우려 | **High** |
+| 설계 문의/질의 | **Medium** |
+| 일반 행정 연락 | **Low** |
+
+# 공법 구분 카테고리
+- PSRC-PC접합
+- PSRC-Steel접합
+- HMB-PC접합
+- 변단면 이슈
+- 하중 검토
+- 접합부 간섭
+- T/C 간섭
+- 기타
+
+# 출력 형식 (JSON)
+반드시 아래 JSON 형식으로만 응답하세요. 마크다운 코드 블록 없이 순수 JSON만 출력:
+{
+  "발생원": "삼우(원설계)",
+  "공법구분": "PSRC-PC접합",
+  "긴급도": "Critical",
+  "zoneId": "zone_b",
+  "affectedColumns": ["C-X30", "D-X30", "E-X30"],
+  "본문요약": "메일 내용을 2-3문장으로 요약",
+  "AI분석": "공법적 관점에서 분석한 내용",
+  "추천조치": "권장 후속 조치 사항",
+  "키워드": ["PSRC", "접합부", "Shop Drawing"]
+}
+
+# 추가 지침
+1. **affectedColumns**: 메일에서 언급된 기둥 위치를 UID 형식으로 추출
+   - 범위가 언급되면 해당 범위의 모든 기둥 UID를 나열
+   - 위치 정보가 없으면 빈 배열 []
+2. **zoneId**: 영향받는 기둥의 Zone ID (zone_a, zone_b, zone_c)
+   - 여러 Zone에 걸치면 주요 Zone 하나만 선택
+   - Zone을 특정할 수 없으면 빈 문자열 ""
+`;
+
+// ============================================================
+// Gemini API 호출
+// ============================================================
+
+/**
+ * Gemini API 호출 (기본)
+ * @param {string} prompt - 프롬프트 텍스트
+ * @returns {Object} API 응답 객체
+ * @private
+ */
+function callGeminiAPI_(prompt) {
+  const apiKey = getGeminiApiKey_();
+  const url = `${CONFIG.GEMINI_ENDPOINT}${CONFIG.GEMINI_MODEL}:generateContent?key=${apiKey}`;
+
+  const payload = {
+    contents: [
+      {
+        parts: [{ text: prompt }],
+      },
+    ],
+    generationConfig: {
+      temperature: CONFIG.GEMINI_TEMPERATURE,
+      maxOutputTokens: CONFIG.GEMINI_MAX_TOKENS,
+      responseMimeType: "application/json",
+    },
+  };
+
+  const options = {
+    method: "post",
+    contentType: "application/json",
+    payload: JSON.stringify(payload),
+    muteHttpExceptions: true,
+  };
+
+  const response = UrlFetchApp.fetch(url, options);
+  const responseCode = response.getResponseCode();
+
+  if (responseCode !== 200) {
+    throw new Error(
+      `Gemini API 오류 (${responseCode}): ${response.getContentText()}`
+    );
+  }
+
+  return JSON.parse(response.getContentText());
+}
+
+/**
+ * Gemini API 호출 (재시도 로직 포함)
+ * @param {string} prompt - 프롬프트 텍스트
+ * @param {number} maxRetries - 최대 재시도 횟수
+ * @returns {Object|null} API 응답 또는 null
+ * @private
+ */
+function callGeminiWithRetry_(prompt, maxRetries) {
+  maxRetries = maxRetries || CONFIG.RETRY_COUNT;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      debugLog_(`Gemini API 호출 시도 ${attempt}/${maxRetries}`);
+
+      const response = callGeminiAPI_(prompt);
+
+      // 유효한 응답 확인
+      if (response.candidates && response.candidates.length > 0) {
+        return response;
+      }
+
+      debugLog_("응답에 candidates 없음");
+    } catch (e) {
+      errorLog_(`API 호출 실패 (시도 ${attempt}/${maxRetries})`, e);
+
+      if (attempt < maxRetries) {
+        // 지수 백오프 대기
+        const delay = Math.pow(2, attempt) * CONFIG.RETRY_DELAY_MS;
+        debugLog_(`${delay}ms 후 재시도...`);
+        Utilities.sleep(delay);
+      }
+    }
+  }
+
+  return null;
+}
+
+/**
+ * API 응답에서 텍스트 추출
+ * @param {Object} response - API 응답 객체
+ * @returns {string|null} 응답 텍스트 또는 null
+ * @private
+ */
+function extractResponseText_(response) {
+  try {
+    return response.candidates[0].content.parts[0].text;
+  } catch (e) {
+    errorLog_("응답 텍스트 추출 실패", e);
+    return null;
+  }
+}
+
+// ============================================================
+// 프롬프트 빌더
+// ============================================================
+
+/**
+ * 메일 분석용 프롬프트 생성
+ * @param {Object} emailData - 메일 데이터 객체
+ * @returns {string} 완성된 프롬프트
+ * @private
+ */
+function buildAnalysisPrompt_(emailData) {
+  return `${PERSONA_PROMPT}
+
+---
+## 분석 대상 메일
+
+**발신자**: ${emailData.from}
+**수신자**: ${emailData.to || "(없음)"}
+**참조**: ${emailData.cc || "없음"}
+**일시**: ${formatDate_(emailData.date)}
+**제목**: ${emailData.subject}
+
+**본문**:
+${emailData.body}
+`;
+}
+
+// ============================================================
+// JSON 응답 파싱
+// ============================================================
+
+/**
+ * JSON 응답 정제 (코드 블록 제거)
+ * @param {string} text - 원본 응답 텍스트
+ * @returns {string} 정제된 JSON 문자열
+ * @private
+ */
+function cleanJsonResponse_(text) {
+  if (!text) return "";
+
+  let cleaned = text;
+
+  // ```json ... ``` 패턴 제거
+  cleaned = cleaned.replace(/^```json\s*/i, "");
+  cleaned = cleaned.replace(/\s*```$/i, "");
+
+  // ``` 만 있는 경우
+  cleaned = cleaned.replace(/^```\s*/i, "");
+  cleaned = cleaned.replace(/\s*```$/i, "");
+
+  return cleaned.trim();
+}
+
+/**
+ * 분석 응답 파싱 및 검증
+ * @param {string} responseText - API 응답 텍스트
+ * @returns {Object|null} 파싱된 분석 결과 또는 null
+ * @private
+ */
+function parseAnalysisResponse_(responseText) {
+  const cleaned = cleanJsonResponse_(responseText);
+
+  try {
+    const parsed = JSON.parse(cleaned);
+
+    // 필수 필드 검증
+    const requiredFields = [
+      "발생원",
+      "공법구분",
+      "긴급도",
+      "본문요약",
+      "AI분석",
+      "추천조치",
+      "키워드",
+    ];
+
+    for (const field of requiredFields) {
+      if (!(field in parsed)) {
+        throw new Error(`필수 필드 누락: ${field}`);
+      }
+    }
+
+    // 키워드 배열 검증
+    if (!Array.isArray(parsed.키워드)) {
+      parsed.키워드 = [];
+    }
+
+    // 긴급도 검증
+    const validUrgencies = Object.values(CONFIG.URGENCY_LEVELS);
+    if (!validUrgencies.includes(parsed.긴급도)) {
+      debugLog_(`알 수 없는 긴급도: ${parsed.긴급도}, Medium으로 대체`);
+      parsed.긴급도 = "Medium";
+    }
+
+    // affectedColumns 배열 검증 및 기본값
+    if (!Array.isArray(parsed.affectedColumns)) {
+      parsed.affectedColumns = [];
+    }
+
+    // M-1 Fix: affectedColumns 크기 제한 (UI 성능 최적화)
+    const MAX_AFFECTED_COLUMNS = 100;
+    if (parsed.affectedColumns.length > MAX_AFFECTED_COLUMNS) {
+      const originalCount = parsed.affectedColumns.length;
+      parsed.affectedColumns = parsed.affectedColumns.slice(
+        0,
+        MAX_AFFECTED_COLUMNS
+      );
+      debugLog_(
+        `⚠️ 영향 기둥 수 제한: ${originalCount}개 → ${MAX_AFFECTED_COLUMNS}개로 축소 (성능 최적화)`
+      );
+      // 축소 사실을 AI 분석에 기록
+      parsed.AI분석 =
+        (parsed.AI분석 || "") +
+        `\n[참고] 원래 ${originalCount}개 기둥이 영향받으나, UI 성능을 위해 처음 ${MAX_AFFECTED_COLUMNS}개만 표시됩니다.`;
+    }
+
+    // zoneId 검증 및 기본값
+    const validZones = ["zone_a", "zone_b", "zone_c", ""];
+    if (!parsed.zoneId || !validZones.includes(parsed.zoneId)) {
+      // affectedColumns에서 Zone 자동 추론
+      parsed.zoneId = inferZoneFromColumns_(parsed.affectedColumns);
+    }
+
+    return parsed;
+  } catch (e) {
+    errorLog_("JSON 파싱 오류", e);
+    debugLog_(`원본 응답: ${responseText}`);
+    return null;
+  }
+}
+
+/**
+ * 파싱 실패 시 기본값 반환
+ * @param {Object} emailData - 메일 데이터 객체
+ * @returns {Object} 기본 분석 결과
+ * @private
+ */
+function getDefaultAnalysis_(emailData) {
+  return {
+    발생원: inferOrigin_(emailData.from) || "미분류",
+    공법구분: "기타",
+    긴급도: "Medium",
+    zoneId: "",
+    affectedColumns: [],
+    본문요약: emailData.subject || "(분석 실패)",
+    AI분석: "AI 분석 실패 - 수동 검토 필요",
+    추천조치: "담당자 수동 확인 필요",
+    키워드: [],
+  };
+}
+
+/**
+ * affectedColumns에서 Zone ID 추론
+ * @param {string[]} columns - 기둥 UID 배열
+ * @returns {string} zone_a, zone_b, zone_c 또는 빈 문자열
+ * @private
+ */
+function inferZoneFromColumns_(columns) {
+  if (!columns || columns.length === 0) {
+    return "";
+  }
+
+  // 각 Zone의 카운트
+  const zoneCounts = { zone_a: 0, zone_b: 0, zone_c: 0 };
+
+  for (const col of columns) {
+    // UID 형식: {행}-X{열번호} (예: C-X30)
+    const match = col.match(/X(\d+)/);
+    if (match) {
+      const xNum = parseInt(match[1], 10);
+      if (xNum >= 1 && xNum <= 23) {
+        zoneCounts.zone_a++;
+      } else if (xNum >= 24 && xNum <= 45) {
+        zoneCounts.zone_b++;
+      } else if (xNum >= 46 && xNum <= 69) {
+        zoneCounts.zone_c++;
+      }
+    }
+  }
+
+  // 가장 많은 기둥이 있는 Zone 반환
+  const maxZone = Object.entries(zoneCounts).sort((a, b) => b[1] - a[1])[0];
+
+  return maxZone[1] > 0 ? maxZone[0] : "";
+}
+
+// ============================================================
+// 통합 분석 함수
+// ============================================================
+
+/**
+ * 메일 1건 분석
+ * @param {Object} emailData - 메일 데이터 객체
+ * @returns {Object} 분석 결과
+ * @private
+ */
+function analyzeEmail_(emailData) {
+  debugLog_(`메일 분석 시작: ${emailData.subject}`);
+
+  const prompt = buildAnalysisPrompt_(emailData);
+  const response = callGeminiWithRetry_(prompt);
+
+  if (!response) {
+    debugLog_("API 응답 없음 - 기본값 사용");
+    return getDefaultAnalysis_(emailData);
+  }
+
+  const text = extractResponseText_(response);
+
+  if (!text) {
+    debugLog_("응답 텍스트 없음 - 기본값 사용");
+    return getDefaultAnalysis_(emailData);
+  }
+
+  const analysis = parseAnalysisResponse_(text);
+
+  if (!analysis) {
+    debugLog_("JSON 파싱 실패 - 기본값 사용");
+    return getDefaultAnalysis_(emailData);
+  }
+
+  debugLog_(`분석 완료: 긴급도=${analysis.긴급도}, 발생원=${analysis.발생원}`);
+  return analysis;
+}
+
+/**
+ * 다건 메일 배치 분석
+ * @param {Object[]} emails - 메일 데이터 배열
+ * @returns {Object[]} 분석 결과 배열 [{email, analysis}, ...]
+ * @private
+ */
+function analyzeEmails_(emails) {
+  const results = [];
+
+  for (let i = 0; i < emails.length; i++) {
+    const email = emails[i];
+
+    Logger.log(
+      `[${i + 1}/${emails.length}] 분석 중: ${truncateString_(
+        email.subject,
+        40
+      )}`
+    );
+
+    try {
+      const analysis = analyzeEmail_(email);
+
+      results.push({
+        email: email,
+        analysis: analysis,
+      });
+    } catch (e) {
+      errorLog_(`메일 분석 실패: ${email.id}`, e);
+
+      results.push({
+        email: email,
+        analysis: getDefaultAnalysis_(email),
+      });
+    }
+
+    // API Rate Limit 대응 (1초 대기)
+    if (i < emails.length - 1) {
+      Utilities.sleep(1000);
+    }
+  }
+
+  return results;
+}
+
+// ============================================================
+// 테스트 함수
+// ============================================================
+
+/**
+ * Gemini API 연결 테스트
+ */
+function testGeminiConnection() {
+  Logger.log("=== Gemini API 연결 테스트 ===\n");
+
+  try {
+    const testPrompt = '안녕하세요. 테스트입니다. "OK"라고만 응답하세요.';
+
+    const response = callGeminiAPI_(testPrompt);
+    const text = extractResponseText_(response);
+
+    Logger.log(`✅ API 연결 성공`);
+    Logger.log(`응답: ${text}`);
+  } catch (e) {
+    Logger.log(`❌ API 연결 실패: ${e.message}`);
+  }
+}
+
+/**
+ * JSON 파싱 테스트
+ */
+function testJsonParsing() {
+  Logger.log("=== JSON 파싱 테스트 ===\n");
+
+  // 정상 케이스
+  const validJson = `{
+    "발생원": "삼우(원설계)",
+    "공법구분": "PSRC-PC접합",
+    "긴급도": "High",
+    "본문요약": "테스트 요약",
+    "AI분석": "테스트 분석",
+    "추천조치": "테스트 조치",
+    "키워드": ["PSRC", "테스트"]
+  }`;
+
+  const result1 = parseAnalysisResponse_(validJson);
+  Logger.log(`[정상 JSON] ${result1 ? "✅ 파싱 성공" : "❌ 파싱 실패"}`);
+
+  // 코드 블록 포함 케이스
+  const withCodeBlock = "```json\n" + validJson + "\n```";
+  const result2 = parseAnalysisResponse_(withCodeBlock);
+  Logger.log(`[코드 블록 포함] ${result2 ? "✅ 파싱 성공" : "❌ 파싱 실패"}`);
+
+  // 필드 누락 케이스
+  const missingField = '{"발생원": "삼우"}';
+  const result3 = parseAnalysisResponse_(missingField);
+  Logger.log(
+    `[필드 누락] ${
+      result3 ? "❌ 파싱 성공 (예상: 실패)" : "✅ 파싱 실패 (예상대로)"
+    }`
+  );
+}
+
+/**
+ * 샘플 메일 분석 테스트
+ */
+function testAnalyzeEmail() {
+  Logger.log("=== 샘플 메일 분석 테스트 ===\n");
+
+  const sampleEmail = {
+    id: "test_001",
+    threadId: "thread_001",
+    from: "engineer@samoo.com",
+    to: "pm@samsung.com",
+    cc: "designer@senkuzo.com",
+    subject: "[P5 복합동] PSRC 기둥-PC보 접합부 간섭 검토 요청",
+    body: `
+    안녕하세요, 삼우종합건축 구조팀입니다.
+
+    P5 복합동 X23~X30열 구간의 PSRC 기둥과 PC보 접합부에서
+    철근 간섭이 우려되어 검토 요청드립니다.
+
+    현재 상황:
+    - 기둥 주근 D32 8EA 배치
+    - 보 주근 D25 6EA 배치
+    - 접합부 내 철근 밀집으로 콘크리트 타설 우려
+
+    검토 요청사항:
+    1. 접합부 철근 간섭 해소 방안
+    2. Shop Drawing 수정 필요 여부
+    3. 대안 상세 검토
+
+    회신 부탁드립니다.
+    감사합니다.
+    `,
+    date: new Date(),
+    attachments: 2,
+    isStarred: false,
+    isUnread: true,
+    labels: "",
+  };
+
+  const analysis = analyzeEmail_(sampleEmail);
+
+  Logger.log("[분석 결과]");
+  Logger.log(`  발생원: ${analysis.발생원}`);
+  Logger.log(`  공법구분: ${analysis.공법구분}`);
+  Logger.log(`  긴급도: ${analysis.긴급도}`);
+  Logger.log(`  본문요약: ${analysis.본문요약}`);
+  Logger.log(`  AI분석: ${analysis.AI분석}`);
+  Logger.log(`  추천조치: ${analysis.추천조치}`);
+  Logger.log(`  키워드: ${analysis.키워드.join(", ")}`);
+}
