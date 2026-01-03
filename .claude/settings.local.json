@@ -59,7 +59,15 @@
       "WebSearch",
       "Bash(dir /b \"C:\\\\Users\\\\user\\\\.gemini\\\\antigravity\\\\brain\\\\0d3246f9-9e8f-4b6b-b03e-23910e2243ee\")",
       "Bash(git push:*)",
-      "Bash(git remote add:*)"
+      "Bash(git remote add:*)",
+      "Bash(dir /B \"D:\\\\00.Work_AI_Tool\\\\11.P5_PJT\\\\docs\")",
+      "Bash(node:*)",
+      "Bash(npm run build:*)",
+      "Bash(gh run list:*)",
+      "Bash(dir \"C:\\\\Users\\\\user\\\\Downloads\" /O-D /B)",
+      "Bash(findstr:*)",
+      "Bash(powershell -Command \"Get-ChildItem ''C:\\\\Users\\\\user\\\\Downloads\\\\*P5*.pdf'' | Sort-Object LastWriteTime -Descending | Select-Object -First 3 Name, LastWriteTime\")",
+      "Bash(git reset:*)"
     ],
     "deny": [],
     "ask": []

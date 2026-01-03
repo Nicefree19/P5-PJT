@@ -24,12 +24,17 @@
  */
 
 // =====================================================
-// 층(Floor) 정의
+// 절주(Jeolju) 정의 - 수직 분절 (층 그룹)
+// ⚠️ 주의: F1, F2는 "층"이 아니라 "절주"를 의미함
+// 절주 = 기둥이 몇 개 층을 관통하는지에 따른 분절 단위
 // =====================================================
-const FLOORS = {
-  F1: { id: "F1", name: "1절주", description: "1절주 제작 현황", columnRange: "X36~X57" },
-  F2: { id: "F2", name: "2절주", description: "2절주 제작 현황", columnRange: "X42~X49" },
+const JEOLJU_CONFIG = {
+  F1: { id: "F1", name: "1절주", floors: ["1F", "2F", "3F"], heightRange: "1F~3F", columnRange: "X36~X57", description: "1절주 제작 현황" },
+  F2: { id: "F2", name: "2절주", floors: ["4F", "5F", "6F"], heightRange: "4F~6F", columnRange: "X42~X49", description: "2절주 제작 현황 (코어제외)" },
 };
+
+// 하위 호환성: FLOORS = JEOLJU_CONFIG
+const FLOORS = JEOLJU_CONFIG;
 
 // =====================================================
 // 1절주 제작현황 데이터 (X36~X57, A~K)
