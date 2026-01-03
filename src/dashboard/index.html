@@ -36,6 +36,9 @@
     <script type="module" src="./js/api.js"></script>
     <script type="module" src="./js/sync-module.js"></script>
     
+    <!-- Production Status Data (PSRC 제작현황) -->
+    <script src="./data/production_status_import.js"></script>
+    
     <style>
         /* === Design System: High-Tech Fab Theme === */
         :root {
@@ -608,6 +611,61 @@
             cursor: grab;
         }
         .grid-scroll-view:active { cursor: grabbing; }
+
+        /* === Virtual Scrolling System === */
+        .virtual-grid-container {
+            position: relative;
+            overflow: auto;
+            background: var(--bg-dark);
+        }
+        .virtual-grid-spacer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        }
+        .virtual-grid-content {
+            position: sticky;
+            top: 0;
+            left: 0;
+            display: grid;
+            gap: 2px;
+            width: fit-content;
+        }
+        .virtual-header-row {
+            display: contents;
+        }
+        .virtual-header-col {
+            position: sticky;
+            left: 0;
+            z-index: 2;
+            background: var(--bg-dark);
+        }
+        .virtual-corner-cell {
+            position: sticky;
+            top: 0;
+            left: 0;
+            z-index: 3;
+            background: var(--bg-dark);
+        }
+        .virtual-scroll-indicator {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            color: #8b949e;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-family: monospace;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+        }
+        .virtual-scroll-indicator.visible {
+            opacity: 1;
+        }
 
         .grid-container {
             display: grid;
@@ -4344,6 +4402,7 @@
         <div class="admin-tabs" role="tablist" aria-label="관리자 설정 탭">
             <button class="admin-tab" :class="adminTab === 'zones' && 'active'" @click="adminTab = 'zones'" role="tab" :aria-selected="adminTab === 'zones'" aria-controls="tab-zones">🗂️ Zone</button>
             <button class="admin-tab" :class="adminTab === 'issues' && 'active'" @click="adminTab = 'issues'" role="tab" :aria-selected="adminTab === 'issues'" aria-controls="tab-issues">🚨 이슈</button>
+            <button class="admin-tab" :class="adminTab === 'project' && 'active'" @click="adminTab = 'project'" role="tab" :aria-selected="adminTab === 'project'" aria-controls="tab-project">📁 프로젝트</button>
             <button class="admin-tab" :class="adminTab === 'settings' && 'active'" @click="adminTab = 'settings'" role="tab" :aria-selected="adminTab === 'settings'" aria-controls="tab-settings">🔧 설정</button>
         </div>
         
@@ -4400,6 +4459,44 @@
                 </div>
             </template>
             
+            <!-- Project Manager Tab -->
+            <template x-if="adminTab === 'project'">
+                <div>
+                    <h3 style="margin:0 0 16px 0; color:#fff;">📁 프로젝트 스냅샷 관리</h3>
+                    <p style="font-size:12px; color:#8b949e; margin-bottom:20px;">
+                        현재 대시보드의 모든 설정(층, 절주, 구간, Zone)과 데이터(기둥 상태, 이슈)를 하나의 파일로 저장하거나 불러옵니다.
+                    </p>
+                    
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                        <div style="padding:20px; background:#0d1117; border:1px solid var(--border-color); border-radius:12px; text-align:center;">
+                            <div style="font-size:32px; margin-bottom:12px;">📤</div>
+                            <h4 style="margin:0 0 8px 0; font-size:14px; color:#fff;">스냅샷 내보내기</h4>
+                            <p style="font-size:11px; color:#8b949e; margin-bottom:16px;">현재 상태를 JSON 파일로 다운로드합니다.</p>
+                            <button class="btn btn-primary" style="width:100%;" @click="exportProjectSnapshot()">스냅샷 저장</button>
+                        </div>
+                        
+                        <div style="padding:20px; background:#0d1117; border:1px solid var(--border-color); border-radius:12px; text-align:center;">
+                            <div style="font-size:32px; margin-bottom:12px;">📥</div>
+                            <h4 style="margin:0 0 8px 0; font-size:14px; color:#fff;">스냅샷 불러오기</h4>
+                            <p style="font-size:11px; color:#8b949e; margin-bottom:16px;">저장된 스냅샷 파일을 선택하여 복원합니다.</p>
+                            <label class="btn btn-success" style="width:100%; display:inline-block; cursor:pointer;">
+                                파일 선택
+                                <input type="file" style="display:none;" @change="importProjectSnapshot($event)" accept=".json">
+                            </label>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:24px; padding:16px; background:rgba(210,153,34,0.1); border:1px solid rgba(210,153,34,0.3); border-radius:8px;">
+                        <h4 style="margin:0 0 8px 0; font-size:12px; color:#d29922;">⚠️ 주의사항</h4>
+                        <ul style="margin:0; padding-left:18px; font-size:11px; color:#8b949e; line-height:1.6;">
+                            <li>스냅샷을 불러오면 현재 브라우저에 저장된 데이터가 모두 덮어씌워집니다.</li>
+                            <li>불러오기 완료 후 페이지가 자동으로 새로고침됩니다.</li>
+                            <li>대량의 데이터(8,000개 이상)가 포함된 경우 처리 시 약간의 지연이 발생할 수 있습니다.</li>
+                        </ul>
+                    </div>
+                </div>
+            </template>
+            
             <!-- Settings Tab -->
             <template x-if="adminTab === 'settings'">
                 <div>
@@ -4420,6 +4517,36 @@
                         <div style="display:flex; gap:8px;">
                             <button class="btn" @click="exportData()">📥 내보내기</button>
                             <button class="btn" style="color:#f85149;" @click="clearAllData()">🗑️ 초기화</button>
+                        </div>
+                    </div>
+
+                    <hr style="border-color:#30363d; margin: 20px 0;">
+
+                    <!-- Virtual Scrolling Settings -->
+                    <h3 style="margin:0 0 16px 0; color:#fff;">🚀 Virtual Scrolling</h3>
+                    <div class="form-group">
+                        <label>Virtual Scrolling 활성화</label>
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <input type="checkbox" x-model="virtualScroll.enabled" style="width:auto;">
+                            <span x-text="virtualScroll.enabled ? '활성화 (대규모 그리드 최적화)' : '비활성화'"></span>
+                        </div>
+                        <small style="color:#8b949e; display:block; margin-top:8px;">
+                            1,000셀 이상 그리드에서 자동 활성화됩니다.
+                            현재 그리드: <strong x-text="gridConfig.cols * gridConfig.rows"></strong>셀
+                        </small>
+                    </div>
+                    <div class="form-group" x-show="virtualScroll.enabled">
+                        <label>버퍼 셀 수</label>
+                        <input type="number" x-model.number="virtualScroll.bufferCells" min="0" max="20" style="width:80px;">
+                        <small style="color:#8b949e; display:block; margin-top:4px;">
+                            뷰포트 외부에 미리 렌더링할 셀 수 (기본: 5)
+                        </small>
+                    </div>
+                    <div class="form-group" x-show="virtualScroll.enabled">
+                        <label>현재 렌더링</label>
+                        <div style="font-family: monospace; color: #58a6ff; font-size: 12px;">
+                            <span x-text="visibleCells.length"></span>셀 렌더링 중
+                            (전체 <span x-text="gridCells.length"></span>셀 중)
                         </div>
                     </div>
                 </div>
@@ -4962,20 +5089,31 @@
             </div>
         </div>
 
-        <!-- Grid -->
-        <div class="grid-scroll-view" 
+        <!-- Grid with Virtual Scrolling -->
+        <div class="grid-scroll-view"
+             x-ref="gridScrollView"
+             x-init="$nextTick(() => initVirtualScroll($refs.gridScrollView))"
+             @scroll.passive="handleVirtualScroll($event)"
              @mousedown="startDragSelect($event)"
              @mousemove="updateDragSelect($event)"
              @mouseup="endDragSelect()"
              @mouseleave="endDragSelect()">
+
+            <!-- Virtual Scroll Spacer (maintains scroll area size) -->
+            <div x-show="virtualScroll.enabled"
+                 class="virtual-grid-spacer"
+                 :style="`width: ${totalGridWidth}px; height: ${totalGridHeight}px;`"></div>
+
             <div class="grid-container"
-                 :style="`--cols: ${gridConfig.cols}; --rows: ${gridConfig.rows}`"
+                 :style="virtualScroll.enabled
+                     ? `--cols: ${visibleColCount}; --rows: ${visibleRowCount}; transform: translate(${virtualScroll.visibleColStart * virtualScroll.cellWidth}px, ${virtualScroll.visibleRowStart * virtualScroll.cellHeight}px);`
+                     : `--cols: ${gridConfig.cols}; --rows: ${gridConfig.rows}`"
                  id="gridMap"
                  role="grid"
                  aria-label="구조 이슈 관리 그리드">
-                
-                <!-- All cells rendered via JS for Alpine.js compatibility -->
-                <template x-for="cell in gridCells" :key="cell.key">
+
+                <!-- Cells: Virtual or Full rendering based on grid size -->
+                <template x-for="cell in (virtualScroll.enabled ? visibleCells : gridCells)" :key="cell.key">
                     <div :class="cell.isHeader ? 'grid-cell-header' : 'grid-cell'"
                          :role="cell.isHeader ? 'columnheader' : 'gridcell'"
                          :aria-label="cell.isHeader ? cell.label : (cell.row + '-X' + cell.col + ' 기둥 셀')"
@@ -5016,6 +5154,11 @@
                 </template>
             </div>
         </div>
+
+        <!-- Virtual Scroll Position Indicator -->
+        <div class="virtual-scroll-indicator"
+             :class="{ 'visible': virtualScroll.isScrolling && virtualScroll.enabled }"
+             x-text="scrollPositionInfo"></div>
     </div>
 
     <!-- Detail Panel -->
@@ -6143,14 +6286,54 @@ const P5Store = {
         }
     },
     
-    export(data) {
-        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    // ★ 프로젝트 스냅샷 내보내기 (모든 설정 + 노드 + 상태 포함)
+    exportSnapshot(app) {
+        const snapshot = {
+            projectInfo: {
+                name: "P5 Dashboard Project",
+                exportDate: new Date().toISOString(),
+                version: "1.0.0"
+            },
+            configurations: {
+                floors: app.floors,
+                jeoljuConfig: app.jeoljuConfig,
+                columnSegments: app.columnSegments,
+                zones: app.zones,
+                statusCodes: app.statusCodes,
+                productionStages: app.productionStages
+            },
+            mgt_grid: app.gridConfig,
+            data: {
+                columns: app.columns,
+                issues: app.issues,
+                history: app.history
+            }
+        };
+        
+        const blob = new Blob([JSON.stringify(snapshot, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `p5_dashboard_${new Date().toISOString().slice(0,10)}.json`;
+        a.download = `P5_Snapshot_${new Date().toISOString().slice(0,10)}.json`;
         a.click();
         URL.revokeObjectURL(url);
+    },
+
+    // ★ 프로젝트 스냅샷 불러오기
+    async importSnapshot(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const snapshot = JSON.parse(e.target.result);
+                    resolve(snapshot);
+                } catch (err) {
+                    reject(err);
+                }
+            };
+            reader.onerror = reject;
+            reader.readAsText(file);
+        });
     }
 };
 
@@ -6160,6 +6343,26 @@ function dashboard() {
         // Grid Config
         gridConfig: { cols: 69, rows: 12 },
         rowLabels: ['A','B','C','D','E','F','G','H','I','J','K','L'],
+
+        // Virtual Scrolling State
+        virtualScroll: {
+            enabled: true,
+            scrollTop: 0,
+            scrollLeft: 0,
+            viewportWidth: 800,
+            viewportHeight: 600,
+            cellWidth: 28,    // 26px + 2px gap
+            cellHeight: 28,   // 26px + 2px gap
+            headerWidth: 37,  // 35px + 2px gap
+            headerHeight: 27, // 25px + 2px gap
+            bufferCells: 5,   // Extra cells to render outside viewport
+            visibleColStart: 0,
+            visibleColEnd: 30,
+            visibleRowStart: 0,
+            visibleRowEnd: 20,
+            isScrolling: false,
+            scrollTimeout: null
+        },
         
         // Data
         zones: [],
@@ -6183,18 +6386,48 @@ function dashboard() {
         showIssueEditor: false,
         issueFilter: 'all',
 
-        // Phase 8: Import Preview State
-        showImportPreview: false,
-        importPreview: {
-            fileName: '',
-            fileType: '',       // 'json' | 'csv'
-            rawData: null,
-            parsedData: [],
-            headers: [],
-            columnMapping: {},  // CSV header → data field mapping
-            stats: { total: 0, new: 0, update: 0, errors: 0 },
-            errors: [],
-            mode: 'update'      // 'update' | 'replace' | 'merge'
+        // ★ 프로젝트 스냅샷 내보내기/불러오기 기능
+        exportProjectSnapshot() {
+            P5Store.exportSnapshot(this);
+            this.showToast('Project Snapshot exported successfully', 'success');
+        },
+
+        async importProjectSnapshot(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            try {
+                const snapshot = await P5Store.importSnapshot(file);
+                
+                // 데이터 적용
+                if (snapshot.configurations) {
+                    this.floors = snapshot.configurations.floors || this.floors;
+                    this.jeoljuConfig = snapshot.configurations.jeoljuConfig || this.jeoljuConfig;
+                    this.columnSegments = snapshot.configurations.columnSegments || this.columnSegments;
+                    this.zones = snapshot.configurations.zones || this.zones;
+                    this.statusCodes = snapshot.configurations.statusCodes || this.statusCodes;
+                    this.productionStages = snapshot.configurations.productionStages || this.productionStages;
+                }
+
+                if (snapshot.mgt_grid) {
+                    this.gridConfig = snapshot.mgt_grid;
+                }
+
+                if (snapshot.data) {
+                    this.columns = snapshot.data.columns || {};
+                    this.issues = snapshot.data.issues || [];
+                    this.history = snapshot.data.history || [];
+                }
+
+                this.saveData();
+                this.showToast('Project Snapshot loaded and applied', 'success');
+                
+                // 페이지 새로고침하여 데이터 캐시 등 초기화 권장 (또는 init 재호출)
+                setTimeout(() => window.location.reload(), 1500);
+            } catch (err) {
+                console.error('Snapshot import failed:', err);
+                this.showToast('Failed to import snapshot: ' + err.message, 'error');
+            }
         },
 
         issueForm: {
@@ -6487,7 +6720,171 @@ function dashboard() {
             
             return cells;
         },
-        
+
+        // === Virtual Scrolling ===
+
+        // Get total grid dimensions in pixels
+        get totalGridWidth() {
+            const vs = this.virtualScroll;
+            return vs.headerWidth + (this.gridConfig.cols * vs.cellWidth);
+        },
+
+        get totalGridHeight() {
+            const vs = this.virtualScroll;
+            return vs.headerHeight + (this.gridConfig.rows * vs.cellHeight);
+        },
+
+        // Calculate visible range based on scroll position
+        updateVisibleRange() {
+            const vs = this.virtualScroll;
+
+            // Calculate visible column range
+            const colStart = Math.max(0, Math.floor((vs.scrollLeft - vs.headerWidth) / vs.cellWidth) - vs.bufferCells);
+            const colEnd = Math.min(this.gridConfig.cols, Math.ceil((vs.scrollLeft + vs.viewportWidth - vs.headerWidth) / vs.cellWidth) + vs.bufferCells);
+
+            // Calculate visible row range
+            const rowStart = Math.max(0, Math.floor((vs.scrollTop - vs.headerHeight) / vs.cellHeight) - vs.bufferCells);
+            const rowEnd = Math.min(this.gridConfig.rows, Math.ceil((vs.scrollTop + vs.viewportHeight - vs.headerHeight) / vs.cellHeight) + vs.bufferCells);
+
+            vs.visibleColStart = colStart;
+            vs.visibleColEnd = colEnd;
+            vs.visibleRowStart = rowStart;
+            vs.visibleRowEnd = rowEnd;
+        },
+
+        // Generate only visible cells for rendering
+        get visibleCells() {
+            if (!this.virtualScroll.enabled) {
+                return this.gridCells;
+            }
+
+            const vs = this.virtualScroll;
+            const cells = [];
+
+            // Always include corner cell
+            cells.push({ key: 'corner', isHeader: true, label: '', isCorner: true });
+
+            // Visible column headers
+            for (let c = vs.visibleColStart + 1; c <= Math.min(vs.visibleColEnd + 1, this.gridConfig.cols); c++) {
+                cells.push({
+                    key: 'h-' + c,
+                    isHeader: true,
+                    label: c,
+                    isColumnHeader: true,
+                    colIndex: c
+                });
+            }
+
+            // Visible data rows
+            for (let r = vs.visibleRowStart; r < Math.min(vs.visibleRowEnd, this.gridConfig.rows); r++) {
+                const rowLabel = this.rowLabels[r] || String.fromCharCode(65 + r);
+
+                // Row header
+                cells.push({
+                    key: 'r-' + rowLabel,
+                    isHeader: true,
+                    label: rowLabel,
+                    isRowHeader: true,
+                    rowIndex: r
+                });
+
+                // Visible data cells in this row
+                for (let c = vs.visibleColStart + 1; c <= Math.min(vs.visibleColEnd + 1, this.gridConfig.cols); c++) {
+                    cells.push({
+                        key: rowLabel + '-X' + c,
+                        isHeader: false,
+                        row: rowLabel,
+                        col: c,
+                        rowIndex: r,
+                        colIndex: c
+                    });
+                }
+            }
+
+            return cells;
+        },
+
+        // Get visible columns count for grid CSS
+        get visibleColCount() {
+            const vs = this.virtualScroll;
+            return Math.min(vs.visibleColEnd + 1, this.gridConfig.cols) - vs.visibleColStart;
+        },
+
+        // Get visible rows count for grid CSS
+        get visibleRowCount() {
+            const vs = this.virtualScroll;
+            return Math.min(vs.visibleRowEnd, this.gridConfig.rows) - vs.visibleRowStart;
+        },
+
+        // Handle scroll event with throttling
+        handleVirtualScroll(event) {
+            const vs = this.virtualScroll;
+            const container = event.target;
+
+            vs.scrollLeft = container.scrollLeft;
+            vs.scrollTop = container.scrollTop;
+            vs.isScrolling = true;
+
+            // Throttled update
+            if (!vs.scrollTimeout) {
+                vs.scrollTimeout = requestAnimationFrame(() => {
+                    this.updateVisibleRange();
+                    vs.scrollTimeout = null;
+
+                    // Hide scroll indicator after delay
+                    setTimeout(() => {
+                        vs.isScrolling = false;
+                    }, 500);
+                });
+            }
+        },
+
+        // Initialize virtual scrolling
+        initVirtualScroll(container) {
+            if (!container) return;
+
+            const vs = this.virtualScroll;
+            vs.viewportWidth = container.clientWidth;
+            vs.viewportHeight = container.clientHeight;
+
+            // Auto-enable for large grids (>1000 cells)
+            const totalCells = this.gridConfig.cols * this.gridConfig.rows;
+            vs.enabled = totalCells > 1000;
+
+            this.updateVisibleRange();
+
+            // Add resize observer
+            const resizeObserver = new ResizeObserver(entries => {
+                for (const entry of entries) {
+                    vs.viewportWidth = entry.contentRect.width;
+                    vs.viewportHeight = entry.contentRect.height;
+                    this.updateVisibleRange();
+                }
+            });
+            resizeObserver.observe(container);
+
+            console.log(`[VirtualScroll] Initialized: ${totalCells} cells, enabled=${vs.enabled}`);
+        },
+
+        // Get cell position for absolute positioning (virtual mode)
+        getCellStyle(cell) {
+            if (!this.virtualScroll.enabled || cell.isHeader) return '';
+
+            const vs = this.virtualScroll;
+            const left = vs.headerWidth + ((cell.colIndex - 1) * vs.cellWidth);
+            const top = vs.headerHeight + (cell.rowIndex * vs.cellHeight);
+
+            return `position: absolute; left: ${left}px; top: ${top}px; width: ${vs.cellWidth - 2}px; height: ${vs.cellHeight - 2}px;`;
+        },
+
+        // Get scroll position info for indicator
+        get scrollPositionInfo() {
+            const vs = this.virtualScroll;
+            const colPercent = Math.round((vs.scrollLeft / (this.totalGridWidth - vs.viewportWidth)) * 100) || 0;
+            const rowPercent = Math.round((vs.scrollTop / (this.totalGridHeight - vs.viewportHeight)) * 100) || 0;
+            return `Col ${vs.visibleColStart + 1}-${vs.visibleColEnd + 1} / ${this.gridConfig.cols} | Row ${vs.visibleRowStart + 1}-${vs.visibleRowEnd} / ${this.gridConfig.rows}`;
+        },
+
         // === Lifecycle ===
         init() {
             const data = P5Store.load();
@@ -6512,6 +6909,9 @@ function dashboard() {
             if (Object.keys(this.columns).length === 0) {
                 this.initializeColumns();
             }
+
+            // ★ PSRC 제작현황 데이터 로드 (production_status_import.js)
+            this.loadProductionStatusData();
 
             // Initialize sample issues for demo
             this.initSampleIssues();
@@ -6545,13 +6945,17 @@ function dashboard() {
                 { floorId: 'RF', label: 'RF층', order: 11, hasVariation: true, variationNote: '지붕층' }
             ];
 
-            // ★ 절주 (수직 분절 - 층 그룹) - production_status_import.js와 정합
-            // 절주 = 기둥이 몇 개 층을 관통하는지에 따른 분절
+            // ★ 절주 (수직 분절 - 층 그룹) - floor_jeolju_implementation_plan.md 기준
+            // 절주 = 기둥 수직분절 계획에 따른 층 그룹 (8개 절주)
             this.jeoljuConfig = [
-                { jeoljuId: '1절주', label: '1절주', floors: ['F1', 'F2', 'F3'], heightRange: '1F~3F', columnRange: 'X36~X57', description: '1절주 제작 현황' },
-                { jeoljuId: '2절주', label: '2절주', floors: ['F4', 'F5', 'F6'], heightRange: '4F~6F', columnRange: 'X42~X49', description: '2절주 제작 현황 (코어제외)' },
-                { jeoljuId: '3절주', label: '3절주', floors: ['F7', 'F8', 'F9'], heightRange: '7F~9F', columnRange: '', description: '3절주 제작 현황' },
-                { jeoljuId: '4절주', label: '4절주', floors: ['F10', 'RF'], heightRange: '10F~RF', columnRange: '', description: '4절주 제작 현황' }
+                { jeoljuId: '1절주', label: '1절주', floors: ['F1', 'F2'], heightRange: '1F~2F', length: 15.2, columnSize: '1600x1600', description: '1절주 제작 현황' },
+                { jeoljuId: '2절주', label: '2절주', floors: ['F3'], heightRange: '3F', length: 10.5, columnSize: '1600x1600', description: '2절주 제작 현황' },
+                { jeoljuId: '3절주', label: '3절주', floors: ['F4'], heightRange: '4F', length: 7.75, columnSize: '1500x1500', description: '3절주 제작 현황' },
+                { jeoljuId: '4절주', label: '4절주', floors: ['F5'], heightRange: '5F', length: 15.4, columnSize: '1500x1500', description: '4절주 제작 현황' },
+                { jeoljuId: '5절주', label: '5절주', floors: ['F6', 'F7'], heightRange: '6F~7F', length: 16.2, columnSize: '1300x1300', description: '5절주 제작 현황' },
+                { jeoljuId: '6절주', label: '6절주', floors: ['F8'], heightRange: '8F', length: 11.75, columnSize: '1300x1300', description: '6절주 제작 현황' },
+                { jeoljuId: '7절주', label: '7절주', floors: ['F9'], heightRange: '9F', length: 7.95, columnSize: '1300x1300', description: '7절주 제작 현황' },
+                { jeoljuId: '8절주', label: '8절주', floors: ['F10', 'RF'], heightRange: '10F~RF', length: 14.45, columnSize: '1200x1200', description: '8절주 제작 현황' }
             ];
 
             // ★ 열 구간 (수평 분절 - 컬럼 범위) - 기존 jeoljuList를 명칭 변경
@@ -6601,6 +7005,77 @@ function dashboard() {
             } catch (error) {
                 console.warn('[Phase 9] Floor stats load failed (using defaults):', error.message);
             }
+        },
+
+        // ★ PSRC 제작현황 데이터 로드 (production_status_import.js에서 가져온 데이터 적용)
+        loadProductionStatusData() {
+            // production_status_import.js가 로드되었는지 확인
+            if (typeof PRODUCTION_STATUS_1JEOL === 'undefined' || typeof PRODUCTION_STATUS_2JEOL === 'undefined') {
+                console.warn('[Production] production_status_import.js not loaded');
+                return;
+            }
+
+            let updated = 0;
+            
+            // 헬퍼 함수: 데이터 세트 처리
+            const processDataSet = (dataSet, floorId) => {
+                for (const uid in dataSet) {
+                    // UID가 이미 존재하면 stages 업데이트
+                    if (this.columns[uid]) {
+                        this.columns[uid].stages = { ...dataSet[uid] };
+                        this.columns[uid].location.floorId = floorId; // 층 정보 업데이트
+                        updated++;
+                    } else {
+                        // 새 기둥 생성 (UID 형식: "A-X36")
+                        const [row, colPart] = uid.split('-');
+                        const col = parseInt(colPart.replace('X', ''));
+                        
+                        // Zone 결정
+                        let zoneId = 'zone_c';
+                        if (col <= 25) zoneId = 'zone_a';
+                        else if (col <= 47) zoneId = 'zone_b';
+
+                        this.columns[uid] = {
+                            uid,
+                            location: {
+                                row: this.rowLabels.indexOf(row),
+                                column: col,
+                                zoneId,
+                                floorId: floorId, // 올바른 층 ID 할당 (F1 or F2)
+                                x: 0,
+                                y: 0,
+                                z: 0
+                            },
+                            status: {
+                                code: 'active',
+                                source: 'production_import',
+                                isLocked: false,
+                                updatedAt: new Date().toISOString()
+                            },
+                            stages: { ...dataSet[uid] }
+                        };
+                        updated++;
+                    }
+                }
+            };
+
+            // 1절주 (F1) 처리
+            processDataSet(PRODUCTION_STATUS_1JEOL, 'F1');
+            
+            // 2절주 (F2) 처리
+            processDataSet(PRODUCTION_STATUS_2JEOL, 'F2');
+
+            console.log(`[Production] ${updated} columns loaded from production_status_import.js`);
+            console.log(`[Production] 1절주(F1): ${Object.keys(PRODUCTION_STATUS_1JEOL).length}개, 2절주(F2): ${Object.keys(PRODUCTION_STATUS_2JEOL).length}개`);
+            
+            // 통계 계산
+            if (typeof getProductionStats === 'function') {
+                const stats = getProductionStats();
+                console.log('[Production] Stats:', stats);
+            }
+
+            // 데이터 저장
+            this.saveData();
         },
 
         // Phase 7: 층 선택
