@@ -6342,10 +6342,17 @@ const P5Store = {
 
 // ===== Alpine.js Application =====
 function dashboard() {
+    // ★ MGT Grid Config from column_data_generator.js (197,835 columns support)
+    const MGT_CONFIG = (typeof COLUMN_CONFIG !== 'undefined') ? COLUMN_CONFIG : null;
+
     return {
-        // Grid Config
-        gridConfig: { cols: 69, rows: 12 },
-        rowLabels: ['A','B','C','D','E','F','G','H','I','J','K','L'],
+        // Grid Config - MGT 규격 (327 cols × 55 rows) or fallback to legacy
+        gridConfig: MGT_CONFIG
+            ? { cols: MGT_CONFIG.columnRange.end - MGT_CONFIG.columnRange.start + 1, rows: MGT_CONFIG.rowLabels.length }
+            : { cols: 69, rows: 12 },
+        rowLabels: MGT_CONFIG
+            ? MGT_CONFIG.rowLabels
+            : ['A','B','C','D','E','F','G','H','I','J','K','L'],
 
         // Virtual Scrolling State
         virtualScroll: {
@@ -6927,7 +6934,16 @@ function dashboard() {
                 this.isMobile = window.innerWidth < 768;
             });
 
-            console.log('Dashboard initialized with', Object.keys(this.columns).length, 'columns and', this.issues.length, 'issues');
+            // Log grid configuration
+            const totalCells = this.gridConfig.cols * this.gridConfig.rows;
+            console.log(`[Dashboard] Grid: ${this.gridConfig.cols}x${this.gridConfig.rows} = ${totalCells.toLocaleString()} cells`);
+            console.log(`[Dashboard] Virtual Scrolling: ${this.virtualScroll.enabled ? 'ENABLED' : 'disabled'} (threshold: 1,000 cells)`);
+            console.log(`[Dashboard] Columns loaded: ${Object.keys(this.columns).length.toLocaleString()}`);
+            console.log(`[Dashboard] Issues: ${this.issues.length}`);
+
+            if (totalCells > 1000) {
+                console.log(`[Dashboard] ⚡ Large grid detected - Virtual Scrolling active for performance`);
+            }
         },
 
         // Phase 7: 층-절주 데이터 초기화
