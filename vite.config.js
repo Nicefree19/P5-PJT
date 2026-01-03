@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite';
+import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 export default defineConfig({
   root: './src/dashboard',
@@ -11,6 +12,20 @@ export default defineConfig({
     sourcemap: false,
     cssCodeSplit: false
   },
+  plugins: [
+    viteStaticCopy({
+      targets: [
+        {
+          src: 'data/*',
+          dest: 'data'
+        },
+        {
+          src: 'js/*',
+          dest: 'js'
+        }
+      ]
+    })
+  ],
   server: {
     port: 5173,
     open: true
