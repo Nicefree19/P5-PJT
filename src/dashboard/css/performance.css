@@ -1,0 +1,167 @@
+/**
+ * P5 Dashboard - Performance CSS
+ * WP-5: Performance Optimization
+ *
+ * CSS Containment, content-visibility, and GPU acceleration
+ * for improved rendering performance on large grids.
+ */
+
+/* ==========================================================================
+   CSS Containment - Isolate layout/paint boundaries
+   ========================================================================== */
+
+/**
+ * Grid Container - Layout containment
+ * Prevents layout changes from propagating up the DOM tree
+ */
+.grid-scroll-view {
+    contain: layout style;
+    will-change: scroll-position;
+}
+
+/**
+ * Grid Container - Strict containment for the grid area
+ */
+.grid-container {
+    contain: layout style;
+}
+
+/**
+ * Virtual Grid Spacer - Size containment only
+ * This element just provides dimensions for scrollbar
+ */
+.virtual-grid-spacer {
+    contain: size layout;
+}
+
+/**
+ * Grid Cells - Strict containment for optimal performance
+ * - layout: Layout changes don't escape the element
+ * - paint: Paint changes don't escape the element
+ * - size: Element size doesn't depend on descendants
+ *
+ * content-visibility: auto enables browser to skip rendering
+ * off-screen elements entirely
+ */
+.grid-cell {
+    contain: strict;
+    content-visibility: auto;
+    contain-intrinsic-size: 26px 26px;
+}
+
+/**
+ * Header cells - Layout containment (less strict for text)
+ */
+.grid-cell-header {
+    contain: layout paint;
+    content-visibility: auto;
+    contain-intrinsic-size: 60px 26px;
+}
+
+/* ==========================================================================
+   GPU Acceleration - Transform-based animations
+   ========================================================================== */
+
+/**
+ * Elements that frequently animate should use GPU compositing
+ * will-change hints to browser for optimization
+ */
+.grid-scroll-view {
+    -webkit-overflow-scrolling: touch;
+}
+
+/**
+ * Selection overlay uses transform for smooth rendering
+ */
+.touch-drag-overlay,
+.selection-rect {
+    contain: strict;
+    will-change: transform, width, height;
+}
+
+/**
+ * Scroll position indicator
+ */
+.scroll-position-indicator {
+    contain: layout paint;
+    will-change: opacity;
+}
+
+/* ==========================================================================
+   Panel Performance - Lazy rendering for modals/panels
+   ========================================================================== */
+
+/**
+ * Detail panel containment
+ */
+.detail-panel,
+.report-panel,
+.settings-panel {
+    contain: layout paint;
+}
+
+/**
+ * Hidden panels should be completely removed from rendering
+ */
+[x-show="false"],
+[style*="display: none"] {
+    content-visibility: hidden;
+}
+
+/* ==========================================================================
+   Reduce Paint Complexity
+   ========================================================================== */
+
+/**
+ * Simplify box-shadow during scroll for performance
+ * Applied via class toggle during scroll events
+ */
+.is-scrolling .grid-cell {
+    box-shadow: none !important;
+}
+
+.is-scrolling .dot:hover {
+    transform: none;
+}
+
+/**
+ * Disable transitions during rapid updates
+ */
+.no-transitions,
+.no-transitions * {
+    transition: none !important;
+}
+
+/* ==========================================================================
+   Memory Optimization - Reduce reflow triggers
+   ========================================================================== */
+
+/**
+ * Fixed dimensions prevent layout recalculation
+ */
+.grid-cell,
+.grid-cell-header {
+    box-sizing: border-box;
+}
+
+/**
+ * Avoid layout-triggering properties in hover states
+ * Use transform instead of changing dimensions
+ */
+.dot:hover {
+    /* transform is GPU-accelerated, doesn't trigger layout */
+    transform: scale(1.8);
+}
+
+/* ==========================================================================
+   Passive Scroll Hints
+   ========================================================================== */
+
+/**
+ * Indicate scroll containers to browser
+ */
+.grid-scroll-view,
+.panel-body,
+.report-panel-body {
+    overscroll-behavior: contain;
+}

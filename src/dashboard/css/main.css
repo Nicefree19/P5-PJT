@@ -15,7 +15,10 @@
 /* 3. Animations & Effects */
 @import url('./animations.css');
 
-/* 
+/* 4. Performance Optimizations (CSS Containment, GPU hints) */
+@import url('./performance.css');
+
+/*
  * Future CSS modules to add:
  * @import url('./layout.css');
  * @import url('./grid.css');
