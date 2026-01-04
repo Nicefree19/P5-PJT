@@ -21,6 +21,10 @@ const SyncModule = (function () {
     MAX_RETRIES: 3,
     QUEUE_KEY: "p5_sync_queue",
     LAST_SYNC_KEY: "p5_last_sync",
+    // WP-3: Chunked Sync Configuration
+    CHUNK_SIZE: 500,      // Max columns per sync request
+    CHUNK_DELAY: 1000,    // Delay between chunks (ms)
+    TIMEOUT_BUFFER: 300000, // 5 minutes (GAS limit is 6 min)
   };
 
   // ===== State =====
@@ -30,8 +34,10 @@ const SyncModule = (function () {
   let onConflict = null;
   let onSyncComplete = null;
   let onSyncError = null;
+  let onProgress = null;  // WP-3: Progress callback
 
   // ===== Public API =====
+
 
   /**
    * Initialize the sync module
@@ -41,9 +47,11 @@ const SyncModule = (function () {
     if (options.apiUrl) CONFIG.API_URL = options.apiUrl;
     if (options.apiKey) CONFIG.API_KEY = options.apiKey; // Phase 10: API Key 지원
     if (options.syncInterval) CONFIG.SYNC_INTERVAL = options.syncInterval;
+    if (options.chunkSize) CONFIG.CHUNK_SIZE = options.chunkSize; // WP-3
     if (options.onConflict) onConflict = options.onConflict;
     if (options.onSyncComplete) onSyncComplete = options.onSyncComplete;
     if (options.onSyncError) onSyncError = options.onSyncError;
+    if (options.onProgress) onProgress = options.onProgress; // WP-3
 
     // Load pending queue from storage
     loadQueue();
@@ -162,7 +170,180 @@ const SyncModule = (function () {
     console.log("[SyncModule] Queue cleared");
   }
 
+  // ===== WP-3: Chunked Sync Functions =====
+
+  /**
+   * Sync large column datasets in chunks to prevent GAS timeout
+   * @param {Object} columns - Column data object (can have 8,000+ entries)
+   * @returns {Promise<Object>} - Sync results
+   */
+  async function syncColumnsChunked(columns) {
+    if (!CONFIG.API_URL) {
+      return { success: false, error: "API not configured" };
+    }
+
+    const columnArray = Object.entries(columns);
+    const totalChunks = Math.ceil(columnArray.length / CONFIG.CHUNK_SIZE);
+    const timestamp = new Date().toISOString();
+
+    console.log(`[SyncModule] Starting chunked sync: ${columnArray.length} columns in ${totalChunks} chunks`);
+
+    const results = {
+      success: true,
+      totalColumns: columnArray.length,
+      totalChunks,
+      processed: 0,
+      failed: 0,
+      conflicts: [],
+      startTime: Date.now()
+    };
+
+    for (let i = 0; i < totalChunks; i++) {
+      const start = i * CONFIG.CHUNK_SIZE;
+      const end = Math.min(start + CONFIG.CHUNK_SIZE, columnArray.length);
+      const chunkData = Object.fromEntries(columnArray.slice(start, end));
+
+      try {
+        const response = await sendChunk(chunkData, i + 1, totalChunks, timestamp);
+
+        if (response.success) {
+          results.processed += Object.keys(chunkData).length;
+        } else if (response.conflicts) {
+          results.conflicts.push(...response.conflicts);
+        } else {
+          results.failed += Object.keys(chunkData).length;
+        }
+
+        // Progress callback
+        const progress = Math.round(((i + 1) / totalChunks) * 100);
+        if (onProgress) {
+          onProgress({
+            current: i + 1,
+            total: totalChunks,
+            percent: progress,
+            processed: results.processed
+          });
+        }
+
+        console.log(`[SyncModule] Chunk ${i + 1}/${totalChunks} complete (${progress}%)`);
+
+        // Delay between chunks to prevent rate limiting
+        if (i < totalChunks - 1) {
+          await delay(CONFIG.CHUNK_DELAY);
+        }
+
+      } catch (error) {
+        console.error(`[SyncModule] Chunk ${i + 1} failed:`, error);
+        results.failed += Object.keys(chunkData).length;
+        results.success = false;
+      }
+    }
+
+    results.endTime = Date.now();
+    results.duration = results.endTime - results.startTime;
+
+    console.log(`[SyncModule] Chunked sync complete in ${results.duration}ms:`, results);
+
+    if (onSyncComplete) {
+      onSyncComplete(results);
+    }
+
+    return results;
+  }
+
+  /**
+   * Send a single chunk to server
+   */
+  async function sendChunk(chunkData, chunkIndex, totalChunks, timestamp) {
+    const requestBody = {
+      action: "syncChunk",
+      chunk: chunkData,
+      chunkIndex,
+      totalChunks,
+      timestamp,
+      user: "dashboard"
+    };
+
+    if (CONFIG.API_KEY) {
+      requestBody.apiKey = CONFIG.API_KEY;
+    }
+
+    const response = await fetch(CONFIG.API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(requestBody)
+    });
+
+    return response.json();
+  }
+
+  /**
+   * Resolve conflicts between local and server data (timestamp-based)
+   * @param {Object} localData - Local column data
+   * @param {Object} serverData - Server column data
+   * @returns {Object} - Resolved conflicts
+   */
+  function resolveConflicts(localData, serverData) {
+    const conflicts = [];
+    const resolved = {};
+
+    for (const [key, localColumn] of Object.entries(localData)) {
+      const serverColumn = serverData[key];
+
+      if (!serverColumn) {
+        // New local column, keep it
+        resolved[key] = localColumn;
+        continue;
+      }
+
+      const localTime = new Date(localColumn.updatedAt || 0).getTime();
+      const serverTime = new Date(serverColumn.updatedAt || 0).getTime();
+
+      if (Math.abs(localTime - serverTime) < 1000) {
+        // Within 1 second, consider them the same
+        resolved[key] = serverColumn;
+      } else if (serverTime > localTime) {
+        // Server wins - newer timestamp
+        conflicts.push({
+          key,
+          resolution: "server_wins",
+          localValue: localColumn,
+          serverValue: serverColumn,
+          reason: "Server data is newer"
+        });
+        resolved[key] = serverColumn;
+      } else {
+        // Local wins - newer timestamp
+        conflicts.push({
+          key,
+          resolution: "local_wins",
+          localValue: localColumn,
+          serverValue: serverColumn,
+          reason: "Local data is newer"
+        });
+        resolved[key] = localColumn;
+      }
+    }
+
+    // Include server-only columns
+    for (const [key, serverColumn] of Object.entries(serverData)) {
+      if (!localData[key]) {
+        resolved[key] = serverColumn;
+      }
+    }
+
+    return { resolved, conflicts };
+  }
+
+  /**
+   * Utility: Delay execution
+   */
+  function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
   // ===== Internal Functions =====
+
 
   /**
    * Process the sync queue
@@ -300,6 +481,9 @@ const SyncModule = (function () {
     fetchFromServer,
     getQueueStatus,
     clearQueue,
+    // WP-3: Chunked Sync
+    syncColumnsChunked,
+    resolveConflicts,
   };
 })();
 
