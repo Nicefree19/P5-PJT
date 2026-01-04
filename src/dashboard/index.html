@@ -44,7 +44,8 @@
     
     <!-- Phase 7: Modular CSS (WP-1 Refactoring) -->
     <link rel="stylesheet" href="./css/main.css">
-    
+    <link rel="stylesheet" href="./css/reports.css">
+
     <style>
         /* === Design System: High-Tech Fab Theme === */
         :root {
@@ -4628,6 +4629,10 @@
                 </div>
             </div>
         </div>
+        <!-- WP-4: Report Panel Button -->
+        <button class="btn" @click="openReportPanel()" style="background:#238636; border-color:#238636;">
+            📊 리포트
+        </button>
         <button class="btn" @click="toggleIssuePanel()" :style="openIssues.length > 0 ? 'border-color:#da3633; color:#f85149;' : ''">
             🚨 이슈 <span x-show="openIssues.length > 0" x-text="`(${openIssues.length})`" style="font-weight:bold;"></span>
         </button>
@@ -6396,6 +6401,321 @@
     </div>
 </div>
 
+<!-- WP-4: Report Panel -->
+<div class="report-panel-overlay" x-show="showReportPanel" x-cloak @click.self="showReportPanel = false"
+     role="dialog" aria-modal="true" aria-labelledby="report-panel-title">
+    <div class="report-panel">
+        <div class="report-panel-header">
+            <h2 id="report-panel-title">📊 고급 리포트</h2>
+            <button class="btn" @click="showReportPanel = false" aria-label="리포트 패널 닫기">✕</button>
+        </div>
+
+        <!-- Report Tabs -->
+        <div class="report-tabs" style="padding: 0 20px;">
+            <button class="report-tab" :class="{ 'active': reportTab === 'overview' }" @click="reportTab = 'overview'">
+                📈 개요
+            </button>
+            <button class="report-tab" :class="{ 'active': reportTab === 'zones' }" @click="reportTab = 'zones'">
+                🗂️ Zone별 현황
+            </button>
+            <button class="report-tab" :class="{ 'active': reportTab === 'issues' }" @click="reportTab = 'issues'">
+                🚨 이슈 통계
+            </button>
+            <button class="report-tab" :class="{ 'active': reportTab === 'trend' }" @click="reportTab = 'trend'">
+                📉 트렌드
+            </button>
+        </div>
+
+        <div class="report-panel-body">
+            <!-- Overview Tab -->
+            <template x-if="reportTab === 'overview'">
+                <div>
+                    <!-- Stats Grid -->
+                    <div class="stats-grid">
+                        <div class="stat-card success">
+                            <div class="stat-value" x-text="getOverallProgress() + '%'"></div>
+                            <div class="stat-label">전체 진행률</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" x-text="Object.keys(columns).length.toLocaleString()"></div>
+                            <div class="stat-label">총 기둥 수</div>
+                        </div>
+                        <div class="stat-card critical">
+                            <div class="stat-value" x-text="openIssues.length"></div>
+                            <div class="stat-label">미해결 이슈</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" x-text="Object.values(columns).filter(c => c.status?.code === 'complete').length"></div>
+                            <div class="stat-label">완료 기둥</div>
+                        </div>
+                    </div>
+
+                    <!-- Stage Progress -->
+                    <div class="chart-container">
+                        <div class="chart-title">
+                            <span class="chart-icon">🔧</span>
+                            공정별 진행 현황
+                        </div>
+                        <div class="progress-list">
+                            <template x-for="stage in stageConfigs" :key="stage.code">
+                                <div class="progress-item">
+                                    <div class="progress-item-label" x-text="stage.label"></div>
+                                    <div class="progress-item-bar">
+                                        <div class="progress-item-fill"
+                                             :style="`width: ${getStageProgress(stage.code)}%; background: ${stage.color};`"></div>
+                                    </div>
+                                    <div class="progress-item-value" x-text="getStageProgress(stage.code) + '%'"></div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Status Distribution Donut -->
+                    <div class="chart-container">
+                        <div class="chart-title">
+                            <span class="chart-icon">🍩</span>
+                            상태별 분포
+                        </div>
+                        <div class="donut-chart-container">
+                            <svg class="donut-chart-svg" viewBox="0 0 150 150" width="150" height="150"
+                                 x-html="getStatusDonutSVG()">
+                            </svg>
+                            <div class="donut-legend">
+                                <template x-for="(item, code) in statusCodes" :key="code">
+                                    <div class="donut-legend-item">
+                                        <div class="donut-legend-dot" :style="`background: ${item.color}`"></div>
+                                        <span x-text="item.label"></span>
+                                        <span class="donut-legend-value"
+                                              x-text="Object.values(columns).filter(c => c.status?.code === code).length"></span>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Zones Tab -->
+            <template x-if="reportTab === 'zones'">
+                <div>
+                    <div class="chart-container">
+                        <div class="chart-title">
+                            <span class="chart-icon">🗂️</span>
+                            Zone별 진행률
+                        </div>
+                        <div class="progress-list">
+                            <template x-for="zone in zones" :key="zone.id">
+                                <div class="progress-item">
+                                    <div class="progress-item-label" x-text="zone.name"></div>
+                                    <div class="progress-item-bar">
+                                        <div class="progress-item-fill"
+                                             :style="`width: ${getZoneProgress(zone)}%; background: ${zone.color || '#238636'};`"></div>
+                                    </div>
+                                    <div class="progress-item-value" x-text="getZoneProgress(zone) + '%'"></div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Zone Detail Table -->
+                    <div class="chart-container">
+                        <div class="chart-title">
+                            <span class="chart-icon">📋</span>
+                            Zone별 상세 현황
+                        </div>
+                        <table class="issue-table">
+                            <thead>
+                                <tr>
+                                    <th>Zone</th>
+                                    <th>전체</th>
+                                    <th>완료</th>
+                                    <th>진행중</th>
+                                    <th>미착수</th>
+                                    <th>진행률</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template x-for="zone in zones" :key="zone.id">
+                                    <tr>
+                                        <td x-text="zone.name"></td>
+                                        <td x-text="getZoneColumnCount(zone)"></td>
+                                        <td x-text="getZoneStatusCount(zone, 'complete')"></td>
+                                        <td x-text="getZoneStatusCount(zone, 'in_progress')"></td>
+                                        <td x-text="getZoneStatusCount(zone, 'not_started')"></td>
+                                        <td><span class="severity-badge low" x-text="getZoneProgress(zone) + '%'"></span></td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Issues Tab -->
+            <template x-if="reportTab === 'issues'">
+                <div>
+                    <!-- Issue Stats -->
+                    <div class="stats-grid">
+                        <div class="stat-card critical">
+                            <div class="stat-value" x-text="issues.filter(i => i.severity === 'critical' && i.status === 'open').length"></div>
+                            <div class="stat-label">Critical 이슈</div>
+                        </div>
+                        <div class="stat-card high">
+                            <div class="stat-value" x-text="issues.filter(i => i.severity === 'high' && i.status === 'open').length"></div>
+                            <div class="stat-label">High 이슈</div>
+                        </div>
+                        <div class="stat-card medium">
+                            <div class="stat-value" x-text="issues.filter(i => i.severity === 'medium' && i.status === 'open').length"></div>
+                            <div class="stat-label">Medium 이슈</div>
+                        </div>
+                        <div class="stat-card success">
+                            <div class="stat-value" x-text="issues.filter(i => i.status === 'resolved').length"></div>
+                            <div class="stat-label">해결됨</div>
+                        </div>
+                    </div>
+
+                    <!-- Issue Severity Donut -->
+                    <div class="chart-container">
+                        <div class="chart-title">
+                            <span class="chart-icon">🎯</span>
+                            심각도별 이슈 분포
+                        </div>
+                        <div class="donut-chart-container">
+                            <svg class="donut-chart-svg" viewBox="0 0 150 150" width="150" height="150"
+                                 x-html="getIssueSeverityDonutSVG()">
+                            </svg>
+                            <div class="donut-legend">
+                                <div class="donut-legend-item">
+                                    <div class="donut-legend-dot" style="background: #f85149;"></div>
+                                    <span>Critical</span>
+                                    <span class="donut-legend-value" x-text="issues.filter(i => i.severity === 'critical').length"></span>
+                                </div>
+                                <div class="donut-legend-item">
+                                    <div class="donut-legend-dot" style="background: #f97316;"></div>
+                                    <span>High</span>
+                                    <span class="donut-legend-value" x-text="issues.filter(i => i.severity === 'high').length"></span>
+                                </div>
+                                <div class="donut-legend-item">
+                                    <div class="donut-legend-dot" style="background: #d29922;"></div>
+                                    <span>Medium</span>
+                                    <span class="donut-legend-value" x-text="issues.filter(i => i.severity === 'medium').length"></span>
+                                </div>
+                                <div class="donut-legend-item">
+                                    <div class="donut-legend-dot" style="background: #238636;"></div>
+                                    <span>Low</span>
+                                    <span class="donut-legend-value" x-text="issues.filter(i => i.severity === 'low').length"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Issues -->
+                    <div class="chart-container">
+                        <div class="chart-title">
+                            <span class="chart-icon">📋</span>
+                            최근 이슈 목록
+                        </div>
+                        <table class="issue-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>제목</th>
+                                    <th>심각도</th>
+                                    <th>상태</th>
+                                    <th>보고일</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template x-for="issue in issues.slice(0, 10)" :key="issue.id">
+                                    <tr>
+                                        <td x-text="issue.id"></td>
+                                        <td x-text="issue.title.substring(0, 30) + (issue.title.length > 30 ? '...' : '')"></td>
+                                        <td>
+                                            <span class="severity-badge" :class="issue.severity" x-text="issue.severity"></span>
+                                        </td>
+                                        <td x-text="issue.status === 'open' ? '미해결' : '해결됨'"></td>
+                                        <td x-text="issue.reportedAt ? new Date(issue.reportedAt).toLocaleDateString('ko-KR') : '-'"></td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Trend Tab -->
+            <template x-if="reportTab === 'trend'">
+                <div>
+                    <div class="chart-container">
+                        <div class="chart-title">
+                            <span class="chart-icon">📉</span>
+                            일별 작업 현황 (최근 14일)
+                        </div>
+                        <div class="trend-chart-container" style="height: 200px; position: relative;">
+                            <svg class="chart-svg" viewBox="0 0 600 180" preserveAspectRatio="xMidYMid meet" style="width: 100%; height: 100%;">
+                                <!-- Grid lines -->
+                                <line x1="40" y1="20" x2="580" y2="20" class="chart-grid-line"/>
+                                <line x1="40" y1="60" x2="580" y2="60" class="chart-grid-line"/>
+                                <line x1="40" y1="100" x2="580" y2="100" class="chart-grid-line"/>
+                                <line x1="40" y1="140" x2="580" y2="140" class="chart-grid-line"/>
+
+                                <!-- Trend Line - simplified for Vite compatibility -->
+                                <g x-show="getTrendData().length > 0">
+                                    <path :d="getTrendLinePath()" class="chart-area" fill="#238636"/>
+                                    <path :d="getTrendLinePath(false)" class="chart-line" stroke="#238636" fill="none"/>
+                                </g>
+                            </svg>
+                            <!-- Trend data labels rendered separately -->
+                            <div style="display:flex; justify-content:space-between; padding: 0 40px; margin-top: 8px;">
+                                <template x-for="(point, idx) in getTrendData()" :key="'label-' + idx">
+                                    <span x-show="idx % 2 === 0 || idx === getTrendData().length - 1"
+                                          class="chart-axis-label" style="font-size: 10px; color: var(--text-muted);"
+                                          x-text="point.label"></span>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- History Summary -->
+                    <div class="chart-container">
+                        <div class="chart-title">
+                            <span class="chart-icon">📜</span>
+                            최근 활동 요약
+                        </div>
+                        <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr);">
+                            <div class="stat-card">
+                                <div class="stat-value" x-text="getTrendData().reduce((sum, d) => sum + d.changes, 0)"></div>
+                                <div class="stat-label">총 변경 (14일)</div>
+                            </div>
+                            <div class="stat-card success">
+                                <div class="stat-value" x-text="getTrendData().reduce((sum, d) => sum + d.completions, 0)"></div>
+                                <div class="stat-label">완료 건수</div>
+                            </div>
+                            <div class="stat-card critical">
+                                <div class="stat-value" x-text="getTrendData().reduce((sum, d) => sum + d.issues, 0)"></div>
+                                <div class="stat-label">신규 이슈</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <!-- Report Actions -->
+        <div class="report-actions">
+            <button class="report-btn" @click="exportReportToExcel()">
+                📗 Excel 내보내기
+            </button>
+            <button class="report-btn" @click="generatePDFReport('detailed')">
+                📕 PDF 보고서
+            </button>
+            <button class="report-btn primary" @click="showReportPanel = false">
+                닫기
+            </button>
+        </div>
+    </div>
+</div>
+
 <!-- WP-1: FAB (Floating Action Button) -->
 <div class="fab-container" x-data="{ fabOpen: false }" @click.outside="fabOpen = false">
     <!-- FAB Action Buttons -->
@@ -6735,6 +7055,10 @@ function dashboard() {
         bulkEditOpen: false,
         showAdminPanel: false,
         adminTab: 'zones',
+        // WP-4: Report Panel State
+        showReportPanel: false,
+        reportTab: 'overview',
+        reportData: null,
         showZoneEditor: false,
         editingZone: null,
         zoneForm: {
@@ -8383,6 +8707,277 @@ function dashboard() {
             }
 
             return totalCount > 0 ? Math.round((totalInstalled / totalCount) * 100) : 0;
+        },
+
+        // === WP-4: Report Panel Functions ===
+        openReportPanel() {
+            this.showReportPanel = true;
+            this.reportTab = 'overview';
+        },
+
+        getStatusDonutData() {
+            const statusCounts = {};
+            const statusColors = {
+                'not_started': '#6e7681',
+                'in_progress': '#3b82f6',
+                'complete': '#238636',
+                'delayed': '#f85149',
+                'installed': '#22c55e'
+            };
+
+            for (const uid in this.columns) {
+                const col = this.columns[uid];
+                const status = col?.status?.code || 'not_started';
+                statusCounts[status] = (statusCounts[status] || 0) + 1;
+            }
+
+            const total = Object.values(statusCounts).reduce((a, b) => a + b, 0);
+            if (total === 0) return [];
+
+            const segments = [];
+            let currentAngle = 0;
+            const cx = 75, cy = 75, outerR = 60, innerR = 40;
+
+            for (const [status, count] of Object.entries(statusCounts)) {
+                if (count === 0) continue;
+                const percentage = count / total;
+                const angle = percentage * 360;
+                const startAngle = currentAngle;
+                const endAngle = currentAngle + angle;
+                const startRad = (startAngle - 90) * Math.PI / 180;
+                const endRad = (endAngle - 90) * Math.PI / 180;
+                const x1 = cx + outerR * Math.cos(startRad);
+                const y1 = cy + outerR * Math.sin(startRad);
+                const x2 = cx + outerR * Math.cos(endRad);
+                const y2 = cy + outerR * Math.sin(endRad);
+                const x3 = cx + innerR * Math.cos(endRad);
+                const y3 = cy + innerR * Math.sin(endRad);
+                const x4 = cx + innerR * Math.cos(startRad);
+                const y4 = cy + innerR * Math.sin(startRad);
+                const largeArc = angle > 180 ? 1 : 0;
+                const path = `M ${x1} ${y1} A ${outerR} ${outerR} 0 ${largeArc} 1 ${x2} ${y2} L ${x3} ${y3} A ${innerR} ${innerR} 0 ${largeArc} 0 ${x4} ${y4} Z`;
+                segments.push({ path, color: statusColors[status] || '#888', status, count, percentage: Math.round(percentage * 100) });
+                currentAngle = endAngle;
+            }
+            return segments;
+        },
+
+        getStatusDonutSVG() {
+            const segments = this.getStatusDonutData();
+            const progress = this.getTotalProgress();
+            let svg = segments.map(s => `<path class="donut-segment" d="${s.path}" fill="${s.color}"/>`).join('');
+            svg += `<text x="75" y="72" text-anchor="middle" class="donut-center-text">${progress}%</text>`;
+            svg += `<text x="75" y="88" text-anchor="middle" class="donut-center-label">완료율</text>`;
+            return svg;
+        },
+
+        getIssueSeverityDonutData() {
+            const severityCounts = { critical: 0, high: 0, medium: 0, low: 0 };
+            const severityColors = { critical: '#f85149', high: '#f97316', medium: '#d29922', low: '#238636' };
+
+            for (const issue of this.issues) {
+                if (issue.severity && severityCounts.hasOwnProperty(issue.severity)) {
+                    severityCounts[issue.severity]++;
+                }
+            }
+
+            const total = Object.values(severityCounts).reduce((a, b) => a + b, 0);
+            if (total === 0) return [];
+
+            const segments = [];
+            let currentAngle = 0;
+            const cx = 75, cy = 75, outerR = 60, innerR = 40;
+
+            for (const [severity, count] of Object.entries(severityCounts)) {
+                if (count === 0) continue;
+                const percentage = count / total;
+                const angle = percentage * 360;
+                const startAngle = currentAngle;
+                const endAngle = currentAngle + angle;
+                const startRad = (startAngle - 90) * Math.PI / 180;
+                const endRad = (endAngle - 90) * Math.PI / 180;
+                const x1 = cx + outerR * Math.cos(startRad);
+                const y1 = cy + outerR * Math.sin(startRad);
+                const x2 = cx + outerR * Math.cos(endRad);
+                const y2 = cy + outerR * Math.sin(endRad);
+                const x3 = cx + innerR * Math.cos(endRad);
+                const y3 = cy + innerR * Math.sin(endRad);
+                const x4 = cx + innerR * Math.cos(startRad);
+                const y4 = cy + innerR * Math.sin(startRad);
+                const largeArc = angle > 180 ? 1 : 0;
+                const path = `M ${x1} ${y1} A ${outerR} ${outerR} 0 ${largeArc} 1 ${x2} ${y2} L ${x3} ${y3} A ${innerR} ${innerR} 0 ${largeArc} 0 ${x4} ${y4} Z`;
+                segments.push({ path, color: severityColors[severity], severity, count, percentage: Math.round(percentage * 100) });
+                currentAngle = endAngle;
+            }
+            return segments;
+        },
+
+        getIssueSeverityDonutSVG() {
+            const segments = this.getIssueSeverityDonutData();
+            const openCount = this.openIssues.length;
+            let svg = segments.map(s => `<path class="donut-segment" d="${s.path}" fill="${s.color}"/>`).join('');
+            svg += `<text x="75" y="72" text-anchor="middle" class="donut-center-text">${openCount}</text>`;
+            svg += `<text x="75" y="88" text-anchor="middle" class="donut-center-label">미해결</text>`;
+            return svg;
+        },
+
+        getTrendData() {
+            const days = 14;
+            const trend = [];
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            for (let i = days - 1; i >= 0; i--) {
+                const date = new Date(today);
+                date.setDate(date.getDate() - i);
+                const dateStr = date.toISOString().split('T')[0];
+                const label = `${date.getMonth() + 1}/${date.getDate()}`;
+
+                let changes = 0, completions = 0, issues = 0;
+
+                // Count history events for this day
+                if (this.history && Array.isArray(this.history)) {
+                    for (const event of this.history) {
+                        const eventDate = new Date(event.timestamp);
+                        eventDate.setHours(0, 0, 0, 0);
+                        if (eventDate.getTime() === date.getTime()) {
+                            changes++;
+                            if (event.type === 'status_change' && (event.title?.includes('완료') || event.title?.includes('complete'))) {
+                                completions++;
+                            }
+                            if (event.type === 'issue_create') {
+                                issues++;
+                            }
+                        }
+                    }
+                }
+
+                trend.push({ date: dateStr, label, changes, completions, issues });
+            }
+
+            return trend;
+        },
+
+        getTrendLinePath(isArea = true) {
+            const data = this.getTrendData();
+            if (data.length === 0) return '';
+
+            const maxChanges = Math.max(...data.map(d => d.changes), 1);
+            const chartWidth = 540;
+            const chartHeight = 120;
+            const baseY = 140;
+            const minY = 20;
+
+            const points = data.map((d, i) => {
+                const x = 40 + (i * (chartWidth / (data.length - 1 || 1)));
+                const y = baseY - ((d.changes / maxChanges) * chartHeight);
+                return { x, y: Math.max(y, minY) };
+            });
+
+            if (points.length === 0) return '';
+
+            let path = `M ${points[0].x} ${points[0].y}`;
+            for (let i = 1; i < points.length; i++) {
+                path += ` L ${points[i].x} ${points[i].y}`;
+            }
+
+            if (isArea) {
+                // Close the area path
+                path += ` L ${points[points.length - 1].x} ${baseY} L ${points[0].x} ${baseY} Z`;
+            }
+
+            return path;
+        },
+
+        getZoneColumnCount(zone) {
+            let count = 0;
+            const zoneId = zone?.id || zone;
+
+            for (const uid in this.columns) {
+                const col = this.columns[uid];
+                if (col?.location?.zoneId === zoneId) {
+                    count++;
+                }
+            }
+            return count;
+        },
+
+        getZoneStatusCount(zone, statusCode) {
+            let count = 0;
+            const zoneId = zone?.id || zone;
+
+            for (const uid in this.columns) {
+                const col = this.columns[uid];
+                if (col?.location?.zoneId === zoneId && col?.status?.code === statusCode) {
+                    count++;
+                }
+            }
+            return count;
+        },
+
+        exportReportToExcel() {
+            // Generate report data
+            const reportData = {
+                generatedAt: new Date().toISOString(),
+                overallProgress: this.getTotalProgress(),
+                totalColumns: Object.keys(this.columns).length,
+                completedColumns: Object.values(this.columns).filter(c => c.status?.code === 'complete').length,
+                inProgressColumns: Object.values(this.columns).filter(c => c.status?.code === 'in_progress').length,
+                notStartedColumns: Object.values(this.columns).filter(c => c.status?.code === 'not_started').length,
+                openIssues: this.openIssues.length,
+                criticalIssues: this.issues.filter(i => i.severity === 'critical' && i.status === 'open').length
+            };
+
+            // Generate zone progress data
+            const zoneData = this.zones.map(zone => ({
+                name: zone.name,
+                total: this.getZoneColumnCount(zone),
+                complete: this.getZoneStatusCount(zone, 'complete'),
+                inProgress: this.getZoneStatusCount(zone, 'in_progress'),
+                notStarted: this.getZoneStatusCount(zone, 'not_started'),
+                progress: this.getZoneProgress(zone) + '%'
+            }));
+
+            // Generate stage progress data
+            const stageData = this.stageConfigs.map(stage => ({
+                stage: stage.label,
+                progress: this.getStageProgress(stage.code) + '%'
+            }));
+
+            // Build CSV content
+            let csv = 'P5 복합동 진행 현황 보고서\n';
+            csv += `생성일: ${new Date().toLocaleDateString('ko-KR')}\n\n`;
+
+            csv += '=== 전체 요약 ===\n';
+            csv += `전체 진행률,${reportData.overallProgress}%\n`;
+            csv += `총 기둥 수,${reportData.totalColumns}\n`;
+            csv += `완료,${reportData.completedColumns}\n`;
+            csv += `진행중,${reportData.inProgressColumns}\n`;
+            csv += `미착수,${reportData.notStartedColumns}\n`;
+            csv += `미해결 이슈,${reportData.openIssues}\n`;
+            csv += `Critical 이슈,${reportData.criticalIssues}\n\n`;
+
+            csv += '=== Zone별 현황 ===\n';
+            csv += 'Zone,전체,완료,진행중,미착수,진행률\n';
+            for (const z of zoneData) {
+                csv += `${z.name},${z.total},${z.complete},${z.inProgress},${z.notStarted},${z.progress}\n`;
+            }
+            csv += '\n';
+
+            csv += '=== 공정별 진행률 ===\n';
+            csv += '공정,진행률\n';
+            for (const s of stageData) {
+                csv += `${s.stage},${s.progress}\n`;
+            }
+
+            // Download CSV file
+            const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `P5_Report_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+
+            this.showToast('보고서가 다운로드되었습니다', 'success');
         },
 
         // === Phase 6: Workflow Filter Functions ===
