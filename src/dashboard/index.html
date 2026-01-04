@@ -6813,6 +6813,7 @@ function dashboard() {
         
         // Issue State
         issues: [],
+        issueIndexMap: null, // Performance: Map<cellUID, Issue[]> for O(1) lookup
         issuePanelOpen: false,
         issueFilter: 'all',
         selectedIssue: null,
@@ -7036,18 +7037,53 @@ function dashboard() {
             return this.openIssues.filter(i => i.overlay?.show !== false);
         },
         
-        // WP-2: Issue Pin Helper Methods
+        // WP-2: Issue Pin Helper Methods (Optimized with O(1) Map lookup)
         
         /**
-         * Check if a cell has any open issues
+         * Build issue index map for O(1) cell lookup
+         * Call this when issues array changes
          */
-        hasIssue(cell) {
-            if (!cell || cell.isHeader) return false;
-            return this.openIssues.some(issue => this.isCellInIssueRange(cell, issue));
+        buildIssueIndex() {
+            const map = new Map();
+            
+            for (const issue of this.openIssues) {
+                if (!issue.startColumn || !issue.endColumn) continue;
+                
+                const startRow = this.rowLabels.indexOf(issue.startRow);
+                const endRow = this.rowLabels.indexOf(issue.endRow);
+                if (startRow < 0 || endRow < 0) continue;
+                
+                // Populate map with all affected cell UIDs
+                for (let r = startRow; r <= endRow; r++) {
+                    const rowLabel = this.rowLabels[r];
+                    if (!rowLabel) continue;
+                    
+                    for (let c = issue.startColumn; c <= issue.endColumn; c++) {
+                        const uid = `${rowLabel}-X${c}`;
+                        if (!map.has(uid)) {
+                            map.set(uid, []);
+                        }
+                        map.get(uid).push(issue);
+                    }
+                }
+            }
+            
+            this.issueIndexMap = map;
+            console.log(`[Performance] Issue index built: ${map.size} cells indexed`);
         },
         
         /**
-         * Check if cell is within issue's affected range
+         * Check if a cell has any open issues - O(1)
+         */
+        hasIssue(cell) {
+            if (!cell || cell.isHeader) return false;
+            if (!this.issueIndexMap) this.buildIssueIndex();
+            const uid = `${cell.row}-X${cell.col}`;
+            return this.issueIndexMap.has(uid);
+        },
+        
+        /**
+         * Check if cell is within issue's affected range (legacy fallback)
          */
         isCellInIssueRange(cell, issue) {
             if (!issue.startColumn || !issue.endColumn) return false;
@@ -7064,19 +7100,24 @@ function dashboard() {
         },
         
         /**
-         * Get the first issue affecting a cell
+         * Get the first issue affecting a cell - O(1)
          */
         getIssueForCell(cell) {
             if (!cell || cell.isHeader) return null;
-            return this.openIssues.find(issue => this.isCellInIssueRange(cell, issue));
+            if (!this.issueIndexMap) this.buildIssueIndex();
+            const uid = `${cell.row}-X${cell.col}`;
+            const issues = this.issueIndexMap.get(uid);
+            return issues ? issues[0] : null;
         },
         
         /**
-         * Get all issues affecting a cell
+         * Get all issues affecting a cell - O(1)
          */
         getIssuesForCell(cell) {
             if (!cell || cell.isHeader) return [];
-            return this.openIssues.filter(issue => this.isCellInIssueRange(cell, issue));
+            if (!this.issueIndexMap) this.buildIssueIndex();
+            const uid = `${cell.row}-X${cell.col}`;
+            return this.issueIndexMap.get(uid) || [];
         },
         
         /**
@@ -7336,7 +7377,30 @@ function dashboard() {
         // === Lifecycle ===
         init() {
             const data = P5Store.load();
-            this.zones = data.zones;
+            
+            // ★ Floor Plan Fix: MGT_CONFIG zones 적용 (P5 복합동 실제 규격)
+            // LocalStorage에 저장된 테스트 데이터(1-69열)가 아닌 
+            // COLUMN_CONFIG(3-329열, 327 cols)을 적용
+            if (typeof MGT_CONFIG !== 'undefined' && MGT_CONFIG && MGT_CONFIG.zones) {
+                // MGT_CONFIG zones를 Alpine.js 형식으로 변환
+                this.zones = MGT_CONFIG.zones.map(zone => ({
+                    id: zone.id,
+                    name: zone.name,
+                    displayName: zone.name,
+                    description: '',
+                    startColumn: zone.startCol,
+                    endColumn: zone.endCol,
+                    startRow: 0,
+                    endRow: this.rowLabels.length - 1,
+                    color: zone.id === 'zone_a' ? '#238636' : 
+                           zone.id === 'zone_b' ? '#1f6feb' : '#d29922',
+                    contractor: '', supervisor: '', targetDate: ''
+                }));
+                console.log('[FloorPlan Fix] Applied COLUMN_CONFIG zones:', this.zones.length, 'zones');
+            } else {
+                this.zones = data.zones || [];
+            }
+            
             this.columns = data.columns || {};
             this.statusCodes = data.statusCodes;
 
@@ -9442,20 +9506,31 @@ function dashboard() {
 
         updateTouchDragSelect(event) {
             if (!this.touchDragActive || event.touches.length > 1) return;
+            
+            // Performance: Throttle with requestAnimationFrame
+            if (this._touchDragRAFPending) return;
+            this._touchDragRAFPending = true;
+            
+            requestAnimationFrame(() => {
+                this._touchDragRAFPending = false;
+                if (!this.touchDragActive) return;
 
-            const touch = event.touches[0];
-            this.touchDragEnd = { x: touch.clientX, y: touch.clientY };
+                const touch = event.touches[0];
+                if (!touch) return;
+                
+                this.touchDragEnd = { x: touch.clientX, y: touch.clientY };
 
-            // Calculate selected cell count (approximation based on drag rect size)
-            const cellWidth = this.virtualScroll.enabled ? this.virtualScroll.cellWidth : 28;
-            const cellHeight = this.virtualScroll.enabled ? this.virtualScroll.cellHeight : 30;
+                // Calculate selected cell count (approximation based on drag rect size)
+                const cellWidth = this.virtualScroll.enabled ? this.virtualScroll.cellWidth : 28;
+                const cellHeight = this.virtualScroll.enabled ? this.virtualScroll.cellHeight : 30;
 
-            const width = Math.abs(this.touchDragEnd.x - this.touchDragStart.x);
-            const height = Math.abs(this.touchDragEnd.y - this.touchDragStart.y);
+                const width = Math.abs(this.touchDragEnd.x - this.touchDragStart.x);
+                const height = Math.abs(this.touchDragEnd.y - this.touchDragStart.y);
 
-            const colCount = Math.max(1, Math.floor(width / cellWidth));
-            const rowCount = Math.max(1, Math.floor(height / cellHeight));
-            this.touchDragCellCount = colCount * rowCount;
+                const colCount = Math.max(1, Math.floor(width / cellWidth));
+                const rowCount = Math.max(1, Math.floor(height / cellHeight));
+                this.touchDragCellCount = colCount * rowCount;
+            });
         },
 
         endTouchDragSelect(event) {

@@ -69,7 +69,9 @@
       "Bash(powershell -Command \"Get-ChildItem ''C:\\\\Users\\\\user\\\\Downloads\\\\*P5*.pdf'' | Sort-Object LastWriteTime -Descending | Select-Object -First 3 Name, LastWriteTime\")",
       "Bash(git reset:*)",
       "mcp__playwright-stealth__playwright_get",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "mcp__playwright-stealth__playwright_fill",
+      "Bash(gh run:*)"
     ],
     "deny": [],
     "ask": []
