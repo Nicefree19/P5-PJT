@@ -7,8 +7,6 @@ on:
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
 
 # 동시 배포 방지
 concurrency:
@@ -16,8 +14,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # 빌드 작업
-  build:
+  deploy-gh-pages:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -42,28 +39,15 @@ jobs:
           echo "📦 Build output:"
           ls -la dist/
           echo ""
-          echo "📊 Bundle sizes (compressed):"
-          ls -la dist/*.gz dist/*.br 2>/dev/null || true
+          echo "📊 Bundle sizes:"
+          du -sh dist/*
           echo ""
-          echo "📁 Assets:"
-          ls -la dist/assets/ 2>/dev/null || true
+          echo "📁 Compressed files:"
+          find dist -name "*.gz" -o -name "*.br" | head -10
 
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./dist
-
-  # 배포 작업
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-
-    # GitHub Pages 환경 설정
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
-    steps:
       - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          force_orphan: true
