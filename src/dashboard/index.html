@@ -5348,10 +5348,10 @@
              x-ref="gridScrollView"
              x-init="$nextTick(() => initVirtualScroll($refs.gridScrollView))"
              @scroll.passive="handleVirtualScroll($event)"
-             @mousedown="startDragSelect($event)"
-             @mousemove="updateDragSelect($event)"
-             @mouseup="endDragSelect()"
-             @mouseleave="endDragSelect()"
+             @mousedown.passive="startDragSelect($event)"
+             @mousemove.passive="updateDragSelect($event)"
+             @mouseup.passive="endDragSelect()"
+             @mouseleave.passive="endDragSelect()"
              @touchstart.passive="startTouchDragSelect($event)"
              @touchmove.passive="updateTouchDragSelect($event)"
              @touchend="endTouchDragSelect($event)"
@@ -5363,6 +5363,7 @@
                  :style="`width: ${totalGridWidth}px; height: ${totalGridHeight}px;`"></div>
 
             <div class="grid-container"
+                 :class="{ 'is-scrolling': virtualScroll.isScrolling }"
                  :style="virtualScroll.enabled
                      ? `--cols: ${visibleColCount}; --rows: ${visibleRowCount}; transform: translate(${virtualScroll.visibleColStart * virtualScroll.cellWidth}px, ${virtualScroll.visibleRowStart * virtualScroll.cellHeight}px);`
                      : `--cols: ${gridConfig.cols}; --rows: ${gridConfig.rows}`"
@@ -7054,7 +7055,8 @@ function dashboard() {
             visibleRowEnd: 20,
             isScrolling: false,
             scrollTimeout: null,
-            _resizeTimeout: null  // WP-5: Resize debounce 타이머
+            _resizeTimeout: null,  // WP-5: Resize debounce 타이머
+            _scrollHideTimeout: null  // WP-5: Scroll indicator hide 타이머
         },
         
         // Data
@@ -7225,6 +7227,7 @@ function dashboard() {
         // Issue State
         issues: [],
         issueIndexMap: null, // Performance: Map<cellUID, Issue[]> for O(1) lookup
+        _severityClassCache: null, // WP-5 Phase 2: Memoized severity classes
         issuePanelOpen: false,
         issueFilter: 'all',
         selectedIssue: null,
@@ -7481,6 +7484,7 @@ function dashboard() {
             }
             
             this.issueIndexMap = map;
+            this.invalidateSeverityCache();  // WP-5 Phase 2: Clear memoization cache
             console.log(`[Performance] Issue index built: ${map.size} cells indexed`);
         },
         
@@ -7532,20 +7536,49 @@ function dashboard() {
             return this.issueIndexMap.get(uid) || [];
         },
         
+        // WP-5 Phase 2: Static severity class mapping (avoid object creation per call)
+        _SEVERITY_CLASSES: {
+            'critical': 'issue-pin-critical',
+            'high': 'issue-pin-high',
+            'medium': 'issue-pin-medium',
+            'low': 'issue-pin-low'
+        },
+
         /**
          * Get CSS class based on issue severity
+         * WP-5 Phase 2: Uses memoization cache for O(1) repeated lookups
          */
         getIssueSeverityClass(cell) {
+            if (!cell || cell.isHeader) return '';
+
+            const cacheKey = `${cell.row}-X${cell.col}`;
+
+            // Check cache first
+            if (this._severityClassCache && this._severityClassCache.has(cacheKey)) {
+                return this._severityClassCache.get(cacheKey);
+            }
+
+            // Compute and cache
             const issue = this.getIssueForCell(cell);
-            if (!issue) return '';
-            
-            const severityClasses = {
-                'critical': 'issue-pin-critical',
-                'high': 'issue-pin-high',
-                'medium': 'issue-pin-medium',
-                'low': 'issue-pin-low'
-            };
-            return severityClasses[issue.severity] || 'issue-pin-medium';
+            const className = issue
+                ? (this._SEVERITY_CLASSES[issue.severity] || 'issue-pin-medium')
+                : '';
+
+            // Initialize cache if needed
+            if (!this._severityClassCache) {
+                this._severityClassCache = new Map();
+            }
+            this._severityClassCache.set(cacheKey, className);
+
+            return className;
+        },
+
+        /**
+         * WP-5 Phase 2: Invalidate severity class cache
+         * Call this when issues change
+         */
+        invalidateSeverityCache() {
+            this._severityClassCache = null;
         },
         
         /**
@@ -7717,27 +7750,35 @@ function dashboard() {
             return Math.min(vs.visibleRowEnd, this.gridConfig.rows) - vs.visibleRowStart;
         },
 
-        // Handle scroll event with throttling
+        // Handle scroll event with throttling (WP-5 Phase 2: Optimized RAF)
         handleVirtualScroll(event) {
             const vs = this.virtualScroll;
             const container = event.target;
 
+            // Batch read operations first (avoid layout thrashing)
             vs.scrollLeft = container.scrollLeft;
             vs.scrollTop = container.scrollTop;
             vs.isScrolling = true;
 
-            // Throttled update
+            // Cancel previous scroll hide timeout
+            if (vs._scrollHideTimeout) {
+                clearTimeout(vs._scrollHideTimeout);
+                vs._scrollHideTimeout = null;
+            }
+
+            // Throttled update using RAF coalescing
             if (!vs.scrollTimeout) {
                 vs.scrollTimeout = requestAnimationFrame(() => {
                     this.updateVisibleRange();
                     vs.scrollTimeout = null;
-
-                    // Hide scroll indicator after delay
-                    setTimeout(() => {
-                        vs.isScrolling = false;
-                    }, 500);
                 });
             }
+
+            // Debounced scroll indicator hide (separate from RAF)
+            vs._scrollHideTimeout = setTimeout(() => {
+                vs.isScrolling = false;
+                vs._scrollHideTimeout = null;
+            }, 500);
         },
 
         // Initialize virtual scrolling
