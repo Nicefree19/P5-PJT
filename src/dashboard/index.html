@@ -715,6 +715,35 @@
         .st-hold_design { background: var(--status-design); border: 2px solid #fff; }
         .st-hold_material { background: var(--status-shipping); }
 
+        /* WP-2: Issue Pin Styles */
+        .issue-pin {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            font-size: 10px;
+            z-index: 10;
+            animation: issue-pulse 2s infinite;
+            pointer-events: none;
+        }
+        
+        .issue-pin-critical { filter: hue-rotate(0deg) drop-shadow(0 0 4px #ff0000); }
+        .issue-pin-high { filter: hue-rotate(30deg) drop-shadow(0 0 3px #ff6600); }
+        .issue-pin-medium { filter: hue-rotate(60deg) drop-shadow(0 0 2px #ffaa00); }
+        .issue-pin-low { filter: hue-rotate(120deg) drop-shadow(0 0 2px #00cc00); }
+        
+        @keyframes issue-pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.8; }
+        }
+        
+        .grid-cell.has-issue {
+            box-shadow: inset 0 0 0 1px rgba(255, 0, 0, 0.4);
+        }
+        
+        .grid-cell.has-issue-critical {
+            box-shadow: inset 0 0 0 2px rgba(255, 0, 0, 0.6);
+        }
+
         /* Locked indicator */
         .dot.locked::after {
             content: '🔒';
@@ -2496,6 +2525,160 @@
             20% { opacity: 1; transform: translateX(-50%) translateY(0); }
             80% { opacity: 1; }
             100% { opacity: 0; }
+        }
+
+        /* === WP-1: FAB (Floating Action Button) === */
+        .fab-container {
+            position: fixed;
+            right: 20px;
+            bottom: 80px;
+            z-index: 90;
+            display: flex;
+            flex-direction: column-reverse;
+            align-items: center;
+            gap: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .fab-container {
+                bottom: 130px; /* Above mobile nav */
+            }
+        }
+
+        .fab-main {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1f6feb 0%, #238636 100%);
+            border: none;
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(31, 111, 235, 0.4);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .fab-main:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(31, 111, 235, 0.5);
+        }
+
+        .fab-main:active {
+            transform: scale(0.95);
+        }
+
+        .fab-main.open {
+            transform: rotate(45deg);
+            background: linear-gradient(135deg, #da3633 0%, #d29922 100%);
+        }
+
+        .fab-actions {
+            display: flex;
+            flex-direction: column-reverse;
+            gap: 10px;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+        }
+
+        .fab-actions.open {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+        }
+
+        .fab-action {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .fab-action-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            font-size: 18px;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .fab-action-btn:hover {
+            background: var(--status-active);
+            border-color: var(--status-active);
+            transform: scale(1.1);
+        }
+
+        .fab-action-btn.success:hover {
+            background: var(--status-ok);
+            border-color: var(--status-ok);
+        }
+
+        .fab-action-btn.warning:hover {
+            background: var(--status-design);
+            border-color: var(--status-design);
+        }
+
+        .fab-action-label {
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        /* === WP-1: Touch Drag Selection Overlay === */
+        .touch-drag-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        .touch-drag-rect {
+            position: absolute;
+            background: rgba(31, 111, 235, 0.2);
+            border: 2px dashed #1f6feb;
+            border-radius: 4px;
+            pointer-events: none;
+        }
+
+        .touch-select-hint {
+            position: fixed;
+            bottom: 140px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(31, 111, 235, 0.9);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 13px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            z-index: 60;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .touch-select-hint {
+                bottom: 190px;
+            }
         }
 
         /* 모바일 하단 네비게이션 바 */
@@ -5101,7 +5284,11 @@
              @mousedown="startDragSelect($event)"
              @mousemove="updateDragSelect($event)"
              @mouseup="endDragSelect()"
-             @mouseleave="endDragSelect()">
+             @mouseleave="endDragSelect()"
+             @touchstart.passive="startTouchDragSelect($event)"
+             @touchmove.passive="updateTouchDragSelect($event)"
+             @touchend="endTouchDragSelect($event)"
+             @touchcancel="endTouchDragSelect($event)">
 
             <!-- Virtual Scroll Spacer (maintains scroll area size) -->
             <div x-show="virtualScroll.enabled"
@@ -6125,6 +6312,72 @@
     </div>
 </div>
 
+<!-- WP-1: FAB (Floating Action Button) -->
+<div class="fab-container" x-data="{ fabOpen: false }" @click.outside="fabOpen = false">
+    <!-- FAB Action Buttons -->
+    <div class="fab-actions" :class="{ 'open': fabOpen }">
+        <div class="fab-action">
+            <span class="fab-action-label">이슈 생성</span>
+            <button class="fab-action-btn warning"
+                    @click="fabOpen = false; openIssueForm()"
+                    aria-label="새 이슈 생성">
+                🚨
+            </button>
+        </div>
+        <div class="fab-action" x-show="selectedCells.length > 0">
+            <span class="fab-action-label">일괄 편집</span>
+            <button class="fab-action-btn"
+                    @click="fabOpen = false; openBulkEdit()"
+                    aria-label="선택 항목 일괄 편집">
+                ✏️
+            </button>
+        </div>
+        <div class="fab-action">
+            <span class="fab-action-label">빠른 동기화</span>
+            <button class="fab-action-btn success"
+                    @click="fabOpen = false; syncNow()"
+                    aria-label="Google Sheet 동기화">
+                🔄
+            </button>
+        </div>
+        <div class="fab-action">
+            <span class="fab-action-label">PDF 리포트</span>
+            <button class="fab-action-btn"
+                    @click="fabOpen = false; generatePDFReport()"
+                    aria-label="PDF 리포트 생성">
+                📄
+            </button>
+        </div>
+    </div>
+
+    <!-- Main FAB Button -->
+    <button class="fab-main touch-target"
+            :class="{ 'open': fabOpen }"
+            @click="fabOpen = !fabOpen"
+            aria-label="빠른 작업 메뉴"
+            aria-expanded="fabOpen">
+        ➕
+    </button>
+</div>
+
+<!-- WP-1: Touch Drag Selection Overlay -->
+<div class="touch-drag-overlay" x-show="touchDragActive" x-cloak>
+    <div class="touch-drag-rect"
+         :style="`
+             left: ${Math.min(touchDragStart.x, touchDragEnd.x)}px;
+             top: ${Math.min(touchDragStart.y, touchDragEnd.y)}px;
+             width: ${Math.abs(touchDragEnd.x - touchDragStart.x)}px;
+             height: ${Math.abs(touchDragEnd.y - touchDragStart.y)}px;
+         `">
+    </div>
+</div>
+
+<!-- WP-1: Touch Selection Hint -->
+<div class="touch-select-hint" x-show="touchDragActive && touchDragCellCount > 0" x-cloak>
+    <span>📱</span>
+    <span x-text="touchDragCellCount + '개 셀 선택 중...'"></span>
+</div>
+
 <!-- Mobile Bottom Navigation -->
 <nav class="mobile-nav" x-cloak>
     <div class="mobile-nav-item" :class="{'active': mobileNavTab === 'grid'}" @click="mobileNavTab = 'grid'; sidebarOpen = false">
@@ -6457,7 +6710,14 @@ function dashboard() {
         isDragging: false,
         dragStart: null,
         dragEnd: null,
-        
+
+        // WP-1: Touch Drag Selection State
+        touchDragActive: false,
+        touchDragStart: { x: 0, y: 0 },
+        touchDragEnd: { x: 0, y: 0 },
+        touchDragCellCount: 0,
+        touchDragGridRect: null,
+
         // Edit Forms
         editForm: {
             status: 'pending',
@@ -6701,6 +6961,75 @@ function dashboard() {
         
         get activeIssueOverlays() {
             return this.openIssues.filter(i => i.overlay?.show !== false);
+        },
+        
+        // WP-2: Issue Pin Helper Methods
+        
+        /**
+         * Check if a cell has any open issues
+         */
+        hasIssue(cell) {
+            if (!cell || cell.isHeader) return false;
+            return this.openIssues.some(issue => this.isCellInIssueRange(cell, issue));
+        },
+        
+        /**
+         * Check if cell is within issue's affected range
+         */
+        isCellInIssueRange(cell, issue) {
+            if (!issue.startColumn || !issue.endColumn) return false;
+            
+            const colNum = cell.col;
+            const rowIdx = this.rowLabels.indexOf(cell.row);
+            const issueStartRow = this.rowLabels.indexOf(issue.startRow);
+            const issueEndRow = this.rowLabels.indexOf(issue.endRow);
+            
+            return colNum >= issue.startColumn && 
+                   colNum <= issue.endColumn &&
+                   rowIdx >= issueStartRow && 
+                   rowIdx <= issueEndRow;
+        },
+        
+        /**
+         * Get the first issue affecting a cell
+         */
+        getIssueForCell(cell) {
+            if (!cell || cell.isHeader) return null;
+            return this.openIssues.find(issue => this.isCellInIssueRange(cell, issue));
+        },
+        
+        /**
+         * Get all issues affecting a cell
+         */
+        getIssuesForCell(cell) {
+            if (!cell || cell.isHeader) return [];
+            return this.openIssues.filter(issue => this.isCellInIssueRange(cell, issue));
+        },
+        
+        /**
+         * Get CSS class based on issue severity
+         */
+        getIssueSeverityClass(cell) {
+            const issue = this.getIssueForCell(cell);
+            if (!issue) return '';
+            
+            const severityClasses = {
+                'critical': 'issue-pin-critical',
+                'high': 'issue-pin-high',
+                'medium': 'issue-pin-medium',
+                'low': 'issue-pin-low'
+            };
+            return severityClasses[issue.severity] || 'issue-pin-medium';
+        },
+        
+        /**
+         * Get issue title for tooltip
+         */
+        getIssueTitle(cell) {
+            const issues = this.getIssuesForCell(cell);
+            if (issues.length === 0) return '';
+            if (issues.length === 1) return issues[0].title;
+            return `${issues.length}개 이슈: ${issues.map(i => i.title).join(', ')}`;
         },
         
         // Generate flat grid cells array for Alpine.js compatibility
@@ -8974,7 +9303,124 @@ function dashboard() {
             // Placeholder for drag rectangle detection
             return false;
         },
-        
+
+        // === WP-1: Touch Drag Selection ===
+        startTouchDragSelect(event) {
+            // Ignore multi-touch (pinch zoom)
+            if (event.touches.length > 1) return;
+
+            // Prevent if touching stage-grid elements
+            const target = event.target;
+            if (target.classList.contains('stage-grid') ||
+                target.classList.contains('stage-cell') ||
+                target.classList.contains('dot')) return;
+
+            const touch = event.touches[0];
+            const gridScrollView = this.$refs.gridScrollView;
+
+            if (gridScrollView) {
+                this.touchDragGridRect = gridScrollView.getBoundingClientRect();
+                this.touchDragActive = true;
+                this.touchDragStart = { x: touch.clientX, y: touch.clientY };
+                this.touchDragEnd = { x: touch.clientX, y: touch.clientY };
+                this.touchDragCellCount = 0;
+
+                // Haptic feedback (if available)
+                if ('vibrate' in navigator) {
+                    navigator.vibrate(10);
+                }
+            }
+        },
+
+        updateTouchDragSelect(event) {
+            if (!this.touchDragActive || event.touches.length > 1) return;
+
+            const touch = event.touches[0];
+            this.touchDragEnd = { x: touch.clientX, y: touch.clientY };
+
+            // Calculate selected cell count (approximation based on drag rect size)
+            const cellWidth = this.virtualScroll.enabled ? this.virtualScroll.cellWidth : 28;
+            const cellHeight = this.virtualScroll.enabled ? this.virtualScroll.cellHeight : 30;
+
+            const width = Math.abs(this.touchDragEnd.x - this.touchDragStart.x);
+            const height = Math.abs(this.touchDragEnd.y - this.touchDragStart.y);
+
+            const colCount = Math.max(1, Math.floor(width / cellWidth));
+            const rowCount = Math.max(1, Math.floor(height / cellHeight));
+            this.touchDragCellCount = colCount * rowCount;
+        },
+
+        endTouchDragSelect(event) {
+            if (!this.touchDragActive) return;
+
+            // Calculate which cells are in the drag rectangle
+            const selectedCells = this.getCellsInTouchDragRect();
+
+            if (selectedCells.length > 0) {
+                // Add to selection (or replace if not holding shift equivalent)
+                this.selectedCells = [...new Set([...this.selectedCells, ...selectedCells])];
+                this.showToast(`${selectedCells.length}개 셀 선택됨`, 'success');
+
+                // Haptic feedback for selection complete
+                if ('vibrate' in navigator) {
+                    navigator.vibrate([20, 50, 20]);
+                }
+            }
+
+            // Reset state
+            this.touchDragActive = false;
+            this.touchDragStart = { x: 0, y: 0 };
+            this.touchDragEnd = { x: 0, y: 0 };
+            this.touchDragCellCount = 0;
+            this.touchDragGridRect = null;
+        },
+
+        getCellsInTouchDragRect() {
+            if (!this.touchDragGridRect) return [];
+
+            const cells = [];
+            const gridScrollView = this.$refs.gridScrollView;
+            if (!gridScrollView) return [];
+
+            const scrollLeft = gridScrollView.scrollLeft;
+            const scrollTop = gridScrollView.scrollTop;
+            const gridRect = this.touchDragGridRect;
+
+            // Convert screen coordinates to grid coordinates
+            const startX = Math.min(this.touchDragStart.x, this.touchDragEnd.x) - gridRect.left + scrollLeft;
+            const startY = Math.min(this.touchDragStart.y, this.touchDragEnd.y) - gridRect.top + scrollTop;
+            const endX = Math.max(this.touchDragStart.x, this.touchDragEnd.x) - gridRect.left + scrollLeft;
+            const endY = Math.max(this.touchDragStart.y, this.touchDragEnd.y) - gridRect.top + scrollTop;
+
+            // Cell dimensions (including gap)
+            const cellWidth = this.virtualScroll.enabled ? this.virtualScroll.cellWidth : 28;
+            const cellHeight = this.virtualScroll.enabled ? this.virtualScroll.cellHeight : 30;
+
+            // Account for header row
+            const headerHeight = cellHeight;
+
+            // Calculate row/col range
+            const startCol = Math.max(1, Math.floor(startX / cellWidth));
+            const endCol = Math.min(this.gridConfig.cols, Math.ceil(endX / cellWidth));
+            const startRow = Math.max(0, Math.floor((startY - headerHeight) / cellHeight));
+            const endRow = Math.min(this.gridConfig.rows - 1, Math.ceil((endY - headerHeight) / cellHeight));
+
+            // Generate UIDs for selected cells
+            for (let r = startRow; r <= endRow; r++) {
+                const rowLabel = this.rowLabels[r];
+                if (!rowLabel) continue;
+
+                for (let c = startCol; c <= endCol; c++) {
+                    const uid = `${rowLabel}-X${c}`;
+                    if (this.columns[uid]) {
+                        cells.push(uid);
+                    }
+                }
+            }
+
+            return cells;
+        },
+
         // === Detail Panel ===
         openDetail(row, col) {
             const uid = `${row}-X${col}`;
