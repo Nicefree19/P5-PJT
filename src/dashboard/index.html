@@ -24,12 +24,9 @@
     <!-- Alpine.js (Core) -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
 
-    <!-- SheetJS for Excel Export -->
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
-
-    <!-- jsPDF for PDF Report Generation -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <!-- WP-5: SheetJS & jsPDF are now lazy-loaded on first export -->
+    <!-- Previously loaded: xlsx.full.min.js, jspdf.umd.min.js, jspdf.plugin.autotable.min.js -->
+    <!-- See loadExportLibs() function for dynamic loading -->
 
     <!-- P5 Modules -->
     <script type="module" src="./js/auth.js"></script>
@@ -4533,7 +4530,7 @@
                            placeholder="기둥/Zone/상태 검색 (예: A-1)"
                            x-model="searchQuery"
                            @focus="if(searchQuery) searchDropdownOpen = true"
-                           @input="performSearch()"
+                           @input="performSearchDebounced()"
                            @keydown.escape="clearSearch()"
                            @keydown="handleSearchKeydown($event)"
                            aria-label="기둥, Zone, 상태 검색"
@@ -7056,7 +7053,8 @@ function dashboard() {
             visibleRowStart: 0,
             visibleRowEnd: 20,
             isScrolling: false,
-            scrollTimeout: null
+            scrollTimeout: null,
+            _resizeTimeout: null  // WP-5: Resize debounce 타이머
         },
         
         // Data
@@ -7084,6 +7082,57 @@ function dashboard() {
         },
         showIssueEditor: false,
         issueFilter: 'all',
+
+        // WP-5: Export Libraries Lazy Loading State
+        _exportLibsLoading: false,
+        _exportLibsLoaded: false,
+
+        /**
+         * WP-5: Dynamically load export libraries (SheetJS, jsPDF)
+         * Saves ~150KB on initial page load
+         */
+        async loadExportLibs() {
+            if (this._exportLibsLoaded) return true;
+            if (this._exportLibsLoading) {
+                // Wait for ongoing load to complete
+                while (this._exportLibsLoading) {
+                    await new Promise(r => setTimeout(r, 100));
+                }
+                return this._exportLibsLoaded;
+            }
+
+            this._exportLibsLoading = true;
+            this.showToast('Export 라이브러리 로딩 중...', 'info');
+
+            const loadScript = (src) => {
+                return new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = src;
+                    script.onload = resolve;
+                    script.onerror = () => reject(new Error(`Failed to load: ${src}`));
+                    document.head.appendChild(script);
+                });
+            };
+
+            try {
+                // Load SheetJS first
+                await loadScript('https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js');
+
+                // Load jsPDF and autotable sequentially (autotable depends on jsPDF)
+                await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+                await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js');
+
+                this._exportLibsLoaded = true;
+                this._exportLibsLoading = false;
+                console.log('[WP-5] Export libraries loaded successfully');
+                return true;
+            } catch (error) {
+                console.error('[WP-5] Failed to load export libraries:', error);
+                this._exportLibsLoading = false;
+                this.showToast('Export 라이브러리 로드 실패', 'error');
+                return false;
+            }
+        },
 
         // ★ 프로젝트 스냅샷 내보내기/불러오기 기능
         exportProjectSnapshot() {
@@ -7282,6 +7331,7 @@ function dashboard() {
         searchResults: [],         // 검색 결과
         recentSearches: [],        // 최근 검색어 (최대 5개)
         activeFilters: [],         // 활성 필터 [{type, value, label}]
+        _searchTimeout: null,      // WP-5: 검색 debounce 타이머
 
         // Phase 7: 대시보드 요약 패널
         summaryPanelOpen: false,   // 요약 패널 열림 상태
@@ -7704,13 +7754,21 @@ function dashboard() {
 
             this.updateVisibleRange();
 
-            // Add resize observer
+            // Add resize observer with debounce (WP-5 Performance)
             const resizeObserver = new ResizeObserver(entries => {
-                for (const entry of entries) {
-                    vs.viewportWidth = entry.contentRect.width;
-                    vs.viewportHeight = entry.contentRect.height;
-                    this.updateVisibleRange();
+                // Clear previous debounce timer
+                if (vs._resizeTimeout) {
+                    clearTimeout(vs._resizeTimeout);
                 }
+
+                // Debounce resize updates to avoid excessive recalculations
+                vs._resizeTimeout = setTimeout(() => {
+                    for (const entry of entries) {
+                        vs.viewportWidth = entry.contentRect.width;
+                        vs.viewportHeight = entry.contentRect.height;
+                    }
+                    this.updateVisibleRange();
+                }, 100);
             });
             resizeObserver.observe(container);
 
@@ -9043,6 +9101,30 @@ function dashboard() {
         },
 
         // === Phase 7: 스마트 검색 & 필터 ===
+
+        /**
+         * WP-5: Debounced 검색 실행
+         * 키 입력마다 바로 실행하지 않고 300ms 대기 후 실행
+         * 성능 최적화: 입력 중 불필요한 검색 방지
+         */
+        performSearchDebounced() {
+            // 이전 타이머 취소
+            if (this._searchTimeout) {
+                clearTimeout(this._searchTimeout);
+            }
+
+            // 빈 검색어는 즉시 처리
+            if (!this.searchQuery.trim()) {
+                this.searchResults = [];
+                this.searchDropdownOpen = false;
+                return;
+            }
+
+            // 300ms 후 검색 실행
+            this._searchTimeout = setTimeout(() => {
+                this.performSearch();
+            }, 300);
+        },
 
         /**
          * 검색 실행
@@ -11625,15 +11707,17 @@ function dashboard() {
         
         /**
          * Export to Excel with SheetJS
+         * WP-5: Now uses lazy-loaded libraries
          * @param {Object} options - Export options
          * @param {string} options.scope - 'all' | 'filtered' | 'selected' | 'floor' | 'zone'
          * @param {string} options.floorId - Floor ID for floor-specific export
          * @param {string} options.zoneId - Zone ID for zone-specific export
          */
-        exportToExcel(options = { scope: 'all' }) {
-            // Check if SheetJS is loaded
-            if (typeof XLSX === 'undefined') {
-                this.showToast('Excel 라이브러리 로드 중... 잠시 후 다시 시도해주세요.', 'error');
+        async exportToExcel(options = { scope: 'all' }) {
+            // WP-5: Load export libraries on demand
+            const loaded = await this.loadExportLibs();
+            if (!loaded || typeof XLSX === 'undefined') {
+                this.showToast('Excel 라이브러리 로드 실패. 페이지를 새로고침 후 다시 시도해주세요.', 'error');
                 return;
             }
 
@@ -12081,12 +12165,14 @@ function dashboard() {
 
         /**
          * Generate PDF Report
+         * WP-5: Now uses lazy-loaded libraries
          * @param {string} type - Report type: 'summary' | 'detailed' | 'issues'
          */
         async generatePDFReport(type = 'summary') {
-            // Check if jsPDF is loaded
-            if (typeof window.jspdf === 'undefined') {
-                this.showToast('PDF 라이브러리 로드 중... 잠시 후 다시 시도해주세요.', 'error');
+            // WP-5: Load export libraries on demand
+            const loaded = await this.loadExportLibs();
+            if (!loaded || typeof window.jspdf === 'undefined') {
+                this.showToast('PDF 라이브러리 로드 실패. 페이지를 새로고침 후 다시 시도해주세요.', 'error');
                 return;
             }
 
