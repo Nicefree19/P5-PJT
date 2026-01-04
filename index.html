@@ -4370,7 +4370,7 @@
     </style>
 
   <script type="module" crossorigin src="./assets/index--oRkV5mU.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/style-ByJdRyJB.css">
+  <link rel="stylesheet" crossorigin href="./assets/style-BgMGs-gf.css">
 </head>
 <body x-data="dashboard()" x-init="init()">
 
@@ -6408,17 +6408,33 @@
         </div>
 
         <!-- Report Tabs -->
-        <div class="report-tabs" style="padding: 0 20px;">
-            <button class="report-tab" :class="{ 'active': reportTab === 'overview' }" @click="reportTab = 'overview'">
+        <div class="report-tabs" role="tablist" aria-label="보고서 탭" style="padding: 0 20px;">
+            <button class="report-tab" role="tab"
+                    :class="{ 'active': reportTab === 'overview' }"
+                    :aria-selected="reportTab === 'overview'"
+                    :tabindex="reportTab === 'overview' ? 0 : -1"
+                    @click="reportTab = 'overview'">
                 📈 개요
             </button>
-            <button class="report-tab" :class="{ 'active': reportTab === 'zones' }" @click="reportTab = 'zones'">
+            <button class="report-tab" role="tab"
+                    :class="{ 'active': reportTab === 'zones' }"
+                    :aria-selected="reportTab === 'zones'"
+                    :tabindex="reportTab === 'zones' ? 0 : -1"
+                    @click="reportTab = 'zones'">
                 🗂️ Zone별 현황
             </button>
-            <button class="report-tab" :class="{ 'active': reportTab === 'issues' }" @click="reportTab = 'issues'">
+            <button class="report-tab" role="tab"
+                    :class="{ 'active': reportTab === 'issues' }"
+                    :aria-selected="reportTab === 'issues'"
+                    :tabindex="reportTab === 'issues' ? 0 : -1"
+                    @click="reportTab = 'issues'">
                 🚨 이슈 통계
             </button>
-            <button class="report-tab" :class="{ 'active': reportTab === 'trend' }" @click="reportTab = 'trend'">
+            <button class="report-tab" role="tab"
+                    :class="{ 'active': reportTab === 'trend' }"
+                    :aria-selected="reportTab === 'trend'"
+                    :tabindex="reportTab === 'trend' ? 0 : -1"
+                    @click="reportTab = 'trend'">
                 📉 트렌드
             </button>
         </div>
@@ -6700,8 +6716,8 @@
 
         <!-- Report Actions -->
         <div class="report-actions">
-            <button class="report-btn" @click="exportReportToExcel()">
-                📗 Excel 내보내기
+            <button class="report-btn" @click="exportReportToCSV()">
+                📊 CSV 내보내기
             </button>
             <button class="report-btn" @click="generatePDFReport('detailed')">
                 📕 PDF 보고서
@@ -8912,7 +8928,7 @@ function dashboard() {
             return count;
         },
 
-        exportReportToExcel() {
+        exportReportToCSV() {
             // Generate report data
             const reportData = {
                 generatedAt: new Date().toISOString(),
