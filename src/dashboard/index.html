@@ -5191,14 +5191,14 @@
                 <div class="zone-summary" style="margin-bottom: 10px;">
                     <div class="zone-title">
                         <span x-text="zone.name + ': ' + zone.displayName"></span>
-                        <span :style="`color: ${zone.style.primaryColor}`" 
+                        <span :style="`color: ${zone.style?.primaryColor || zone.color || '#238636'}`"
                               x-text="getZoneProgress(zone.id) + '%'"></span>
                     </div>
-                    <div style="font-size:10px; color:#8b949e;" 
-                         x-text="`X${zone.range.startColumn} ~ X${zone.range.endColumn}`"></div>
+                    <div style="font-size:10px; color:#8b949e;"
+                         x-text="`X${zone.range?.startColumn || zone.startColumn || 1} ~ X${zone.range?.endColumn || zone.endColumn || 10}`"></div>
                     <div class="progress-bar">
-                        <div class="progress-fill" 
-                             :style="`width: ${getZoneProgress(zone.id)}%; background: ${zone.style.primaryColor}`">
+                        <div class="progress-fill"
+                             :style="`width: ${getZoneProgress(zone.id)}%; background: ${zone.style?.primaryColor || zone.color || '#238636'}`">
                         </div>
                     </div>
                 </div>
@@ -5323,7 +5323,7 @@
         <!-- Zone Indicator Bar -->
         <div class="zone-indicator-bar">
             <template x-for="zone in zones" :key="zone.id">
-                <div class="zone-segment" :style="`background: ${zone.style.backgroundColor}; color: ${zone.style.primaryColor}`">
+                <div class="zone-segment" :style="`background: ${zone.style?.backgroundColor || (zone.color + '1a') || 'rgba(35,134,54,0.1)'}; color: ${zone.style?.primaryColor || zone.color || '#238636'}`">
                     <span x-text="zone.name + ' (' + zone.displayName + ')'"></span>
                 </div>
             </template>
@@ -5800,17 +5800,17 @@
                 <div class="zone-manager-list">
                     <template x-for="(zone, index) in zones" :key="zone.id">
                         <div class="zone-item">
-                            <div class="zone-color-preview" :style="`background: ${zone.style.backgroundColor}; color: ${zone.style.primaryColor};`">
+                            <div class="zone-color-preview" :style="`background: ${zone.style?.backgroundColor || (zone.color + '1a') || 'rgba(35,134,54,0.1)'}; color: ${zone.style?.primaryColor || zone.color || '#238636'};`">
                                 <span x-text="zone.name.substring(5, 6)"></span>
                             </div>
                             <div class="zone-info">
                                 <h4 x-text="zone.name + ' - ' + zone.displayName"></h4>
                                 <p x-text="zone.description"></p>
                             </div>
-                            <div class="zone-range" x-text="`X${zone.range.startColumn} ~ X${zone.range.endColumn}`"></div>
+                            <div class="zone-range" x-text="`X${zone.range?.startColumn || zone.startColumn || 1} ~ X${zone.range?.endColumn || zone.endColumn || 10}`"></div>
                             <div class="zone-actions">
                                 <button class="btn" style="padding:4px 8px; font-size:11px;" @click="editZone(zone)">Edit</button>
-                                <input type="color" :value="zone.style.primaryColor" 
+                                <input type="color" :value="zone.style?.primaryColor || zone.color || '#238636'"
                                        @change="updateZoneColor(zone.id, $event.target.value)"
                                        style="width:28px; height:28px; border:none; cursor:pointer;">
                             </div>
@@ -7169,7 +7169,7 @@ function dashboard() {
                     this.history = snapshot.data.history || [];
                 }
 
-                this.saveData();
+                this.saveToLocalStorage();
                 this.showToast('Project Snapshot loaded and applied', 'success');
                 
                 // 페이지 새로고침하여 데이터 캐시 등 초기화 권장 (또는 init 재호출)
@@ -7218,7 +7218,21 @@ function dashboard() {
         
         // Toast
         toast: { show: false, message: '', type: 'success' },
-        
+
+        // Import Preview State (for CSV/JSON import)
+        showImportPreview: false,
+        importPreview: {
+            fileName: '',
+            fileType: '',
+            mode: 'update',
+            headers: [],
+            parsedData: [],
+            rawData: null,
+            columnMapping: { uid: '', status: '', isLocked: '' },
+            stats: { total: 0, new: 0, update: 0, errors: 0 },
+            errors: []
+        },
+
         // Sync State
         syncEnabled: false,
         apiUrl: 'https://script.google.com/macros/s/AKfycbyzvzDbe6NQ0Ni_Fp7I0LLNlg66st7mnnLkxtqjxUTtZnA7KeGRqp2Gcb8c_rjgbm1eTg/exec',
@@ -7844,22 +7858,65 @@ function dashboard() {
             // COLUMN_CONFIG(3-329열, 327 cols)을 적용
             if (typeof MGT_CONFIG !== 'undefined' && MGT_CONFIG && MGT_CONFIG.zones) {
                 // MGT_CONFIG zones를 Alpine.js 형식으로 변환
-                this.zones = MGT_CONFIG.zones.map(zone => ({
-                    id: zone.id,
-                    name: zone.name,
-                    displayName: zone.name,
-                    description: '',
-                    startColumn: zone.startCol,
-                    endColumn: zone.endCol,
-                    startRow: 0,
-                    endRow: this.rowLabels.length - 1,
-                    color: zone.id === 'zone_a' ? '#238636' : 
-                           zone.id === 'zone_b' ? '#1f6feb' : '#d29922',
-                    contractor: '', supervisor: '', targetDate: ''
-                }));
+                this.zones = MGT_CONFIG.zones.map(zone => {
+                    const color = zone.id === 'zone_a' ? '#238636' :
+                                  zone.id === 'zone_b' ? '#1f6feb' : '#d29922';
+                    return {
+                        id: zone.id,
+                        name: zone.name,
+                        displayName: zone.name,
+                        description: '',
+                        // Direct properties for backward compatibility
+                        startColumn: zone.startCol,
+                        endColumn: zone.endCol,
+                        startRow: 0,
+                        endRow: this.rowLabels.length - 1,
+                        color: color,
+                        // Nested range for P5Store format
+                        range: {
+                            startColumn: zone.startCol,
+                            endColumn: zone.endCol,
+                            startRow: 0,
+                            endRow: this.rowLabels.length - 1
+                        },
+                        // Nested style for P5Store format
+                        style: {
+                            primaryColor: color,
+                            backgroundColor: color + '1a',
+                            progressPercent: 0
+                        },
+                        contractor: '', supervisor: '', targetDate: '',
+                        metadata: { createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), createdBy: 'system' }
+                    };
+                });
                 console.log('[FloorPlan Fix] Applied COLUMN_CONFIG zones:', this.zones.length, 'zones');
             } else {
-                this.zones = data.zones || [];
+                // Normalize zones from P5Store to ensure consistent structure
+                this.zones = (data.zones || []).map(zone => {
+                    const color = zone.color || zone.style?.primaryColor || '#238636';
+                    return {
+                        ...zone,
+                        // Ensure direct properties exist
+                        startColumn: zone.startColumn ?? zone.range?.startColumn ?? 1,
+                        endColumn: zone.endColumn ?? zone.range?.endColumn ?? 10,
+                        startRow: zone.startRow ?? zone.range?.startRow ?? 0,
+                        endRow: zone.endRow ?? zone.range?.endRow ?? 11,
+                        color: color,
+                        // Ensure nested range exists
+                        range: zone.range || {
+                            startColumn: zone.startColumn ?? 1,
+                            endColumn: zone.endColumn ?? 10,
+                            startRow: zone.startRow ?? 0,
+                            endRow: zone.endRow ?? 11
+                        },
+                        // Ensure nested style exists
+                        style: zone.style || {
+                            primaryColor: color,
+                            backgroundColor: color + '1a',
+                            progressPercent: 0
+                        }
+                    };
+                });
             }
             
             this.columns = data.columns || {};
@@ -7942,15 +7999,16 @@ function dashboard() {
 
             // ★ 열 구간 (수평 분절 - 컬럼 범위) - 기존 jeoljuList를 명칭 변경
             // 그리드 뷰어에서 컬럼 범위별 필터링/하이라이트 용도
+            // jeoljuId 포함: 하위 호환성 (템플릿에서 jeolju.jeoljuId 사용)
             this.columnSegments = [
-                { segmentId: 'S1', label: '1구간', startColumn: 1, endColumn: 9, columnCount: 9, priority: 1 },
-                { segmentId: 'S2', label: '2구간', startColumn: 10, endColumn: 18, columnCount: 9, priority: 2 },
-                { segmentId: 'S3', label: '3구간', startColumn: 19, endColumn: 27, columnCount: 9, priority: 3 },
-                { segmentId: 'S4', label: '4구간', startColumn: 28, endColumn: 36, columnCount: 9, priority: 4 },
-                { segmentId: 'S5', label: '5구간', startColumn: 37, endColumn: 45, columnCount: 9, priority: 5 },
-                { segmentId: 'S6', label: '6구간', startColumn: 46, endColumn: 54, columnCount: 9, priority: 6 },
-                { segmentId: 'S7', label: '7구간', startColumn: 55, endColumn: 62, columnCount: 8, priority: 7 },
-                { segmentId: 'S8', label: '8구간', startColumn: 63, endColumn: 69, columnCount: 7, priority: 8 }
+                { segmentId: 'S1', jeoljuId: 'S1', label: '1구간', startColumn: 1, endColumn: 9, columnCount: 9, priority: 1 },
+                { segmentId: 'S2', jeoljuId: 'S2', label: '2구간', startColumn: 10, endColumn: 18, columnCount: 9, priority: 2 },
+                { segmentId: 'S3', jeoljuId: 'S3', label: '3구간', startColumn: 19, endColumn: 27, columnCount: 9, priority: 3 },
+                { segmentId: 'S4', jeoljuId: 'S4', label: '4구간', startColumn: 28, endColumn: 36, columnCount: 9, priority: 4 },
+                { segmentId: 'S5', jeoljuId: 'S5', label: '5구간', startColumn: 37, endColumn: 45, columnCount: 9, priority: 5 },
+                { segmentId: 'S6', jeoljuId: 'S6', label: '6구간', startColumn: 46, endColumn: 54, columnCount: 9, priority: 6 },
+                { segmentId: 'S7', jeoljuId: 'S7', label: '7구간', startColumn: 55, endColumn: 62, columnCount: 8, priority: 7 },
+                { segmentId: 'S8', jeoljuId: 'S8', label: '8구간', startColumn: 63, endColumn: 69, columnCount: 7, priority: 8 }
             ];
 
             // 하위 호환성: jeoljuList를 columnSegments로 매핑 (기존 코드 호환)
@@ -8057,7 +8115,7 @@ function dashboard() {
             }
 
             // 데이터 저장
-            this.saveData();
+            this.saveToLocalStorage();
         },
 
         // Phase 7: 층 선택
@@ -13908,8 +13966,8 @@ document.addEventListener('alpine:init', () => {
     </button>
 
     <button class="bottom-nav-item"
-            :class="{ 'active': showNotificationPanel }"
-            @click="showNotificationPanel = !showNotificationPanel"
+            :class="{ 'active': notificationPanelOpen }"
+            @click="notificationPanelOpen = !notificationPanelOpen"
             aria-label="알림">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
