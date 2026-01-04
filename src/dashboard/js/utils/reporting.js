@@ -148,6 +148,11 @@ function calculateJeoljuProgress(columns, jeoljuConfig, statusCodes = {}) {
  * @returns {Object} Issue statistics
  */
 function calculateIssueStats(issues) {
+  // Input validation
+  if (!Array.isArray(issues)) {
+    issues = [];
+  }
+
   const stats = {
     total: issues.length,
     open: 0,
@@ -194,22 +199,33 @@ function calculateIssueStats(issues) {
     if (status === 'resolved' || status === 'closed') {
       stats.resolved++;
 
-      // Calculate resolution time
+      // Calculate resolution time with date validation
       if (issue.reportedAt && issue.resolvedAt) {
         const reported = new Date(issue.reportedAt);
         const resolved = new Date(issue.resolvedAt);
-        const days = (resolved - reported) / (1000 * 60 * 60 * 24);
-        resolutionTimes.push(days);
-        if (severityResolutionTimes[severity]) {
-          severityResolutionTimes[severity].push(days);
+        // Validate dates are valid and resolved >= reported
+        if (!isNaN(reported.getTime()) && !isNaN(resolved.getTime()) && resolved >= reported) {
+          const days = (resolved - reported) / (1000 * 60 * 60 * 24);
+          resolutionTimes.push(days);
+          if (severityResolutionTimes[severity]) {
+            severityResolutionTimes[severity].push(days);
+          }
         }
       }
     }
 
-    // Track oldest open issue
+    // Track oldest open issue with date validation
     if (status === 'open' && issue.reportedAt) {
-      if (!stats.oldestOpenIssue || new Date(issue.reportedAt) < new Date(stats.oldestOpenIssue.reportedAt)) {
-        stats.oldestOpenIssue = issue;
+      const reportedDate = new Date(issue.reportedAt);
+      if (!isNaN(reportedDate.getTime())) {
+        if (!stats.oldestOpenIssue) {
+          stats.oldestOpenIssue = issue;
+        } else {
+          const existingDate = new Date(stats.oldestOpenIssue.reportedAt);
+          if (!isNaN(existingDate.getTime()) && reportedDate < existingDate) {
+            stats.oldestOpenIssue = issue;
+          }
+        }
       }
     }
   }
@@ -414,7 +430,20 @@ function generateDonutChartData(data, options = {}) {
     outerRadius = 70
   } = options;
 
-  const total = data.reduce((sum, item) => sum + item.value, 0);
+  // Input validation
+  if (!Array.isArray(data) || data.length === 0) {
+    return { size, center: size / 2, innerRadius, outerRadius, total: 0, segments: [] };
+  }
+
+  // Filter valid data and calculate total safely
+  const validData = data.filter(item => item && typeof item.value === 'number' && item.value > 0);
+  const total = validData.reduce((sum, item) => sum + item.value, 0);
+
+  // Handle zero total case
+  if (total === 0) {
+    return { size, center: size / 2, innerRadius, outerRadius, total: 0, segments: [] };
+  }
+
   const center = size / 2;
   let currentAngle = -Math.PI / 2; // Start from top
 
@@ -427,7 +456,7 @@ function generateDonutChartData(data, options = {}) {
     segments: []
   };
 
-  for (const item of data) {
+  for (const item of validData) {
     if (item.value === 0) continue;
 
     const percentage = item.value / total;
@@ -488,16 +517,22 @@ function generateLineChartData(data, options = {}) {
     yLabels: []
   };
 
-  if (data.length === 0) return chartData;
+  // Input validation
+  if (!Array.isArray(data) || data.length === 0) return chartData;
 
-  const maxValue = Math.max(...data.map(d => d.value), 1);
+  // Filter valid data points
+  const validData = data.filter(d => d && typeof d.value === 'number' && !isNaN(d.value));
+  if (validData.length === 0) return chartData;
+
+  // Calculate max value safely (ensure at least 1 to prevent division by zero)
+  const maxValue = Math.max(...validData.map(d => d.value), 1);
   const padding = { left: 40, right: 20, top: 20, bottom: 30 };
   const chartWidth = width - padding.left - padding.right;
   const chartHeight = height - padding.top - padding.bottom;
-  const xStep = chartWidth / (data.length - 1 || 1);
+  const xStep = chartWidth / (validData.length - 1 || 1);
 
   // Generate points
-  data.forEach((item, index) => {
+  validData.forEach((item, index) => {
     const x = padding.left + index * xStep;
     const y = padding.top + chartHeight - (item.value / maxValue) * chartHeight;
 
@@ -515,13 +550,13 @@ function generateLineChartData(data, options = {}) {
   }
 
   // X-axis labels (show every nth)
-  const labelInterval = Math.ceil(data.length / 7);
-  data.forEach((item, index) => {
-    if (index % labelInterval === 0 || index === data.length - 1) {
+  const labelInterval = Math.ceil(validData.length / 7);
+  validData.forEach((item, index) => {
+    if (index % labelInterval === 0 || index === validData.length - 1) {
       chartData.xLabels.push({
         x: padding.left + index * xStep,
         y: height - 5,
-        text: item.label
+        text: item.label || ''
       });
     }
   });
