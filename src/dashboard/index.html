@@ -44,89 +44,14 @@
     <link rel="stylesheet" href="./css/reports.css">
 
     <style>
-        /* === Design System: High-Tech Fab Theme === */
-        :root {
-            --bg-color: #0d1117;
-            --panel-bg: #161b22;
-            --border-color: #30363d;
-            --grid-line: #21262d;
-            --text-main: #c9d1d9;
-            --text-sub: #8b949e;
-            
-            /* Status Colors */
-            --status-ok: #238636;
-            --status-active: #1f6feb;
-            --status-tc-hold: #da3633;
-            --status-design: #d29922;
-            --status-shipping: #8957e5;
-            --status-pending: #484f58;
-        }
-
-        /* === Accessibility: Focus Indicators === */
-        *:focus-visible {
-            outline: 3px solid #58a6ff;
-            outline-offset: 2px;
-        }
-
-        .btn:focus-visible {
-            outline: 3px solid #58a6ff;
-            outline-offset: 2px;
-            box-shadow: 0 0 0 4px rgba(88, 166, 255, 0.3);
-        }
-
-        .grid-cell:focus-visible {
-            outline: 2px solid #58a6ff;
-            outline-offset: -2px;
-            z-index: 5;
-        }
-
-        input:focus-visible,
-        select:focus-visible,
-        textarea:focus-visible {
-            outline: 2px solid var(--status-active);
-            border-color: var(--status-active);
-        }
-
-        /* Screen reader only - hidden but accessible */
-        .sr-only {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            white-space: nowrap;
-            border: 0;
-        }
-
-        .sr-only-focusable:focus {
-            position: static;
-            width: auto;
-            height: auto;
-            padding: inherit;
-            margin: inherit;
-            overflow: visible;
-            clip: auto;
-            white-space: normal;
-        }
-
-        /* === Accessibility: Skip Link === */
-        .skip-link {
-            position: absolute;
-            top: -40px;
-            left: 0;
-            background: var(--status-active);
-            color: white;
-            padding: 8px 16px;
-            z-index: 1000;
-            text-decoration: none;
-            border-radius: 0 0 4px 0;
-            transition: top 0.3s;
-        }
-        .skip-link:focus {
-            top: 0;
-        }
+        /* === Phase 8 WP-3: CSS Deduplication === 
+         * Design tokens -> css/variables.css
+         * Accessibility  -> css/accessibility.css
+         * Animations     -> css/animations.css
+         * Performance    -> css/performance.css
+         * Reports        -> css/reports.css
+         * Below: Component styles only (not duplicated)
+         */
 
         * { box-sizing: border-box; }
         
