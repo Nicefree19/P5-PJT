@@ -9,9 +9,9 @@
 
 | 항목 | 내용 |
 |------|------|
-| **시간** | 2026-01-04 09:23 KST |
+| **시간** | 2026-01-04 13:00 KST |
 | **작업자** | Claude Code |
-| **상태** | ✅ WP-1 모바일 입력 UX 개선 완료 |
+| **상태** | ✅ WP-2 이슈 핀 시각화 완료 → Phase 6 종합 검증 진행 |
 
 ---
 
@@ -36,7 +36,7 @@
 
 ## 🚧 현재 작업 중 (In Progress)
 
-- **Claude Code**: ✅ WP-1 모바일 입력 UX 완료 → WP-2 (이슈 핀 UI) 대기 중
+- **Claude Code**: ✅ WP-1 모바일 입력 UX 완료 → ✅ WP-2 이슈 핀 시각화 완료
 - **Antigravity**: 📋 WP-3 (GAS Chunked Sync) 대기
 
 ---
@@ -78,7 +78,7 @@
 | 시간 | 발신 | 수신 | 작업 | 상태 |
 |------|------|------|------|:----:|
 | 00:55 | Antigravity | Claude Code | **WP-1: 모바일 입력 UX 개선** - 터치 드래그 선택, FAB 버튼 | ✅ 완료 |
-| 00:55 | Antigravity | Claude Code | **WP-2: 이슈 핀 시각화 (UI)** - 핀 오버레이, pulse 애니메이션 | 🟡 대기 |
+| 00:55 | Antigravity | Claude Code | **WP-2: 이슈 핀 시각화 (UI)** - 핀 오버레이, pulse 애니메이션 | ✅ 완료 |
 | 00:55 | Antigravity | Antigravity | **WP-3: GAS Chunked Sync** - 500개 청크 분할, 충돌 감지 | 🟡 대기 |
 
 **🆕 Phase 5 작업 패키지:**
@@ -218,6 +218,25 @@
 ---
 
 ## 💬 에이전트 통신 로그
+
+```
+[2026-01-04 13:00] Claude Code:
+✅ WP-2 이슈 핀 시각화 완료!
+
+구현 내용:
+- 이슈 핀 오버레이 (📍) - hasIssue() 체크 기반 렌더링
+- 심각도별 CSS 애니메이션:
+  - issue-pulse-critical (1s, 빨간 글로우)
+  - issue-pulse-high (1.5s, 주황 글로우)
+  - issue-pulse (2s, 일반)
+- cell-pulse-critical 애니메이션
+- issue-count-badge (다중 이슈 표시)
+- openIssueDetail(cell) 메서드 (자동 패널 오픈, 심각도 정렬)
+
++128 lines (CSS ~80, HTML ~20, JS ~28)
+commit: aa854c6
+빌드 및 테스트 완료. GitHub Pages 배포 진행 중.
+```
 
 ```
 [2026-01-04 09:23] Claude Code:
