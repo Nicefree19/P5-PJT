@@ -2634,6 +2634,42 @@
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
         }
 
+        /* === Mouse Drag Selection Overlay === */
+        .mouse-drag-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        .mouse-drag-rect {
+            position: absolute;
+            background: rgba(31, 111, 235, 0.15);
+            border: 2px solid #1f6feb;
+            border-radius: 2px;
+            pointer-events: none;
+        }
+
+        .mouse-select-hint {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(31, 111, 235, 0.95);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 16px;
+            font-size: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            z-index: 60;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
         /* === WP-1: Touch Drag Selection Overlay === */
         .touch-drag-overlay {
             position: fixed;
@@ -6710,6 +6746,35 @@
     </button>
 </div>
 
+<!-- Mouse Drag Selection Overlay -->
+<div class="mouse-drag-overlay"
+     x-show="isDragging"
+     x-cloak
+     role="region"
+     aria-label="마우스 드래그 선택 영역"
+     aria-hidden="!isDragging">
+    <div class="mouse-drag-rect"
+         :style="`
+             left: ${Math.min(dragStart?.x || 0, dragEnd?.x || 0)}px;
+             top: ${Math.min(dragStart?.y || 0, dragEnd?.y || 0)}px;
+             width: ${Math.abs((dragEnd?.x || 0) - (dragStart?.x || 0))}px;
+             height: ${Math.abs((dragEnd?.y || 0) - (dragStart?.y || 0))}px;
+         `"
+         role="presentation">
+    </div>
+</div>
+
+<!-- Mouse Selection Hint -->
+<div class="mouse-select-hint"
+     x-show="isDragging && dragCellCount > 0"
+     x-cloak
+     role="status"
+     aria-live="polite"
+     aria-atomic="true">
+    <span aria-hidden="true">🖱️</span>
+    <span x-text="dragCellCount + '개 셀 선택 중...'"></span>
+</div>
+
 <!-- WP-1: Touch Drag Selection Overlay -->
 <div class="touch-drag-overlay"
      x-show="touchDragActive"
@@ -7265,10 +7330,12 @@ function dashboard() {
         },
         isDirty: false,
         
-        // Drag Selection
+        // Drag Selection (Mouse)
         isDragging: false,
         dragStart: null,
         dragEnd: null,
+        dragGridRect: null,
+        dragCellCount: 0,
 
         // WP-1: Touch Drag Selection State
         touchDragActive: false,
@@ -10334,33 +10401,113 @@ function dashboard() {
             this.showToast(`Selected ${this.selectedCells.length} columns in zone`);
         },
         
-        // === Drag Selection ===
+        // === Drag Selection (Mouse) ===
         startDragSelect(event) {
             // Prevent drag if clicking on stage-grid or its children
             if (event.target.classList.contains('stage-grid') ||
                 event.target.classList.contains('stage-cell') ||
                 event.target.classList.contains('dot')) return;
-            this.isDragging = true;
-            this.dragStart = { x: event.offsetX, y: event.offsetY };
-            this.dragEnd = { x: event.offsetX, y: event.offsetY };
+
+            const gridScrollView = this.$refs.gridScrollView;
+            if (gridScrollView) {
+                this.dragGridRect = gridScrollView.getBoundingClientRect();
+                this.isDragging = true;
+                this.dragStart = { x: event.clientX, y: event.clientY };
+                this.dragEnd = { x: event.clientX, y: event.clientY };
+                this.dragCellCount = 0;
+            }
         },
-        
+
         updateDragSelect(event) {
             if (!this.isDragging) return;
-            this.dragEnd = { x: event.offsetX, y: event.offsetY };
+
+            this.dragEnd = { x: event.clientX, y: event.clientY };
+
+            // Calculate selected cell count (approximation based on drag rect size)
+            const cellWidth = this.virtualScroll.enabled ? this.virtualScroll.cellWidth : 28;
+            const cellHeight = this.virtualScroll.enabled ? this.virtualScroll.cellHeight : 30;
+
+            const width = Math.abs(this.dragEnd.x - this.dragStart.x);
+            const height = Math.abs(this.dragEnd.y - this.dragStart.y);
+
+            const colCount = Math.max(1, Math.floor(width / cellWidth));
+            const rowCount = Math.max(1, Math.floor(height / cellHeight));
+            this.dragCellCount = colCount * rowCount;
         },
-        
+
         endDragSelect() {
             if (!this.isDragging) return;
+
+            // Calculate which cells are in the drag rectangle
+            const selectedCells = this.getCellsInDragRect();
+
+            if (selectedCells.length > 0) {
+                // Add to selection (merge with existing)
+                this.selectedCells = [...new Set([...this.selectedCells, ...selectedCells])];
+                this.showToast(`${selectedCells.length}개 선택됨`, 'success');
+            }
+
+            // Reset state
             this.isDragging = false;
-            // In a full implementation, we'd calculate which cells are in the rect
             this.dragStart = null;
             this.dragEnd = null;
+            this.dragCellCount = 0;
+            this.dragGridRect = null;
         },
-        
+
+        getCellsInDragRect() {
+            if (!this.dragGridRect || !this.dragStart || !this.dragEnd) return [];
+
+            const cells = [];
+            const gridScrollView = this.$refs.gridScrollView;
+            if (!gridScrollView) return [];
+
+            const scrollLeft = gridScrollView.scrollLeft;
+            const scrollTop = gridScrollView.scrollTop;
+            const gridRect = this.dragGridRect;
+
+            // Convert screen coordinates to grid coordinates
+            const startX = Math.min(this.dragStart.x, this.dragEnd.x) - gridRect.left + scrollLeft;
+            const startY = Math.min(this.dragStart.y, this.dragEnd.y) - gridRect.top + scrollTop;
+            const endX = Math.max(this.dragStart.x, this.dragEnd.x) - gridRect.left + scrollLeft;
+            const endY = Math.max(this.dragStart.y, this.dragEnd.y) - gridRect.top + scrollTop;
+
+            // Cell dimensions (including gap)
+            const cellWidth = this.virtualScroll.enabled ? this.virtualScroll.cellWidth : 28;
+            const cellHeight = this.virtualScroll.enabled ? this.virtualScroll.cellHeight : 30;
+
+            // Account for header row
+            const headerHeight = cellHeight;
+
+            // Calculate row/col range
+            const startCol = Math.max(1, Math.floor(startX / cellWidth));
+            const endCol = Math.min(this.gridConfig.cols, Math.ceil(endX / cellWidth));
+            const startRow = Math.max(0, Math.floor((startY - headerHeight) / cellHeight));
+            const endRow = Math.min(this.gridConfig.rows - 1, Math.ceil((endY - headerHeight) / cellHeight));
+
+            // Generate UIDs for selected cells
+            for (let r = startRow; r <= endRow; r++) {
+                const rowLabel = this.rowLabels[r];
+                if (!rowLabel) continue;
+
+                for (let c = startCol; c <= endCol; c++) {
+                    const uid = `${rowLabel}-X${c}`;
+                    if (this.columns[uid]) {
+                        cells.push(uid);
+                    }
+                }
+            }
+
+            return cells;
+        },
+
         isInDragRect(row, col) {
-            // Placeholder for drag rectangle detection
-            return false;
+            // Check if a cell is in the current drag rectangle
+            if (!this.isDragging || !this.dragStart || !this.dragEnd) return false;
+
+            const cells = this.getCellsInDragRect();
+            const uid = `${row}-X${col}`;
+            return cells.includes(uid);
         },
 
         // === WP-1: Touch Drag Selection ===

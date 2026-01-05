@@ -250,6 +250,58 @@ test.describe('P5 Dashboard E2E (Fixed)', () => {
       await expect(selectionBanner).toBeVisible({ timeout: 3000 });
       await expect(selectionBanner).toContainText('selected');
     });
+
+    // 마우스 드래그로 다중 셀 선택 테스트
+    test('마우스 드래그로 다중 셀 선택', async ({ page }) => {
+      await page.goto('/');
+      await waitForDashboardReady(page);
+      await waitForGridCells(page, 10);
+
+      // 먼저 기존 선택 초기화 (ESC 키)
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(100);
+
+      // 그리드 스크롤 뷰 찾기
+      const gridScrollView = page.locator('.grid-scroll-view');
+      await expect(gridScrollView).toBeVisible();
+
+      // 그리드 스크롤 뷰의 bounding box 가져오기
+      const box = await gridScrollView.boundingBox();
+      expect(box).not.toBeNull();
+
+      if (box) {
+        // 그리드 내에서 드래그 (좌상단에서 우하단으로)
+        const startX = box.x + 50;
+        const startY = box.y + 50;
+        const endX = startX + 150;
+        const endY = startY + 100;
+
+        // 마우스 드래그 실행
+        await page.mouse.move(startX, startY);
+        await page.mouse.down();
+        await page.waitForTimeout(50);
+        await page.mouse.move(endX, endY, { steps: 10 });
+        await page.waitForTimeout(50);
+        await page.mouse.up();
+        await page.waitForTimeout(300);
+
+        // 드래그 후 선택된 셀 확인
+        const selectedCount = await page.evaluate(() => {
+          const alpine = (window as any).Alpine;
+          const data = alpine.$data(document.body);
+          return data.selectedCells?.length || 0;
+        });
+
+        // 드래그로 최소 1개 이상 선택되어야 함
+        expect(selectedCount).toBeGreaterThanOrEqual(1);
+
+        // 선택된 셀이 있으면 선택 배너가 표시되어야 함
+        if (selectedCount > 0) {
+          const selectionBanner = page.locator('.selection-banner');
+          await expect(selectionBanner).toBeVisible({ timeout: 3000 });
+        }
+      }
+    });
   });
 
   test.describe('Search Functionality', () => {
