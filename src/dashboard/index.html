@@ -36,6 +36,9 @@
     <script type="module" src="./js/api.js"></script>
     <script type="module" src="./js/sync-module.js"></script>
     
+    <!-- WP-9-1: Global Error Handler & Circuit Breaker -->
+    <script src="./js/error-handler.js"></script>
+
     <!-- WP-1-A: Modular JS Stores (exposes window.ColumnStore, window.IssueStore) -->
     <script src="./js/stores/column-store.js"></script>
     <script src="./js/stores/issue-store.js"></script>
@@ -3709,7 +3712,16 @@ function dashboard() {
         // === Lifecycle ===
         init() {
             const data = P5Store.load();
-            
+
+            // WP-9-1: Initialize Global Error Handler with showToast integration
+            if (typeof ErrorHandler !== 'undefined') {
+                const self = this;
+                ErrorHandler.init((message, type) => {
+                    self.showToast(message, type);
+                });
+                console.log('[WP-9-1] ErrorHandler initialized with toast integration');
+            }
+
             // ★ Floor Plan Fix: MGT_CONFIG zones 적용 (P5 복합동 실제 규격)
             // LocalStorage에 저장된 테스트 데이터(1-69열)가 아닌 
             // COLUMN_CONFIG(3-329열, 327 cols)을 적용
