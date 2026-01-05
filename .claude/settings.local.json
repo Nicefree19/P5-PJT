@@ -71,7 +71,19 @@
       "mcp__playwright-stealth__playwright_get",
       "Bash(npm install:*)",
       "mcp__playwright-stealth__playwright_fill",
-      "Bash(gh run:*)"
+      "Bash(gh run:*)",
+      "Bash(npm test)",
+      "Bash(npm run test:coverage:*)",
+      "Bash(git check-ignore:*)",
+      "Bash(npm test:*)",
+      "Bash(git stash:*)",
+      "Bash(git -C \"D:\\\\00.Work_AI_Tool\\\\11.P5_PJT\" log --oneline -15)",
+      "Bash(npm ls:*)",
+      "Bash(npx playwright test:*)",
+      "Bash(ls -la \"C:\\\\Users\\\\user\\\\.gemini\\\\antigravity\\\\brain\\\\0dc45563-4676-42a2-a047-af720ef0d516\"\" 2>/dev/null || dir /O-D \"C:Usersuser.geminiantigravitybrain0dc45563-4676-42a2-a047-af720ef0d516 \")",
+      "Bash(npm run build:analyze:*)",
+      "Bash(git show:*)",
+      "Bash(npm run test:e2e:*)"
     ],
     "deny": [],
     "ask": []

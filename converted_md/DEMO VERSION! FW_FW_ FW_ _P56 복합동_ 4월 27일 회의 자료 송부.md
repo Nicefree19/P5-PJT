@@ -1,0 +1,117 @@
+# DEMO VERSION! FW:FW: FW: [P56 복합동] 4월 27일 회의 자료 송부
+
+- **From**: 이동혁 [소장] [EPC팀]
+- **Date**: 2023-04-27 15:56:19
+- **Source**: DEMO VERSION! FW_FW_ FW_ _P56 복합동_ 4월 27일 회의 자료 송부.msg
+
+---
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+|  |  |
+| --- | --- |
+| 이동혁   EPC | 소장 | senkuzo |
+
+|  |  |
+| --- | --- |
+| t: 02-2629-3104  m: 010-4249-7140  e: dhlee@senkuzo.com  www.senkuzo.com | (주)센구조연구소 SEN ENGINEERING GROUP 07226 서울시 영등포구 버드나루로 19길 6 (센스빌딩) |
+
+**------ Original Message ------**  
+**Date:** 2023-04-27 15:54:54  
+**From:**endmall02 < endmall.02@partner.samsung.com >  
+**To:** dhlee@senkuzo.com < dhlee@senkuzo.com >,ihlee@senkuzo.com < ihlee@senkuzo.com >,senkuzo01 < senkuzo.01@partner.samsung.com >,senkuzo02 < senkuzo.02@partner.samsung.com >  
+**Subject:** FW: FW: [P56 복합동] 4월 27일 회의 자료 송부
+
+ 
+
+ 
+
+--------- **Original Message** ---------
+
+**Sender** : endmall01 <endmall.01@partner.samsung.com>협력사/삼성엔지니어링
+
+**Date** : 2023-04-27 15:53 (GMT+9)
+
+**Title** : FW: [P56 복합동] 4월 27일 회의 자료 송부
+
+ 
+
+ 
+
+ 
+
+--------- **Original Message** ---------
+
+**Sender** : 강상규 <sk-.kang@samsung.com> AE/산업환경구조설계그룹/삼성엔지니어링
+
+**Date** : 2023-04-27 08:38 (GMT+9)
+
+**Title** : [P56 복합동] 4월 27일 회의 자료 송부
+
+ 
+
+ 
+
+수신 : 김형섭 마스터님
+
+ 
+
+업무에 노고가 많으십니다.
+
+ 
+
+금일 회의자료를 송부드립니다.
+
+ 
+
+ 
+
+감사합니다.
+
+Best Regard.
+
+ 
+
+ 
+
+ 강상규 프로
+
+SANG-KYOU KANG
+
+I & E Structural Eng’g Group
+
+SAMSUNG ENGINEERING Co., LTD.
+
+Office:  +82-2-2053-4872
+
+Mobile: +82-10-4872-5730
+
+e-mail: sk-.kang@samsung.com
+
+ 
+
+ 
+
+ 
+
+|  |  |  |
+| --- | --- | --- |
+| |  |  | | --- | --- | |  |  | |
+
+ 
+
+ 
+
+ 
+
+|  |
+| --- |
+|  |
+
+|  |
+| --- |
+|  |
+
+|  |
+| --- |
+|  |
