@@ -688,3 +688,20 @@ if (typeof window !== "undefined") {
   window.ConflictResolver = ConflictResolver;
   window.P5SyncStore = P5SyncStore;
 }
+
+// Export for testing (CommonJS)
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    SyncModule,
+    ConflictResolver,
+    // Export internal functions for testing
+    _internal: {
+      resolveConflicts: SyncModule.resolveConflicts,
+      syncColumnsChunked: SyncModule.syncColumnsChunked,
+      configure: SyncModule.configure,
+      queueChange: SyncModule.queueChange,
+      getQueueStatus: SyncModule.getQueueStatus,
+      clearQueue: SyncModule.clearQueue
+    }
+  };
+}
