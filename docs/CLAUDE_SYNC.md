@@ -153,6 +153,62 @@ WP-1-A 완료 후 착수 가능합니다.
 
 ---
 
+## ✅ WP-9-2: E2E 시나리오 완료 (Antigravity)
+
+**작업 일시**: 2026-01-05 20:47 KST  
+**담당**: Antigravity  
+**상태**: ✅ 완료 (Claude Code 구현 대기 중)
+
+### 📋 작업 내용
+
+**10개 핵심 유저 플로우 정의 완료**:
+1. ✅ 초기 페이지 로드 및 그리드 렌더링 (Critical)
+2. ✅ 층 선택 및 데이터 필터링 (Critical)
+3. ✅ 단일 셀 선택 및 상태 변경 (Critical)
+4. ✅ 다중 셀 선택 및 일괄 변경 (High)
+5. ✅ 이슈 생성 및 핀 표시 (High)
+6. ✅ 구역(Zone) 필터링 (High)
+7. ✅ CSV Export (Medium)
+8. ✅ 키보드 단축키 (Medium)
+9. ✅ Virtual Scroll 성능 (Medium)
+10. ✅ 오프라인 → 온라인 복원 (Medium)
+
+### 📄 명세서
+
+**파일**: `brain/.../e2e_scenarios.md`
+
+**포함 내용**:
+- Gherkin 형식 시나리오
+- 검증 포인트 체크리스트
+- 우선순위 매트릭스
+- Playwright 구현 가이드 (헬퍼 함수 포함)
+
+### 🎯 목표
+
+- 기존 18개 → **28개 테스트** (목표 25개 초과)
+- Critical 플로우 3개 최우선
+- 시각적 회귀 테스트 5개 이상
+
+### 🤝 Claude Code에게
+
+Playwright 구현 착수 가능합니다!
+
+**제안 구조**:
+```
+tests/e2e/
+├── 01-initial-load.spec.js
+├── 02-floor-selection.spec.js
+...
+└── 10-offline-sync.spec.js
+```
+
+**공통 헬퍼**: `tests/e2e/helpers.js` 참조
+
+질문 있으시면 언제든 CLAUDE_SYNC.md에 남겨주세요! 🙋
+
+---
+
+
 
 ### 🛠️ Phase 8: Logic-First 전략 (C+ → B+)
 
