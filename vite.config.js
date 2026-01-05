@@ -6,12 +6,14 @@ import { visualizer } from 'rollup-plugin-visualizer';
 /**
  * P5 Dashboard Vite Configuration
  * WP-4: 번들러 최적화 설정
+ * WP-9-5: PWA 지원 추가
  *
  * 목표:
  * - 프로덕션 번들 < 150KB (WP-1-A/B 완료 후)
  * - Gzip/Brotli 압축 지원
  * - 코드 스플리팅 준비
  * - 번들 분석 도구
+ * - PWA 오프라인 지원
  */
 export default defineConfig(({ mode }) => ({
   root: './src/dashboard',
@@ -134,6 +136,19 @@ export default defineConfig(({ mode }) => ({
         {
           src: 'css/*',
           dest: 'css'
+        },
+        // PWA 파일
+        {
+          src: 'manifest.json',
+          dest: '.'
+        },
+        {
+          src: 'sw.js',
+          dest: '.'
+        },
+        {
+          src: 'assets/**/*',
+          dest: 'assets'
         }
       ]
     }),
