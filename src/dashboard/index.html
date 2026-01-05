@@ -28,10 +28,17 @@
     <!-- Previously loaded: xlsx.full.min.js, jspdf.umd.min.js, jspdf.plugin.autotable.min.js -->
     <!-- See loadExportLibs() function for dynamic loading -->
 
+    <!-- LZ-String for localStorage compression -->
+    <script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
+
     <!-- P5 Modules -->
     <script type="module" src="./js/auth.js"></script>
     <script type="module" src="./js/api.js"></script>
     <script type="module" src="./js/sync-module.js"></script>
+    
+    <!-- WP-1-A: Modular JS Stores (exposes window.ColumnStore, window.IssueStore) -->
+    <script src="./js/stores/column-store.js"></script>
+    <script src="./js/stores/issue-store.js"></script>
     
     <!-- Production Status Data (PSRC 제작현황) -->
     <script src="./data/production_status_import.js"></script>
@@ -6813,7 +6820,9 @@ function limitInput(input, maxLength = 500) {
 // ===== Data Store =====
 const P5Store = {
     STORAGE_KEY: 'p5_dashboard_data',
-    
+    STORAGE_KEY_COMPRESSED: 'p5_data_lz',
+    MAX_STORAGE_SIZE: 4 * 1024 * 1024, // 4MB limit (safe margin)
+
     getDefaultData() {
         return {
             zones: [
@@ -6874,27 +6883,166 @@ const P5Store = {
             ]
         };
     },
-    
+
+    /**
+     * Extract only modified columns (sparse storage)
+     * Only saves columns where status != 'pending' or has issues/locks
+     */
+    getModifiedColumns(columns) {
+        const modified = {};
+        let count = 0;
+        for (const [uid, col] of Object.entries(columns)) {
+            // Save if: non-default status, locked, or has stages modified
+            const isModified =
+                (col.status && col.status.code !== 'pending') ||
+                col.isLocked ||
+                (col.stages && Object.values(col.stages).some(s => s.status !== 'pending'));
+
+            if (isModified) {
+                // Store minimal data only
+                modified[uid] = {
+                    s: col.status?.code || 'pending',  // status code
+                    l: col.isLocked ? 1 : 0,           // locked flag
+                    st: col.stages ? Object.fromEntries(
+                        Object.entries(col.stages)
+                            .filter(([_, v]) => v.status !== 'pending')
+                            .map(([k, v]) => [k, v.status])
+                    ) : undefined
+                };
+                // Remove empty stages
+                if (modified[uid].st && Object.keys(modified[uid].st).length === 0) {
+                    delete modified[uid].st;
+                }
+                count++;
+            }
+        }
+        console.log(`[P5Store] Sparse storage: ${count} modified columns (of ${Object.keys(columns).length} total)`);
+        return modified;
+    },
+
+    /**
+     * Restore full column data from sparse storage
+     */
+    restoreColumns(sparseColumns, fullColumns) {
+        if (!sparseColumns || Object.keys(sparseColumns).length === 0) {
+            return fullColumns;
+        }
+
+        const restored = { ...fullColumns };
+        for (const [uid, sparse] of Object.entries(sparseColumns)) {
+            if (restored[uid]) {
+                // Restore status
+                if (sparse.s) {
+                    restored[uid].status = { code: sparse.s };
+                }
+                // Restore lock
+                if (sparse.l) {
+                    restored[uid].isLocked = true;
+                }
+                // Restore stages
+                if (sparse.st) {
+                    restored[uid].stages = restored[uid].stages || {};
+                    for (const [stage, status] of Object.entries(sparse.st)) {
+                        restored[uid].stages[stage] = { status };
+                    }
+                }
+            }
+        }
+        console.log(`[P5Store] Restored ${Object.keys(sparseColumns).length} modified columns`);
+        return restored;
+    },
+
     load() {
         try {
+            // Try compressed format first
+            const compressed = localStorage.getItem(this.STORAGE_KEY_COMPRESSED);
+            if (compressed && typeof LZString !== 'undefined') {
+                const decompressed = LZString.decompressFromUTF16(compressed);
+                if (decompressed) {
+                    const data = JSON.parse(decompressed);
+                    console.log(`[P5Store] Loaded compressed data (${(compressed.length / 1024).toFixed(1)}KB)`);
+                    return data;
+                }
+            }
+
+            // Fallback to legacy format
             const saved = localStorage.getItem(this.STORAGE_KEY);
             if (saved) {
+                console.log(`[P5Store] Loaded legacy data (${(saved.length / 1024).toFixed(1)}KB)`);
                 return JSON.parse(saved);
             }
         } catch (e) {
-            console.error('Failed to load data:', e);
+            console.error('[P5Store] Failed to load data:', e);
         }
         return this.getDefaultData();
     },
-    
+
     save(data) {
         try {
-            localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data));
-            return true;
+            // Prepare sparse data (only save modified columns)
+            const sparseData = {
+                zones: data.zones,
+                modifiedColumns: this.getModifiedColumns(data.columns || {}),
+                issues: data.issues,
+                statusCodes: data.statusCodes,
+                savedAt: new Date().toISOString()
+            };
+
+            const jsonString = JSON.stringify(sparseData);
+
+            // Try compressed save first
+            if (typeof LZString !== 'undefined') {
+                const compressed = LZString.compressToUTF16(jsonString);
+                const compressionRatio = ((1 - compressed.length / jsonString.length) * 100).toFixed(1);
+
+                if (compressed.length < this.MAX_STORAGE_SIZE) {
+                    localStorage.setItem(this.STORAGE_KEY_COMPRESSED, compressed);
+                    // Clean up legacy key
+                    localStorage.removeItem(this.STORAGE_KEY);
+                    console.log(`[P5Store] Saved compressed (${(compressed.length / 1024).toFixed(1)}KB, ${compressionRatio}% reduction)`);
+                    return true;
+                } else {
+                    console.warn(`[P5Store] Compressed data too large (${(compressed.length / 1024).toFixed(1)}KB)`);
+                }
+            }
+
+            // Fallback: try uncompressed (might fail for large data)
+            if (jsonString.length < this.MAX_STORAGE_SIZE) {
+                localStorage.setItem(this.STORAGE_KEY, jsonString);
+                console.log(`[P5Store] Saved uncompressed (${(jsonString.length / 1024).toFixed(1)}KB)`);
+                return true;
+            }
+
+            console.warn('[P5Store] Data too large to save, skipping localStorage');
+            return false;
         } catch (e) {
-            console.error('Failed to save data:', e);
+            if (e.name === 'QuotaExceededError') {
+                console.warn('[P5Store] Storage quota exceeded, data not saved');
+            } else {
+                console.error('[P5Store] Failed to save data:', e);
+            }
             return false;
         }
+    },
+
+    /**
+     * Get storage usage info
+     */
+    getStorageInfo() {
+        let used = 0;
+        for (const key in localStorage) {
+            if (localStorage.hasOwnProperty(key)) {
+                used += localStorage.getItem(key).length * 2; // UTF-16 = 2 bytes per char
+            }
+        }
+        return {
+            used: used,
+            usedKB: (used / 1024).toFixed(1),
+            usedMB: (used / 1024 / 1024).toFixed(2),
+            limit: '5MB (typical)',
+            p5DataSize: (localStorage.getItem(this.STORAGE_KEY_COMPRESSED)?.length ||
+                         localStorage.getItem(this.STORAGE_KEY)?.length || 0) * 2
+        };
     },
     
     // ★ 프로젝트 스냅샷 내보내기 (모든 설정 + 노드 + 상태 포함)

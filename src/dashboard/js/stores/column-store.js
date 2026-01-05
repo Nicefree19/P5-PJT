@@ -226,9 +226,22 @@ function parseUID(uid) {
   };
 }
 
-// Export for testing and module usage
+// Export for testing (CommonJS)
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
+    quickChangeStatus,
+    bulkLockColumns,
+    quickChangeStage,
+    calculateColumnStats,
+    filterColumnsByZone,
+    isValidUID,
+    parseUID
+  };
+}
+
+// WP-1-A: Expose to browser global for Alpine.js integration
+if (typeof window !== 'undefined') {
+  window.ColumnStore = {
     quickChangeStatus,
     bulkLockColumns,
     quickChangeStage,

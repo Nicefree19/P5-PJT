@@ -144,9 +144,22 @@ function getIssueTitle(cell, issueIndexMap) {
   return `${issues.length}개 이슈: ${issues.map(i => i.title).join(', ')}`;
 }
 
-// Export for testing and module usage
+// Export for testing (CommonJS)
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
+    buildIssueIndex,
+    hasIssue,
+    isCellInIssueRange,
+    getIssueForCell,
+    getIssuesForCell,
+    getIssueSeverityClass,
+    getIssueTitle
+  };
+}
+
+// WP-1-A: Expose to browser global for Alpine.js integration
+if (typeof window !== 'undefined') {
+  window.IssueStore = {
     buildIssueIndex,
     hasIssue,
     isCellInIssueRange,
