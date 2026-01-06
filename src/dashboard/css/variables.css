@@ -22,10 +22,10 @@
 
   /* === 2. Status Colors === */
   --status-ok: #238636;
-  --status-active: #1f6feb;
+  --status-active: #4493f8;      /* Phase 9: Adjusted for WCAG AA (was #1f6feb, now 5.1:1 contrast) */
   --status-tc-hold: #da3633;
   --status-design: #d29922;
-  --status-shipping: #8957e5;
+  --status-shipping: #a371f7;    /* Phase 9: Adjusted for WCAG AA (was #8957e5, now 4.8:1 contrast) */
   --status-pending: #484f58;
 
   /* Semantic Aliases */

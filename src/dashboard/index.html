@@ -1078,7 +1078,10 @@
 
                 <!-- Cells: Virtual or Full rendering based on grid size -->
                 <template x-for="cell in (virtualScroll.enabled ? visibleCells : gridCells)" :key="cell.key">
-                    <div :class="cell.isHeader ? 'grid-cell-header' : 'grid-cell'"
+                    <div :class="[
+                            cell.isHeader ? 'grid-cell-header' : 'grid-cell',
+                            !cell.isHeader && isColumnHighlighted(cell.row + '-X' + cell.col) ? 'context-highlighted' : ''
+                         ]"
                          :role="cell.isHeader ? 'columnheader' : 'gridcell'"
                          :aria-label="cell.isHeader ? cell.label : (cell.row + '-X' + cell.col + ' 기둥 셀')"
                          :style="!cell.isHeader && isSelected(cell.row, cell.col) ? 'background: rgba(31, 111, 235, 0.3); border-color: #1f6feb;' : ''"
@@ -1415,8 +1418,8 @@
         </div>
         <div class="issue-modal-body">
             <div class="form-group">
-                <label>Issue Type</label>
-                <select x-model="newIssueForm.type">
+                <label for="issue-type">Issue Type</label>
+                <select id="issue-type" x-model="newIssueForm.type">
                     <option value="tc">T/C 간섭</option>
                     <option value="design">설계 변경</option>
                     <option value="material">자재 이슈</option>
@@ -1425,13 +1428,13 @@
             </div>
 
             <div class="form-group">
-                <label>Title</label>
-                <input type="text" x-model="newIssueForm.title" placeholder="이슈 제목 입력...">
+                <label for="issue-title">Title</label>
+                <input id="issue-title" type="text" x-model="newIssueForm.title" placeholder="이슈 제목 입력...">
             </div>
 
             <div class="form-group">
-                <label>Severity</label>
-                <select x-model="newIssueForm.severity">
+                <label for="issue-severity">Severity</label>
+                <select id="issue-severity" x-model="newIssueForm.severity">
                     <option value="critical">Critical (즉시 조치 필요)</option>
                     <option value="high">High (24시간 내 조치)</option>
                     <option value="medium">Medium (일주일 내 조치)</option>
@@ -1440,8 +1443,8 @@
             </div>
 
             <div class="form-group">
-                <label>Description</label>
-                <textarea x-model="newIssueForm.description" rows="3" 
+                <label for="issue-description">Description</label>
+                <textarea id="issue-description" x-model="newIssueForm.description" rows="3" 
                           style="width:100%; padding:8px; background:#0d1117; border:1px solid #30363d; border-radius:4px; color:#c9d1d9; font-size:12px; resize:vertical;"
                           placeholder="상세 내용 입력..."></textarea>
             </div>
@@ -1729,8 +1732,8 @@
                 </div>
                 
                 <div class="form-group">
-                    <label>API Endpoint URL</label>
-                    <input type="text" x-model="apiUrl" 
+                    <label for="api-endpoint-url">API Endpoint URL</label>
+                    <input id="api-endpoint-url" type="text" x-model="apiUrl" 
                            placeholder="https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec">
                 </div>
                 
@@ -1773,9 +1776,10 @@
 
                 <!-- Webhook URL Input -->
                 <div class="form-group">
-                    <label>Webhook URL</label>
+                    <label for="slack-webhook-url">Webhook URL</label>
                     <div style="position: relative;">
-                        <input :type="slackSettings.showWebhookUrl ? 'text' : 'password'"
+                        <input id="slack-webhook-url"
+                               :type="slackSettings.showWebhookUrl ? 'text' : 'password'"
                                x-model="slackSettings.webhookUrl"
                                placeholder="https://hooks.slack.com/services/T00000000/B00000000/XXXXXXX"
                                style="padding-right: 80px;">
@@ -1933,7 +1937,8 @@
                                 <span style="font-size:12px; color:#c9d1d9; font-family:monospace;" x-text="email"></span>
                                 <button class="btn"
                                         style="padding:2px 8px; font-size:10px; color:#f85149;"
-                                        @click="removeEmailRecipient(index)">
+                                        @click="removeEmailRecipient(index)"
+                                        aria-label="이메일 수신자 제거">
                                     ✕
                                 </button>
                             </div>
@@ -2068,7 +2073,7 @@
                 <option value="lock">잠금/해제</option>
                 <option value="import">데이터 가져오기</option>
             </select>
-            <button class="btn" style="padding:4px 8px;" @click="historyPanelOpen = false">✕</button>
+            <button class="btn" style="padding:4px 8px;" @click="historyPanelOpen = false" aria-label="변경 이력 패널 닫기">✕</button>
         </div>
     </div>
     <div class="history-panel-body">
@@ -2440,6 +2445,14 @@
     <!-- FAB Action Buttons -->
     <div class="fab-actions" :class="{ 'open': fabOpen }">
         <div class="fab-action">
+            <span class="fab-action-label">📊 요약</span>
+            <button class="fab-action-btn primary"
+                    @click="fabOpen = false; showSummaryPanel = true"
+                    aria-label="현황 요약 보기">
+                📊
+            </button>
+        </div>
+        <div class="fab-action">
             <span class="fab-action-label">이슈 생성</span>
             <button class="fab-action-btn warning"
                     @click="fabOpen = false; openIssueForm()"
@@ -2481,6 +2494,269 @@
             aria-expanded="fabOpen">
         ➕
     </button>
+</div>
+
+<!-- Phase 12-1: Context Intelligence - Quick Paste Bar -->
+<div class="context-paste-bar"
+     x-show="contextPanelOpen"
+     x-cloak
+     x-transition:enter="transition ease-out duration-200"
+     x-transition:enter-start="opacity-0 transform translate-y-full"
+     x-transition:enter-end="opacity-100 transform translate-y-0"
+     x-transition:leave="transition ease-in duration-150"
+     x-transition:leave-start="opacity-100 transform translate-y-0"
+     x-transition:leave-end="opacity-0 transform translate-y-full"
+     role="dialog"
+     aria-label="컨텍스트 입력 패널">
+
+    <!-- Header -->
+    <div class="context-bar-header">
+        <h3>📋 Smart Paste</h3>
+        <button class="context-bar-close"
+                @click="contextPanelOpen = false; contextInput = ''; contextSuggestions = []; highlightedColumns = []"
+                aria-label="닫기">×</button>
+    </div>
+
+    <!-- Input Area -->
+    <div class="context-input-area">
+        <textarea
+            x-model="contextInput"
+            placeholder="카톡, 메일, 회의록 내용을 붙여넣으세요...&#10;예: 'C-X1~5 설치 완료, A구역 3층 보류'"
+            rows="3"
+            class="context-textarea"
+            @keydown.ctrl.enter="analyzeContext()"
+            aria-label="컨텍스트 입력"></textarea>
+        <button class="context-analyze-btn"
+                @click="analyzeContext()"
+                :disabled="!contextInput.trim() || contextProcessing"
+                :class="{ 'processing': contextProcessing }">
+            <span x-show="!contextProcessing">🔍 분석하기</span>
+            <span x-show="contextProcessing">⏳ 분석 중...</span>
+        </button>
+    </div>
+
+    <!-- Suggestions List -->
+    <div class="context-suggestions" x-show="contextSuggestions.length > 0">
+        <h4>📊 제안 사항 (<span x-text="contextSuggestions.length"></span>개)</h4>
+        <template x-for="(suggestion, idx) in contextSuggestions" :key="idx">
+            <div class="context-suggestion-card"
+                 :class="{
+                     'status-change': suggestion.type === 'status_change',
+                     'issue-create': suggestion.type === 'issue_create'
+                 }">
+                <div class="suggestion-content">
+                    <span class="suggestion-icon" x-text="suggestion.type === 'status_change' ? '🔄' : '⚠️'"></span>
+                    <div class="suggestion-text">
+                        <strong x-text="suggestion.columns.map(c => c.id || c).join(', ')"></strong>
+                        <template x-if="suggestion.type === 'status_change'">
+                            <span> → <span x-text="getStatusLabel(suggestion.newStatus)"></span></span>
+                        </template>
+                        <template x-if="suggestion.type === 'issue_create'">
+                            <span> 이슈 생성</span>
+                        </template>
+                        <div class="suggestion-confidence">
+                            신뢰도: <span x-text="suggestion.confidence + '%'"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="suggestion-actions">
+                    <button class="btn-approve"
+                            @click="approveContextSuggestion(suggestion)"
+                            aria-label="승인">✓</button>
+                    <button class="btn-reject"
+                            @click="rejectContextSuggestion(suggestion)"
+                            aria-label="거절">✕</button>
+                </div>
+            </div>
+        </template>
+    </div>
+
+    <!-- Source Preview -->
+    <div class="context-source-preview" x-show="contextInput.trim()">
+        <small>📝 원본: "<span x-text="contextInput.substring(0, 50) + (contextInput.length > 50 ? '...' : '')"></span>"</small>
+    </div>
+</div>
+
+<!-- Context Paste Toggle Button (Floating) -->
+<button class="context-paste-toggle"
+        x-show="!contextPanelOpen"
+        @click="contextPanelOpen = true"
+        aria-label="Smart Paste 열기">
+    📋
+</button>
+
+<!-- Phase 12-2: Context Source Modal -->
+<div class="context-source-modal-overlay"
+     x-show="contextSourceModal.open"
+     x-cloak
+     x-transition:enter="transition ease-out duration-200"
+     x-transition:enter-start="opacity-0"
+     x-transition:enter-end="opacity-100"
+     x-transition:leave="transition ease-in duration-150"
+     x-transition:leave-start="opacity-100"
+     x-transition:leave-end="opacity-0"
+     @click.self="closeContextSource()"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="context-source-title">
+
+    <div class="context-source-modal">
+        <!-- Header -->
+        <div class="context-source-header">
+            <h3 id="context-source-title">📄 원본 컨텍스트</h3>
+            <button class="context-source-close"
+                    @click="closeContextSource()"
+                    aria-label="닫기">×</button>
+        </div>
+
+        <!-- Content -->
+        <template x-if="contextSourceModal.context">
+            <div class="context-source-content">
+                <!-- Meta Info -->
+                <div class="context-source-meta">
+                    <div class="meta-item">
+                        <span class="meta-label">📅 시간</span>
+                        <span class="meta-value" x-text="new Date(contextSourceModal.context.timestamp).toLocaleString('ko-KR')"></span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">🎯 적용 작업</span>
+                        <span class="meta-value" x-text="contextSourceModal.context.appliedAction"></span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">📊 신뢰도</span>
+                        <span class="meta-value" x-text="contextSourceModal.context.parsedData?.confidence + '%'"></span>
+                    </div>
+                </div>
+
+                <!-- Affected Columns -->
+                <div class="context-source-columns">
+                    <span class="section-label">🏗️ 영향받은 기둥</span>
+                    <div class="column-tags">
+                        <template x-for="col in contextSourceModal.context.affectedColumns" :key="col">
+                            <span class="column-tag" x-text="col"></span>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Original Text (Highlighted) -->
+                <div class="context-source-text">
+                    <span class="section-label">📝 원본 텍스트</span>
+                    <div class="original-text-box">
+                        <p x-text="contextSourceModal.context.rawText"></p>
+                    </div>
+                </div>
+
+                <!-- Parsed Data -->
+                <div class="context-source-parsed">
+                    <span class="section-label">🔍 파싱 결과</span>
+                    <pre x-text="JSON.stringify(contextSourceModal.context.parsedData, null, 2)"></pre>
+                </div>
+            </div>
+        </template>
+
+        <!-- Footer -->
+        <div class="context-source-footer">
+            <button class="btn btn-primary" @click="closeContextSource()">확인</button>
+        </div>
+    </div>
+</div>
+
+<!-- Phase 13: Summary Panel (실무자용 요약 뷰) -->
+<div class="summary-panel-overlay"
+     x-show="showSummaryPanel"
+     x-cloak
+     @click.self="showSummaryPanel = false"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="summary-panel-title">
+
+    <div class="summary-panel" id="summary-panel-content">
+        <!-- Header -->
+        <div class="summary-panel-header">
+            <h2 id="summary-panel-title">📊 P5 복합동 현황</h2>
+            <span class="summary-date" x-text="new Date().toLocaleDateString('ko-KR', {year:'numeric', month:'long', day:'numeric'})"></span>
+            <button class="summary-close-btn"
+                    @click="showSummaryPanel = false"
+                    aria-label="닫기">×</button>
+        </div>
+
+        <!-- Body -->
+        <div class="summary-panel-body">
+            <!-- Overall Progress -->
+            <div class="summary-overall">
+                <div class="overall-label">전체 진행률</div>
+                <div class="overall-value" x-text="getOverallProgress() + '%'"></div>
+                <div class="overall-bar">
+                    <div class="overall-bar-fill" :style="`width: ${getOverallProgress()}%`"></div>
+                </div>
+            </div>
+
+            <!-- Zone Cards -->
+            <div class="summary-zones">
+                <template x-for="zone in zones" :key="zone.id">
+                    <div class="summary-zone-card" :style="`border-color: ${zone.color}`">
+                        <div class="zone-card-name" x-text="zone.displayName || zone.name"></div>
+                        <div class="zone-card-progress" x-text="getZoneProgress(zone.id) + '%'"></div>
+                        <div class="zone-card-bar">
+                            <div class="zone-card-bar-fill" :style="`width: ${getZoneProgress(zone.id)}%; background: ${zone.color}`"></div>
+                        </div>
+                        <div class="zone-card-stats">
+                            <span>완료: <strong x-text="getZoneCompletedCount(zone.id)"></strong></span>
+                            <span>전체: <strong x-text="getZoneTotalCount(zone.id)"></strong></span>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="summary-quick-stats">
+                <div class="quick-stat" :class="{'has-critical': openIssues.some(i => i.severity === 'critical')}">
+                    <div class="stat-icon">🚨</div>
+                    <div class="stat-value" x-text="openIssues.length"></div>
+                    <div class="stat-label">열린 이슈</div>
+                    <template x-if="openIssues.some(i => i.severity === 'critical')">
+                        <div class="stat-badge critical">Critical <span x-text="openIssues.filter(i => i.severity === 'critical').length"></span></div>
+                    </template>
+                </div>
+                <div class="quick-stat">
+                    <div class="stat-icon">🔄</div>
+                    <div class="stat-value" x-text="getActiveColumnsCount()"></div>
+                    <div class="stat-label">진행중</div>
+                </div>
+                <div class="quick-stat">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-value" x-text="getCompletedColumnsCount()"></div>
+                    <div class="stat-label">완료</div>
+                </div>
+            </div>
+
+            <!-- Stage Progress (6단계 공정) -->
+            <div class="summary-stages">
+                <div class="stages-title">공정별 진행 현황</div>
+                <div class="stages-list">
+                    <template x-for="stage in stageConfigs" :key="stage.id">
+                        <div class="stage-item">
+                            <span class="stage-name" x-text="stage.name"></span>
+                            <span class="stage-count" x-text="getStageCount(stage.id)"></span>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="summary-panel-footer">
+            <button class="btn btn-secondary" @click="saveSummaryAsImage()">
+                📷 이미지 저장
+            </button>
+            <button class="btn btn-secondary" @click="copySummaryLink()">
+                🔗 링크 복사
+            </button>
+            <button class="btn btn-primary" @click="showSummaryPanel = false">
+                확인
+            </button>
+        </div>
+    </div>
 </div>
 
 <!-- Mouse Drag Selection Overlay -->
@@ -2959,6 +3235,23 @@ function dashboard() {
         },
         showIssueEditor: false,
         issueFilter: 'all',
+
+        // Phase 12-1: Context Intelligence State
+        contextPanelOpen: false,
+        contextInput: '',
+        contextSuggestions: [],
+        contextProcessing: false,
+        highlightedColumns: [],
+
+        // Phase 12-2: Context Storage State
+        contextStore: [],              // 저장된 컨텍스트 목록
+        contextSourceModal: {
+            open: false,
+            context: null              // 현재 보기 중인 컨텍스트
+        },
+
+        // Phase 13: Summary Panel (실무자용 요약 뷰)
+        showSummaryPanel: false,
 
         // WP-5: Export Libraries Lazy Loading State
         _exportLibsLoading: false,
@@ -3726,6 +4019,394 @@ function dashboard() {
             return `Col ${vs.visibleColStart + 1}-${vs.visibleColEnd + 1} / ${this.gridConfig.cols} | Row ${vs.visibleRowStart + 1}-${vs.visibleRowEnd} / ${this.gridConfig.rows}`;
         },
 
+        // === Phase 12-1: Context Intelligence (Smart Paste) ===
+
+        /**
+         * SmartPaste Parsing Engine
+         * 정규식 기반으로 카톡/메일 텍스트에서 기둥 ID와 상태를 추출
+         */
+        smartPaste: {
+            patterns: {
+                // 기둥 ID 패턴: C-X1, CX1, C1, A-X15, ZONE-A-X1 등
+                columnId: /([A-C])-?[Xx]?(\d{1,3})/gi,
+                // 범위 패턴: X1~5, X1-5, X10~15, A-X1~X5, 1번~5번 등
+                columnRange: /([A-C])-?[Xx]?(\d{1,3})\s*[~\-~－까지]\s*[Xx]?(\d{1,3})/gi,
+                // 층수 패턴: 1층, 3F, RF, 10FL
+                floor: /(RF|\d{1,2})\s*(층|[Ff][Ll]?|[Ff]loor)?/gi,
+                // 상태 키워드
+                statusKeywords: {
+                    installed: ['완료', '끝', 'done', 'complete', '타설', '설치'],
+                    hold_design: ['보류', 'hold', '중단', '대기', '설계변경'],
+                    hold_material: ['자재', 'material', '입고지연'],
+                    active: ['진행', 'active', '시작', 'start', '착수']
+                },
+                // 이슈 키워드
+                issueKeywords: ['문제', 'issue', '지연', 'delay', '오류', '간섭', 'T/C', '안전']
+            },
+
+            parse(text) {
+                const result = {
+                    columns: [],
+                    floor: null,
+                    status: null,
+                    hasIssue: false,
+                    rawText: text,
+                    confidence: 0
+                };
+
+                const addedIds = new Set(); // 중복 방지
+
+                // 1-A. 범위 패턴 먼저 추출 (X1~5, X10-15 등)
+                const rangeMatches = text.matchAll(this.patterns.columnRange);
+                for (const match of rangeMatches) {
+                    const zone = match[1].toUpperCase();
+                    const startNum = parseInt(match[2], 10);
+                    const endNum = parseInt(match[3], 10);
+
+                    // 범위 확장 (startNum ~ endNum)
+                    const [min, max] = startNum <= endNum ? [startNum, endNum] : [endNum, startNum];
+                    for (let num = min; num <= max && num <= 330; num++) {
+                        const id = `${zone}-X${num}`;
+                        if (!addedIds.has(id) && num > 0) {
+                            result.columns.push({ zone, num, id });
+                            addedIds.add(id);
+                        }
+                    }
+                }
+
+                // 1-B. 개별 기둥 ID 추출 (범위에 포함되지 않은 것들)
+                const columnMatches = text.matchAll(this.patterns.columnId);
+                for (const match of columnMatches) {
+                    const zone = match[1].toUpperCase();
+                    const num = parseInt(match[2], 10);
+                    const id = `${zone}-X${num}`;
+                    if (num > 0 && num <= 330 && !addedIds.has(id)) {
+                        result.columns.push({ zone, num, id });
+                        addedIds.add(id);
+                    }
+                }
+
+                // 2. 층수 추출
+                const floorMatch = text.match(this.patterns.floor);
+                if (floorMatch) {
+                    result.floor = floorMatch[1].toUpperCase() === 'RF' ? 'RF' : parseInt(floorMatch[1], 10);
+                }
+
+                // 3. 상태 키워드 매칭
+                for (const [status, keywords] of Object.entries(this.patterns.statusKeywords)) {
+                    for (const keyword of keywords) {
+                        if (text.toLowerCase().includes(keyword.toLowerCase())) {
+                            result.status = status;
+                            break;
+                        }
+                    }
+                    if (result.status) break;
+                }
+
+                // 4. 이슈 키워드 체크
+                result.hasIssue = this.patterns.issueKeywords.some(kw =>
+                    text.toLowerCase().includes(kw.toLowerCase())
+                );
+
+                // 5. 신뢰도 계산
+                if (result.columns.length > 0) result.confidence += 40;
+                if (result.status) result.confidence += 30;
+                if (result.floor) result.confidence += 20;
+                if (text.length > 10) result.confidence += 10;
+
+                return result;
+            }
+        },
+
+        /**
+         * Context Intelligence: 텍스트 분석 실행
+         */
+        analyzeContext() {
+            if (!this.contextInput.trim()) {
+                this.showToast('분석할 텍스트를 입력해주세요', 'warning');
+                return;
+            }
+
+            this.contextProcessing = true;
+            this.contextSuggestions = [];
+            this.highlightedColumns = [];
+
+            // 파싱 실행
+            const parsed = this.smartPaste.parse(this.contextInput);
+
+            setTimeout(() => {
+                if (parsed.columns.length === 0) {
+                    this.showToast('인식된 기둥 ID가 없습니다. 예: C-X1, A-X15', 'warning');
+                    this.contextProcessing = false;
+                    return;
+                }
+
+                // 제안 생성
+                const suggestion = {
+                    id: Date.now(),
+                    type: parsed.hasIssue ? 'issue_create' : 'status_change',
+                    columns: parsed.columns,
+                    floor: parsed.floor,
+                    newStatus: parsed.status || 'installed',
+                    hasIssue: parsed.hasIssue,
+                    confidence: parsed.confidence,
+                    sourceText: this.contextInput.substring(0, 200),
+                    timestamp: new Date().toISOString()
+                };
+
+                this.contextSuggestions = [suggestion];
+
+                // 하이라이트할 기둥 ID 목록
+                this.highlightedColumns = parsed.columns.map(c => c.id);
+
+                this.contextProcessing = false;
+                this.showToast(`${parsed.columns.length}개 기둥 인식됨 (신뢰도: ${parsed.confidence}%)`, 'success');
+            }, 300);
+        },
+
+        /**
+         * 제안 승인: 상태 변경 실행
+         */
+        approveContextSuggestion(suggestion) {
+            const updatedColumns = [];
+
+            // Phase 12-2: 컨텍스트를 저장소에 저장하고 ID 생성
+            const contextId = this.saveContextToStore(suggestion);
+
+            for (const col of suggestion.columns) {
+                // 기둥 UID 찾기 (예: A-X1, B-X10, 3F-C-X1)
+                const colId = col.id || `${col.zone}-X${col.num}`;
+                const columnKeys = Object.keys(this.columns).filter(key =>
+                    key === colId ||                                    // 정확히 일치
+                    key.endsWith(`-${colId}`) ||                         // 층 prefix 포함 (예: 3F-A-X1)
+                    key === `${col.zone}-X${col.num}`                    // Zone-X# 형식
+                );
+
+                for (const key of columnKeys) {
+                    if (this.columns[key]) {
+                        const oldStatus = this.columns[key].status;
+                        this.columns[key].status = suggestion.newStatus;
+                        this.columns[key].updatedAt = new Date().toISOString();
+
+                        // 히스토리 추가 (출처 연결 - Phase 12-2 강화)
+                        if (!this.columns[key].history) {
+                            this.columns[key].history = [];
+                        }
+                        this.columns[key].history.push({
+                            timestamp: new Date().toISOString(),
+                            action: 'status_change',
+                            from: oldStatus,
+                            to: suggestion.newStatus,
+                            reason: 'Context Intelligence',
+                            sourceId: contextId,                    // 컨텍스트 ID 연결
+                            sourceSnippet: suggestion.sourceText.substring(0, 100)
+                        });
+
+                        updatedColumns.push(key);
+                    }
+                }
+            }
+
+            // 저장
+            this.saveToLocalStorage();
+
+            // Phase 12-2: 글로벌 히스토리에도 추가 (View Source 버튼 연동)
+            if (updatedColumns.length > 0) {
+                const historyEntry = {
+                    id: `hist_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                    type: 'status',
+                    timestamp: new Date().toISOString(),
+                    description: `${updatedColumns.length}개 기둥 상태 변경 → ${this.getStatusLabel(suggestion.newStatus)}`,
+                    targetId: updatedColumns.join(', '),
+                    affectedColumns: updatedColumns,
+                    affectedCount: updatedColumns.length,
+                    user: 'Context Intelligence',
+                    sourceId: contextId,  // 컨텍스트 출처 연결
+                    data: {
+                        action: 'status_change',
+                        newStatus: suggestion.newStatus,
+                        source: 'Smart Paste'
+                    }
+                };
+                this.historyData.unshift(historyEntry);
+
+                // 최대 500개 유지
+                if (this.historyData.length > 500) {
+                    this.historyData = this.historyData.slice(0, 500);
+                }
+
+                // LocalStorage에 저장
+                try {
+                    localStorage.setItem('p5_history', JSON.stringify(this.historyData.slice(0, 100)));
+                } catch (e) {
+                    console.warn('[History] Failed to save to localStorage:', e);
+                }
+            }
+
+            // 제안 제거
+            this.contextSuggestions = this.contextSuggestions.filter(s => s.id !== suggestion.id);
+
+            // 하이라이트 해제 (2초 후)
+            setTimeout(() => {
+                this.highlightedColumns = [];
+            }, 2000);
+
+            // 입력 초기화
+            this.contextInput = '';
+
+            this.showToast(`${updatedColumns.length}개 기둥 상태가 '${this.getStatusLabel(suggestion.newStatus)}'로 변경되었습니다`, 'success');
+        },
+
+        /**
+         * 제안 거절
+         */
+        rejectContextSuggestion(suggestion) {
+            this.contextSuggestions = this.contextSuggestions.filter(s => s.id !== suggestion.id);
+            this.highlightedColumns = [];
+            this.showToast('제안이 취소되었습니다', 'info');
+        },
+
+        // === Phase 12-2: Context Storage System ===
+
+        /**
+         * 컨텍스트를 저장소에 저장
+         * @param {Object} suggestion - 승인된 제안 객체
+         * @returns {string} 생성된 컨텍스트 ID
+         */
+        saveContextToStore(suggestion) {
+            const contextId = `ctx_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+            const contextRecord = {
+                id: contextId,
+                timestamp: new Date().toISOString(),
+                type: suggestion.type,
+                rawText: suggestion.sourceText,
+                parsedData: {
+                    columns: suggestion.columns.map(c => c.id || c),
+                    floor: suggestion.floor,
+                    status: suggestion.newStatus,
+                    confidence: suggestion.confidence
+                },
+                affectedColumns: suggestion.columns.map(c => c.id || c),
+                appliedAction: suggestion.type === 'status_change'
+                    ? `상태 변경: ${this.getStatusLabel(suggestion.newStatus)}`
+                    : '이슈 생성',
+                metadata: {
+                    source: 'Smart Paste',
+                    approvedAt: new Date().toISOString()
+                }
+            };
+
+            // 저장소에 추가 (최대 100개 유지)
+            this.contextStore.unshift(contextRecord);
+            if (this.contextStore.length > 100) {
+                this.contextStore = this.contextStore.slice(0, 100);
+            }
+
+            // LocalStorage에 저장
+            this.saveContextStore();
+
+            console.log('[Context Store] Saved:', contextId);
+            return contextId;
+        },
+
+        /**
+         * 컨텍스트 ID로 조회
+         * @param {string} contextId - 컨텍스트 ID
+         * @returns {Object|null} 컨텍스트 레코드
+         */
+        getContextById(contextId) {
+            return this.contextStore.find(ctx => ctx.id === contextId) || null;
+        },
+
+        /**
+         * 컨텍스트 소스 팝업 열기
+         * @param {string} contextId - 컨텍스트 ID
+         */
+        openContextSource(contextId) {
+            const context = this.getContextById(contextId);
+            if (context) {
+                this.contextSourceModal.context = context;
+                this.contextSourceModal.open = true;
+            } else {
+                this.showToast('원본 컨텍스트를 찾을 수 없습니다', 'warning');
+            }
+        },
+
+        /**
+         * 컨텍스트 소스 팝업 닫기
+         */
+        closeContextSource() {
+            this.contextSourceModal.open = false;
+            this.contextSourceModal.context = null;
+        },
+
+        /**
+         * 컨텍스트 저장소 LocalStorage 저장
+         */
+        saveContextStore() {
+            try {
+                localStorage.setItem('p5_context_store', JSON.stringify(this.contextStore));
+            } catch (e) {
+                console.warn('[Context Store] Save failed:', e);
+            }
+        },
+
+        /**
+         * 컨텍스트 저장소 LocalStorage 로드
+         */
+        loadContextStore() {
+            try {
+                const stored = localStorage.getItem('p5_context_store');
+                if (stored) {
+                    this.contextStore = JSON.parse(stored);
+                    console.log('[Context Store] Loaded:', this.contextStore.length, 'records');
+                }
+            } catch (e) {
+                console.warn('[Context Store] Load failed:', e);
+                this.contextStore = [];
+            }
+        },
+
+        /**
+         * Phase 12-2: 히스토리 데이터 LocalStorage 로드
+         */
+        loadHistoryData() {
+            try {
+                const stored = localStorage.getItem('p5_history');
+                if (stored) {
+                    this.historyData = JSON.parse(stored);
+                    console.log('[History] Loaded:', this.historyData.length, 'records');
+                }
+            } catch (e) {
+                console.warn('[History] Load failed:', e);
+                this.historyData = [];
+            }
+        },
+
+        /**
+         * 기둥이 하이라이트되어야 하는지 확인
+         */
+        isColumnHighlighted(columnId) {
+            return this.highlightedColumns.some(id => columnId.includes(id));
+        },
+
+        /**
+         * 상태 코드의 한글 레이블 반환
+         */
+        getStatusLabel(statusCode) {
+            const labels = {
+                pending: '대기',
+                active: '진행중',
+                installed: '설치완료',
+                hold_design: '설계 변경',
+                hold_material: '자재 대기',
+                hold_tc: 'T/C Hold',
+                hold_safety: '안전 점검'
+            };
+            return labels[statusCode] || statusCode;
+        },
+
         // === Lifecycle ===
         init() {
             const data = P5Store.load();
@@ -3738,6 +4419,12 @@ function dashboard() {
                 });
                 console.log('[WP-9-1] ErrorHandler initialized with toast integration');
             }
+
+            // Phase 12-2: Load Context Store from LocalStorage
+            this.loadContextStore();
+
+            // Phase 12-2: Load History Data from LocalStorage
+            this.loadHistoryData();
 
             // ★ Floor Plan Fix: MGT_CONFIG zones 적용 (P5 복합동 실제 규격)
             // LocalStorage에 저장된 테스트 데이터(1-69열)가 아닌 
@@ -5660,6 +6347,123 @@ function dashboard() {
         getZoneColor(zoneId) {
             const zone = this.zones.find(z => z.id === zoneId);
             return zone?.color || '#1f6feb';
+        },
+
+        // === Phase 13: Summary Panel Helper Functions ===
+
+        /**
+         * Zone별 완료 기둥 수
+         */
+        getZoneCompletedCount(zoneId) {
+            const zone = this.zones.find(z => z.id === zoneId);
+            if (!zone || !zone.columns?.length) return 0;
+
+            let completed = 0;
+            for (const uid of zone.columns) {
+                const column = this.columns[uid];
+                if (column?.stages?.embed === 'installed') {
+                    completed++;
+                }
+            }
+            return completed;
+        },
+
+        /**
+         * Zone별 전체 기둥 수
+         */
+        getZoneTotalCount(zoneId) {
+            const zone = this.zones.find(z => z.id === zoneId);
+            return zone?.columns?.length || 0;
+        },
+
+        /**
+         * 진행중(active) 기둥 수
+         */
+        getActiveColumnsCount() {
+            return Object.values(this.columns).filter(col =>
+                col.status?.code === 'active' || col.status?.code === 'in_progress'
+            ).length;
+        },
+
+        /**
+         * 완료(installed) 기둥 수
+         */
+        getCompletedColumnsCount() {
+            return Object.values(this.columns).filter(col =>
+                col.stages?.embed === 'installed'
+            ).length;
+        },
+
+        /**
+         * Summary Panel을 이미지로 저장
+         */
+        async saveSummaryAsImage() {
+            try {
+                this.showToast('이미지 생성 중...', 'info');
+
+                // html2canvas 동적 로드
+                if (typeof html2canvas === 'undefined') {
+                    await this.loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+                }
+
+                const panel = document.getElementById('summary-panel-content');
+                if (!panel) {
+                    this.showToast('패널을 찾을 수 없습니다', 'error');
+                    return;
+                }
+
+                const canvas = await html2canvas(panel, {
+                    backgroundColor: '#161b22',
+                    scale: 2,
+                    useCORS: true
+                });
+
+                // 다운로드
+                const link = document.createElement('a');
+                const dateStr = new Date().toISOString().slice(0, 10);
+                link.download = `P5_현황_${dateStr}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+
+                this.showToast('이미지가 저장되었습니다', 'success');
+            } catch (error) {
+                console.error('[Summary] Image save error:', error);
+                this.showToast('이미지 저장 실패: ' + error.message, 'error');
+            }
+        },
+
+        /**
+         * 현재 현황 링크 복사
+         */
+        async copySummaryLink() {
+            try {
+                const url = new URL(window.location.href);
+                url.searchParams.set('view', 'summary');
+                url.searchParams.set('date', new Date().toISOString().slice(0, 10));
+
+                await navigator.clipboard.writeText(url.toString());
+                this.showToast('링크가 복사되었습니다', 'success');
+            } catch (error) {
+                console.error('[Summary] Copy link error:', error);
+                this.showToast('링크 복사 실패', 'error');
+            }
+        },
+
+        /**
+         * 스크립트 동적 로드 유틸리티
+         */
+        loadScript(src) {
+            return new Promise((resolve, reject) => {
+                if (document.querySelector(`script[src="${src}"]`)) {
+                    resolve();
+                    return;
+                }
+                const script = document.createElement('script');
+                script.src = src;
+                script.onload = resolve;
+                script.onerror = () => reject(new Error(`Failed to load: ${src}`));
+                document.head.appendChild(script);
+            });
         },
 
         /**
@@ -9456,130 +10260,6 @@ document.addEventListener('alpine:init', () => {
     </div>
 </nav>
 
-<!-- Phase 7: 요약 패널 토글 버튼 -->
-<button class="summary-toggle-btn" @click="summaryPanelOpen = !summaryPanelOpen" title="대시보드 요약">
-    📊
-</button>
-
-<!-- Phase 7: 요약 패널 오버레이 -->
-<div class="summary-panel-overlay" :class="summaryPanelOpen ? 'open' : ''" @click="summaryPanelOpen = false"></div>
-
-<!-- Phase 7: 대시보드 요약 패널 -->
-<div class="summary-panel" :class="summaryPanelOpen ? 'open' : ''">
-    <div class="summary-panel-header">
-        <h2>📊 대시보드 요약</h2>
-        <button class="notification-close" @click="summaryPanelOpen = false">✕</button>
-    </div>
-    <div class="summary-panel-body">
-        <div class="summary-grid">
-            <!-- 전체 진행률 -->
-            <div class="summary-card">
-                <div class="summary-card-header">
-                    <span class="summary-card-title">전체 진행률</span>
-                    <span class="summary-card-icon">📈</span>
-                </div>
-                <div class="donut-chart">
-                    <svg viewBox="0 0 100 100">
-                        <circle class="bg" cx="50" cy="50" r="40"></circle>
-                        <circle class="progress" cx="50" cy="50" r="40"
-                                :stroke-dasharray="251.2"
-                                :stroke-dashoffset="251.2 - (251.2 * getTotalProgress() / 100)"></circle>
-                    </svg>
-                    <div class="center-text">
-                        <div class="donut-center-value" x-text="getTotalProgress() + '%'"></div>
-                        <div class="donut-center-label">완료</div>
-                    </div>
-                </div>
-                <div style="text-align:center; font-size:12px; color:#8b949e;">
-                    <span x-text="Object.keys(columns).length"></span>개 중
-                    <span style="color:#238636;" x-text="getCompletedColumnsCount()"></span>개 완료
-                </div>
-            </div>
-
-            <!-- 공정별 진행률 -->
-            <div class="summary-card">
-                <div class="summary-card-header">
-                    <span class="summary-card-title">공정별 현황</span>
-                    <span class="summary-card-icon">🔧</span>
-                </div>
-                <div class="stage-progress-list">
-                    <template x-for="stage in stageConfigs" :key="stage.code">
-                        <div class="stage-progress-item">
-                            <span class="stage-progress-label" x-text="stage.label"></span>
-                            <div class="stage-progress-bar">
-                                <div class="stage-progress-fill"
-                                     :style="'width:' + getStageProgress(stage.code) + '%; background:' + stage.color">
-                                </div>
-                            </div>
-                            <span class="stage-progress-value" x-text="getStageProgress(stage.code) + '%'"></span>
-                        </div>
-                    </template>
-                </div>
-            </div>
-
-            <!-- 오늘 변경 내역 -->
-            <div class="summary-card">
-                <div class="summary-card-header">
-                    <span class="summary-card-title">오늘의 변경</span>
-                    <span class="summary-card-icon">📅</span>
-                </div>
-                <div class="today-timeline" x-show="todayChanges.length > 0">
-                    <template x-for="change in todayChanges.slice(0, 5)" :key="change.id">
-                        <div class="timeline-item">
-                            <span class="timeline-time" x-text="change.time"></span>
-                            <span class="timeline-content" x-text="change.description"></span>
-                        </div>
-                    </template>
-                </div>
-                <div class="timeline-empty" x-show="todayChanges.length === 0">
-                    오늘 변경 내역이 없습니다
-                </div>
-            </div>
-
-            <!-- TOP 이슈 -->
-            <div class="summary-card">
-                <div class="summary-card-header">
-                    <span class="summary-card-title">미해결 이슈 TOP 5</span>
-                    <span class="summary-card-icon">🚨</span>
-                </div>
-                <div class="top-issues-list" x-show="openIssues.length > 0">
-                    <template x-for="issue in openIssues.slice(0, 5)" :key="issue.id">
-                        <div class="top-issue-item" @click="selectedIssue = issue; issuePanelOpen = true; summaryPanelOpen = false;">
-                            <span class="top-issue-severity" x-text="getSeverityEmoji(issue.severity)"></span>
-                            <span class="top-issue-title" x-text="issue.title"></span>
-                            <span class="top-issue-count" x-text="(issue.affectedColumns?.length || 0) + '개 기둥'"></span>
-                        </div>
-                    </template>
-                </div>
-                <div class="timeline-empty" x-show="openIssues.length === 0">
-                    ✅ 미해결 이슈가 없습니다!
-                </div>
-            </div>
-
-            <!-- Zone별 완료율 -->
-            <div class="summary-card" style="grid-column: span 2;">
-                <div class="summary-card-header">
-                    <span class="summary-card-title">Zone별 완료율 비교</span>
-                    <span class="summary-card-icon">🏗️</span>
-                </div>
-                <div class="zone-compare-chart">
-                    <template x-for="zone in zones" :key="zone.id">
-                        <div class="zone-bar-wrapper">
-                            <div class="zone-bar-value" x-text="getZoneProgress(zone.id) + '%'"></div>
-                            <div class="zone-bar" :style="'height:' + Math.max(getZoneProgress(zone.id), 10) + 'px'">
-                                <div class="zone-bar-fill" 
-                                     :style="'height:100%; background:' + getZoneColor(zone.id)">
-                                </div>
-                            </div>
-                            <div class="zone-bar-label" x-text="zone.name"></div>
-                        </div>
-                    </template>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
 <!-- Phase 7: 빠른 상태 변경 액션 바 -->
 <div class="quick-action-bar" :class="selectedCells.length > 0 ? 'visible' : ''">
     <div class="quick-action-info">
@@ -9712,6 +10392,14 @@ document.addEventListener('alpine:init', () => {
                                 </template>
                             </div>
                         </div>
+                        <!-- Phase 12-2: View Source Button -->
+                        <template x-if="item.sourceId">
+                            <button class="history-source-btn"
+                                    @click.stop="openContextSource(item.sourceId)"
+                                    title="View original context source">
+                                📄
+                            </button>
+                        </template>
                     </div>
                 </template>
             </div>
