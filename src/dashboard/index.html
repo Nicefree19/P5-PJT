@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>P5 Live Grid Dashboard v2.3</title>
+    <title>P5 Live Grid Dashboard v2.4</title>
     
     <!-- Security: Content Security Policy (Updated for GIS + SheetJS + jsPDF) -->
     <meta http-equiv="Content-Security-Policy"
@@ -9634,7 +9634,7 @@ document.addEventListener('alpine:init', () => {
 
         <!-- Lock 토글 -->
         <div class="quick-action-dropdown">
-            <button class="quick-action-btn" :class="{ 'locked': getSelectedLockCount() > 0 }">
+            <button class="quick-action-btn" :class="{ 'locked': getSelectedLockCount() > 0 }" aria-label="선택한 기둥 잠금/해제">
                 <span x-text="getSelectedLockCount() > 0 ? '🔒' : '🔓'"></span>
                 <span x-text="getSelectedLockCount() + '/' + selectedCells.length"></span>
                 <span class="keyboard-hint">L</span>
@@ -9733,7 +9733,7 @@ document.addEventListener('alpine:init', () => {
     <div class="shortcuts-modal">
         <div class="shortcuts-modal-header">
             <h2>⌨️ 키보드 단축키</h2>
-            <button class="modal-close-btn" @click="shortcutsModalOpen = false">✕</button>
+            <button class="modal-close-btn" @click="shortcutsModalOpen = false" aria-label="키보드 단축키 도움말 닫기">✕</button>
         </div>
         <div class="shortcuts-modal-body">
             <!-- 일반 단축키 -->
