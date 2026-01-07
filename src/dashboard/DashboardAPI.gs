@@ -24,6 +24,8 @@
  * POST ?action=testSlackNotification - Slack 테스트 알림 전송 (Phase 11)
  * POST ?action=saveEmailSettings - Email 알림 설정 저장 (Phase 12)
  * POST ?action=testEmailNotification - Email 테스트 알림 전송 (Phase 12)
+ * POST ?action=parseShopIssues      - CSV 이슈 데이터 파싱 (Shop Issue Parser)
+ * POST ?action=getShopIssueStats    - 이슈 통계 조회 (Shop Issue Parser)
  *
  * Migration Functions (Apps Script에서 직접 실행):
  * - migrateAddFloorIdColumn()    - 기존 데이터에 floorId 컬럼 추가
@@ -537,6 +539,50 @@ function doPost(e) {
 
       case "testEmailNotification":
         result = sendEmailTestNotification();
+        break;
+
+      // Phase 12-3: Advanced NLP Context Analysis
+      case "analyzeContextNLP":
+        if (!payload.text || typeof payload.text !== "string") {
+          result = {
+            success: false,
+            error: "Text input is required for NLP analysis",
+            code: 400,
+          };
+        } else if (payload.text.length > 2000) {
+          result = {
+            success: false,
+            error: "Text input too long (max 2000 characters)",
+            code: 400,
+          };
+        } else {
+          result = analyzeContextWithNLP(payload.text, payload.context || {});
+        }
+        break;
+
+      // Shop Issue Parser API (CSV/Excel 이슈 데이터 파싱)
+      case "parseShopIssues":
+        if (!payload.csvData || typeof payload.csvData !== "string") {
+          result = {
+            success: false,
+            error: "CSV data is required for parsing",
+            code: 400,
+          };
+        } else {
+          result = parseShopIssuesFromCSV(payload.csvData);
+        }
+        break;
+
+      case "getShopIssueStats":
+        if (!payload.issues || !Array.isArray(payload.issues)) {
+          result = {
+            success: false,
+            error: "Issues array is required for statistics",
+            code: 400,
+          };
+        } else {
+          result = getShopIssueStatistics(payload.issues);
+        }
         break;
 
       default:
@@ -4491,7 +4537,695 @@ function sendWeeklyProgressSummaryEmail() {
   };
 }
 
+// ===== Phase 12-3: Advanced NLP Context Analysis =====
+
+/**
+ * NLP 기반 컨텍스트 분석 프롬프트
+ * 자연어 텍스트에서 기둥 정보, 상태, 의도를 추출
+ */
+const NLP_CONTEXT_PROMPT = `
+# 역할
+당신은 건설 현장 관리 시스템의 자연어 처리 전문가입니다.
+사용자가 입력한 비정형 텍스트(카톡, 이메일, 회의록 등)에서
+기둥 정보와 의도를 정확하게 추출합니다.
+
+# 그리드 정보
+- Zone A (FAB): X1 ~ X23
+- Zone B (CUB): X24 ~ X45
+- Zone C (COMPLEX): X46 ~ X69
+- 행 라벨: A, B, C, D, E, F, G, H, I, J, K, L (12개)
+- 기둥 UID 형식: "{행}-X{열}" (예: A-X23, C-X45)
+
+# 추출 규칙
+1. 기둥 ID 패턴 인식:
+   - "C-X1", "CX1", "C1" → "C-X1"
+   - "X1~5", "1번~5번", "X1에서 5까지" → X1, X2, X3, X4, X5
+   - "3개 기둥", "저번에 말한 것" → 문맥에서 유추 (불확실 시 null)
+
+2. 상태 키워드 매핑:
+   - "완료", "끝", "done", "설치" → "installed"
+   - "보류", "대기", "스탑", "중단" → "hold_design" 또는 "hold_material"
+   - "진행", "시작", "착수" → "active"
+   - "문제", "이슈", "지연" → 이슈 생성 필요
+
+3. 층/위치 정보:
+   - "3층", "3F", "RF" 등 층수 추출
+   - "B구역", "CUB", "팹" 등 Zone 힌트
+
+# 응답 형식 (JSON)
+{
+  "columns": [
+    {"id": "C-X1", "zone": "zone_a", "confidence": 95},
+    {"id": "C-X2", "zone": "zone_a", "confidence": 95}
+  ],
+  "suggestedStatus": "installed",
+  "statusConfidence": 85,
+  "floor": 3,
+  "intent": "status_change",
+  "issues": [],
+  "ambiguousRefs": ["저번에 말한 3개"],
+  "summary": "C-X1~X2 기둥을 설치 완료로 변경 요청"
+}
+
+# 주의사항
+- 확실하지 않은 정보는 confidence 점수를 낮게 설정
+- 모호한 표현("그거", "저번 것", "아까 그 기둥")은 ambiguousRefs에 기록
+- intent 유형: "status_change", "issue_create", "query", "unclear"
+`;
+
+/**
+ * Gemini API를 사용한 NLP 컨텍스트 분석
+ * @param {string} text - 분석할 텍스트
+ * @param {Object} context - 추가 컨텍스트 정보 (이전 대화, 선택된 기둥 등)
+ * @returns {Object} 분석 결과
+ */
+function analyzeContextWithNLP(text, context) {
+  try {
+    // Gemini API 키 확인
+    const apiKey = PropertiesService.getScriptProperties().getProperty("GEMINI_API_KEY");
+    if (!apiKey) {
+      return {
+        success: false,
+        error: "GEMINI_API_KEY not configured. NLP analysis requires Gemini API.",
+        code: 503,
+        fallback: true
+      };
+    }
+
+    // 프롬프트 구성
+    const contextInfo = context.previousColumns
+      ? \`\n# 최근 언급된 기둥: \${context.previousColumns.join(", ")}\`
+      : "";
+
+    const fullPrompt = \`\${NLP_CONTEXT_PROMPT}\${contextInfo}
+
+# 분석할 텍스트
+"\${text}"
+
+위 텍스트를 분석하여 JSON 형식으로 응답하세요. 다른 설명 없이 JSON만 출력합니다.\`;
+
+    // Gemini API 호출
+    const model = "gemini-2.0-flash";
+    const url = \`https://generativelanguage.googleapis.com/v1beta/models/\${model}:generateContent?key=\${apiKey}\`;
+
+    const payload = {
+      contents: [{ parts: [{ text: fullPrompt }] }],
+      generationConfig: {
+        temperature: 0.1,
+        maxOutputTokens: 1024,
+        responseMimeType: "application/json"
+      }
+    };
+
+    const options = {
+      method: "post",
+      contentType: "application/json",
+      payload: JSON.stringify(payload),
+      muteHttpExceptions: true
+    };
+
+    const response = UrlFetchApp.fetch(url, options);
+    const responseCode = response.getResponseCode();
+
+    if (responseCode !== 200) {
+      console.error(\`[NLP] Gemini API error: \${responseCode}\`);
+      return {
+        success: false,
+        error: \`Gemini API error (\${responseCode})\`,
+        code: responseCode,
+        fallback: true
+      };
+    }
+
+    const apiResponse = JSON.parse(response.getContentText());
+
+    // 응답에서 텍스트 추출
+    if (!apiResponse.candidates || !apiResponse.candidates[0]?.content?.parts?.[0]?.text) {
+      return {
+        success: false,
+        error: "Invalid Gemini response structure",
+        fallback: true
+      };
+    }
+
+    const resultText = apiResponse.candidates[0].content.parts[0].text;
+
+    // JSON 파싱
+    let parsedResult;
+    try {
+      parsedResult = JSON.parse(resultText);
+    } catch (parseError) {
+      // JSON 파싱 실패 시 텍스트에서 JSON 추출 시도
+      const jsonMatch = resultText.match(/\\{[\\s\\S]*\\}/);
+      if (jsonMatch) {
+        parsedResult = JSON.parse(jsonMatch[0]);
+      } else {
+        return {
+          success: false,
+          error: "Failed to parse NLP response as JSON",
+          rawResponse: resultText,
+          fallback: true
+        };
+      }
+    }
+
+    // 성공 응답
+    return {
+      success: true,
+      analysis: parsedResult,
+      columns: parsedResult.columns || [],
+      suggestedStatus: parsedResult.suggestedStatus,
+      statusConfidence: parsedResult.statusConfidence || 0,
+      intent: parsedResult.intent || "unclear",
+      summary: parsedResult.summary || "",
+      ambiguousRefs: parsedResult.ambiguousRefs || [],
+      timestamp: new Date().toISOString(),
+      source: "gemini-nlp"
+    };
+
+  } catch (error) {
+    console.error("[NLP] Analysis error:", error);
+    return {
+      success: false,
+      error: error.message || "NLP analysis failed",
+      fallback: true
+    };
+  }
+}
+
 // ===== Apps Script UI Integration =====
+
+// ===== Shop Issue Parser API (CSV/Excel 이슈 데이터 파싱) =====
+
+/**
+ * CSV 텍스트 데이터를 파싱하여 이슈 배열로 변환
+ * @param {string} csvData - CSV 형식의 텍스트 데이터
+ * @returns {Object} 파싱된 이슈 배열과 메타데이터
+ */
+function parseShopIssuesFromCSV(csvData) {
+  try {
+    if (!csvData || csvData.trim() === "") {
+      return {
+        success: false,
+        error: "Empty CSV data provided",
+        code: 400,
+      };
+    }
+
+    // CSV 라인 분리 (Windows/Unix 줄바꿈 모두 처리)
+    const lines = csvData
+      .replace(/\r\n/g, "\n")
+      .replace(/\r/g, "\n")
+      .split("\n")
+      .filter((line) => line.trim() !== "");
+
+    if (lines.length < 2) {
+      return {
+        success: false,
+        error: "CSV must have at least a header row and one data row",
+        code: 400,
+      };
+    }
+
+    // 헤더 파싱 (첫 번째 줄)
+    const headers = parseCSVLine_(lines[0]);
+
+    // 헤더 매핑 (다양한 한글/영문 헤더 지원)
+    const headerMap = mapCSVHeaders_(headers);
+
+    // 데이터 행 파싱
+    const issues = [];
+    const errors = [];
+    const typeCounters = {}; // 유형별 카운터
+
+    for (let i = 1; i < lines.length; i++) {
+      try {
+        const values = parseCSVLine_(lines[i]);
+        if (values.length === 0 || values.every((v) => !v.trim())) {
+          continue; // 빈 행 스킵
+        }
+
+        const issue = parseIssueRow_(values, headerMap, typeCounters, i + 1);
+        if (issue) {
+          issues.push(issue);
+        }
+      } catch (rowError) {
+        errors.push({
+          row: i + 1,
+          error: rowError.message,
+          line: lines[i].substring(0, 100),
+        });
+      }
+    }
+
+    return {
+      success: true,
+      issues,
+      count: issues.length,
+      errors: errors.length > 0 ? errors : null,
+      errorCount: errors.length,
+      headers: headers,
+      headerMap: headerMap,
+      timestamp: getKSTTimestamp_(),
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: `CSV parsing failed: ${error.message}`,
+      code: 500,
+    };
+  }
+}
+
+/**
+ * CSV 라인을 파싱하여 값 배열로 변환
+ * 쉼표, 따옴표, 한글 처리 지원
+ * @param {string} line - CSV 라인
+ * @returns {string[]} 파싱된 값 배열
+ */
+function parseCSVLine_(line) {
+  const result = [];
+  let current = "";
+  let inQuotes = false;
+
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    const nextChar = line[i + 1];
+
+    if (inQuotes) {
+      if (char === '"' && nextChar === '"') {
+        // 이스케이프된 따옴표
+        current += '"';
+        i++;
+      } else if (char === '"') {
+        // 따옴표 종료
+        inQuotes = false;
+      } else {
+        current += char;
+      }
+    } else {
+      if (char === '"') {
+        // 따옴표 시작
+        inQuotes = true;
+      } else if (char === ",") {
+        // 필드 구분자
+        result.push(current.trim());
+        current = "";
+      } else {
+        current += char;
+      }
+    }
+  }
+
+  // 마지막 필드 추가
+  result.push(current.trim());
+
+  return result;
+}
+
+/**
+ * CSV 헤더를 표준 필드명으로 매핑
+ * @param {string[]} headers - CSV 헤더 배열
+ * @returns {Object} 헤더 인덱스 매핑
+ */
+function mapCSVHeaders_(headers) {
+  const map = {
+    typeCode: -1,
+    typeNumber: -1,
+    sentDate: -1,
+    method: -1,
+    sender: -1,
+    receiver: -1,
+    title: -1,
+    description: -1,
+    location: -1,
+    status: -1,
+    notes: -1,
+    comment: -1,
+  };
+
+  // 헤더 매핑 패턴 (한글/영문 다양한 형식 지원)
+  const patterns = {
+    typeCode: ["유형", "type", "typecode", "구분", "분류", "종류"],
+    typeNumber: ["번호", "no", "number", "typenumber", "seq", "순번"],
+    sentDate: ["발신일", "날짜", "date", "sentdate", "일자", "발송일"],
+    method: ["전달방식", "방식", "method", "type", "경로", "수단"],
+    sender: ["발신자", "from", "sender", "발신", "보낸사람"],
+    receiver: ["수신자", "to", "receiver", "수신", "받은사람"],
+    title: ["제목", "title", "subject", "내용요약"],
+    description: ["상세내용", "내용", "description", "content", "설명", "세부내용"],
+    location: ["위치", "location", "절주", "구역", "zone", "area"],
+    status: ["반영", "status", "상태", "처리상태", "완료"],
+    notes: ["비고", "note", "notes", "memo", "메모", "기타"],
+    comment: ["코멘트", "comment", "comments", "의견", "답변"],
+  };
+
+  // 헤더 매칭
+  headers.forEach((header, index) => {
+    const normalizedHeader = header.toLowerCase().replace(/[\s_-]/g, "");
+
+    for (const [field, aliases] of Object.entries(patterns)) {
+      for (const alias of aliases) {
+        if (normalizedHeader.includes(alias.toLowerCase())) {
+          if (map[field] === -1) {
+            map[field] = index;
+            break;
+          }
+        }
+      }
+    }
+  });
+
+  return map;
+}
+
+/**
+ * 이슈 행 데이터를 파싱하여 이슈 객체로 변환
+ * @param {string[]} values - 행 값 배열
+ * @param {Object} headerMap - 헤더 매핑
+ * @param {Object} typeCounters - 유형별 카운터 (참조로 수정)
+ * @param {number} rowNum - 행 번호 (에러 메시지용)
+ * @returns {Object} 이슈 객체
+ */
+function parseIssueRow_(values, headerMap, typeCounters, rowNum) {
+  // 유형 코드 결정
+  let typeCode = getValue_(values, headerMap.typeCode) || "P";
+
+  // 유형 코드 정규화 (첫 글자만 대문자로)
+  const typeCodeMap = {
+    "P": "P", "p": "P", "품질": "P", "quality": "P",
+    "G": "G", "g": "G", "일반": "G", "general": "G",
+    "W": "W", "w": "W", "공사": "W", "work": "W", "시공": "W",
+    "R": "R", "r": "R", "협의요청": "R", "request": "R", "검토": "R",
+    "S": "S", "s": "S", "안전": "S", "safety": "S",
+    "D": "D", "d": "D", "설계": "D", "design": "D",
+    "F": "F", "f": "F", "검수": "F", "factory": "F", "공장": "F",
+    "A": "A", "a": "A", "기타": "A", "etc": "A", "other": "A",
+  };
+
+  typeCode = typeCodeMap[typeCode] || typeCode.charAt(0).toUpperCase();
+
+  // 유형 코드 유효성 검증
+  const validTypeCodes = ["P", "G", "W", "R", "S", "D", "F", "A"];
+  if (!validTypeCodes.includes(typeCode)) {
+    typeCode = "G"; // 기본값
+  }
+
+  // 유형별 일련번호 부여
+  if (!typeCounters[typeCode]) {
+    typeCounters[typeCode] = 0;
+  }
+  typeCounters[typeCode]++;
+  const typeNumber = typeCounters[typeCode];
+
+  // ID 생성
+  const id = `${typeCode}-${typeNumber}`;
+
+  // 날짜 파싱
+  let sentDate = getValue_(values, headerMap.sentDate);
+  if (sentDate) {
+    sentDate = normalizeDate_(sentDate);
+  }
+
+  // 위치 정규화
+  let location = getValue_(values, headerMap.location) || "전체";
+  location = normalizeLocation_(location);
+
+  // 상태 정규화
+  let status = getValue_(values, headerMap.status) || "";
+  status = normalizeStatus_(status);
+
+  return {
+    id,
+    typeCode,
+    typeNumber,
+    sentDate,
+    method: getValue_(values, headerMap.method) || "메일",
+    sender: getValue_(values, headerMap.sender) || "",
+    receiver: getValue_(values, headerMap.receiver) || "",
+    title: getValue_(values, headerMap.title) || "",
+    description: getValue_(values, headerMap.description) || "",
+    location,
+    status,
+    notes: getValue_(values, headerMap.notes) || "",
+    comment: getValue_(values, headerMap.comment) || "",
+    _rowNum: rowNum, // 원본 행 번호 (디버깅용)
+  };
+}
+
+/**
+ * 배열에서 안전하게 값 추출
+ * @param {string[]} values - 값 배열
+ * @param {number} index - 인덱스
+ * @returns {string} 값 또는 빈 문자열
+ */
+function getValue_(values, index) {
+  if (index === -1 || index >= values.length) {
+    return "";
+  }
+  return (values[index] || "").toString().trim();
+}
+
+/**
+ * 날짜 문자열 정규화
+ * @param {string} dateStr - 날짜 문자열
+ * @returns {string} YYYY-MM-DD 형식
+ */
+function normalizeDate_(dateStr) {
+  if (!dateStr) return "";
+
+  // 이미 YYYY-MM-DD 형식인 경우
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    return dateStr;
+  }
+
+  // YYYY/MM/DD 또는 YYYY.MM.DD 형식
+  const match1 = dateStr.match(/^(\d{4})[\/\.](\d{1,2})[\/\.](\d{1,2})$/);
+  if (match1) {
+    return `${match1[1]}-${match1[2].padStart(2, "0")}-${match1[3].padStart(2, "0")}`;
+  }
+
+  // MM/DD/YYYY 형식
+  const match2 = dateStr.match(/^(\d{1,2})[\/\.](\d{1,2})[\/\.](\d{4})$/);
+  if (match2) {
+    return `${match2[3]}-${match2[1].padStart(2, "0")}-${match2[2].padStart(2, "0")}`;
+  }
+
+  // 한국어 날짜 형식 (2023년 1월 1일)
+  const match3 = dateStr.match(/(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일?/);
+  if (match3) {
+    return `${match3[1]}-${match3[2].padStart(2, "0")}-${match3[3].padStart(2, "0")}`;
+  }
+
+  // Excel 시리얼 날짜 (숫자인 경우)
+  const numDate = parseFloat(dateStr);
+  if (!isNaN(numDate) && numDate > 40000 && numDate < 50000) {
+    // Excel 기준일: 1899-12-30
+    const date = new Date((numDate - 25569) * 86400 * 1000);
+    return date.toISOString().split("T")[0];
+  }
+
+  return dateStr; // 파싱 실패 시 원본 반환
+}
+
+/**
+ * 위치 문자열 정규화
+ * @param {string} location - 위치 문자열
+ * @returns {string} 정규화된 위치
+ */
+function normalizeLocation_(location) {
+  if (!location) return "전체";
+
+  const normalized = location.trim();
+
+  // 절주 형식 정규화
+  const jeoljuMatch = normalized.match(/(\d+)\s*절주?/);
+  if (jeoljuMatch) {
+    return `${jeoljuMatch[1]}절주`;
+  }
+
+  // 숫자만 있는 경우
+  if (/^\d+$/.test(normalized)) {
+    return `${normalized}절주`;
+  }
+
+  // 전체/all 등
+  if (/^(전체|all|전|공통|-)$/i.test(normalized)) {
+    return "전체";
+  }
+
+  return normalized;
+}
+
+/**
+ * 상태 문자열 정규화
+ * @param {string} status - 상태 문자열
+ * @returns {string} O|X|""
+ */
+function normalizeStatus_(status) {
+  if (!status) return "";
+
+  const normalized = status.trim().toUpperCase();
+
+  // O/X 형식
+  if (normalized === "O" || normalized === "0") return "O";
+  if (normalized === "X") return "X";
+
+  // 완료/미완료 형식
+  if (/^(완료|done|yes|y|ok|반영|적용|처리)$/i.test(normalized)) return "O";
+  if (/^(미완료|pending|no|n|미반영|미적용|미처리)$/i.test(normalized)) return "X";
+
+  // 체크마크
+  if (normalized.includes("✓") || normalized.includes("✔") || normalized.includes("○")) return "O";
+  if (normalized.includes("✗") || normalized.includes("×") || normalized.includes("●")) return "X";
+
+  return "";
+}
+
+/**
+ * 이슈 통계 계산
+ * @param {Object[]} issues - 이슈 배열
+ * @returns {Object} 통계 데이터
+ */
+function getShopIssueStatistics(issues) {
+  try {
+    if (!issues || !Array.isArray(issues) || issues.length === 0) {
+      return {
+        success: true,
+        stats: {
+          total: 0,
+          byType: {},
+          byLocation: {},
+          byStatus: { resolved: 0, unresolved: 0, unknown: 0 },
+          unresolvedIssues: [],
+        },
+        timestamp: getKSTTimestamp_(),
+      };
+    }
+
+    // 유형별 통계
+    const byType = {};
+    const typeLabels = {
+      P: "품질",
+      G: "일반",
+      W: "공사/시공",
+      R: "협의요청",
+      S: "안전",
+      D: "설계",
+      F: "검수/공장",
+      A: "기타",
+    };
+
+    // 위치별 통계
+    const byLocation = {};
+
+    // 상태별 통계
+    const byStatus = {
+      resolved: 0,   // O
+      unresolved: 0, // X
+      unknown: 0,    // 빈값
+    };
+
+    // 미반영 이슈 목록
+    const unresolvedIssues = [];
+
+    // 통계 계산
+    for (const issue of issues) {
+      // 유형별
+      const typeCode = issue.typeCode || "G";
+      if (!byType[typeCode]) {
+        byType[typeCode] = {
+          code: typeCode,
+          label: typeLabels[typeCode] || typeCode,
+          count: 0,
+          resolved: 0,
+          unresolved: 0,
+        };
+      }
+      byType[typeCode].count++;
+
+      // 위치별
+      const location = issue.location || "전체";
+      if (!byLocation[location]) {
+        byLocation[location] = {
+          location,
+          count: 0,
+          resolved: 0,
+          unresolved: 0,
+        };
+      }
+      byLocation[location].count++;
+
+      // 상태별
+      const status = issue.status;
+      if (status === "O") {
+        byStatus.resolved++;
+        byType[typeCode].resolved++;
+        byLocation[location].resolved++;
+      } else if (status === "X") {
+        byStatus.unresolved++;
+        byType[typeCode].unresolved++;
+        byLocation[location].unresolved++;
+
+        // 미반영 목록에 추가
+        unresolvedIssues.push({
+          id: issue.id,
+          typeCode: issue.typeCode,
+          title: issue.title,
+          location: issue.location,
+          sentDate: issue.sentDate,
+          sender: issue.sender,
+        });
+      } else {
+        byStatus.unknown++;
+      }
+    }
+
+    // 유형별 정렬 (건수 내림차순)
+    const sortedByType = Object.values(byType).sort((a, b) => b.count - a.count);
+
+    // 위치별 정렬 (절주 순서)
+    const sortedByLocation = Object.values(byLocation).sort((a, b) => {
+      // "전체"는 맨 앞
+      if (a.location === "전체") return -1;
+      if (b.location === "전체") return 1;
+
+      // 숫자 추출하여 정렬
+      const numA = parseInt(a.location.match(/\d+/)?.[0] || "999");
+      const numB = parseInt(b.location.match(/\d+/)?.[0] || "999");
+      return numA - numB;
+    });
+
+    // 미반영 이슈 정렬 (날짜 최신순)
+    unresolvedIssues.sort((a, b) => {
+      if (!a.sentDate) return 1;
+      if (!b.sentDate) return -1;
+      return b.sentDate.localeCompare(a.sentDate);
+    });
+
+    return {
+      success: true,
+      stats: {
+        total: issues.length,
+        byType: sortedByType,
+        byLocation: sortedByLocation,
+        byStatus,
+        unresolvedIssues,
+        unresolvedCount: unresolvedIssues.length,
+        resolvedRate: issues.length > 0
+          ? Math.round((byStatus.resolved / issues.length) * 100)
+          : 0,
+      },
+      timestamp: getKSTTimestamp_(),
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: `Statistics calculation failed: ${error.message}`,
+      code: 500,
+    };
+  }
+}
 
 /**
  * 스프레드시트가 열릴 때 실행되는 함수

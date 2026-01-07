@@ -236,5 +236,122 @@
     { "code": "SAMOO", "name": "삼우종합건축", "domain": "@samoo.com" },
     { "code": "EANDI", "name": "이앤디몰", "domain": "naver.com" },
     { "code": "SENKUZO", "name": "센구조", "domain": "@senkuzo.com" }
-  ]
+  ],
+  "shopIssue": {
+    "typeDefinitions": {
+      "A": {
+        "code": "A",
+        "name": "일반 사항",
+        "fullName": "일반 사항(전체 영향)",
+        "color": "#6b7280",
+        "owner": "공통"
+      },
+      "P": {
+        "code": "P",
+        "name": "PSRC",
+        "fullName": "PSRC 사항",
+        "color": "#f97316",
+        "owner": "강상규, 센구조"
+      },
+      "G": {
+        "code": "G",
+        "name": "PC",
+        "fullName": "PC 사항",
+        "color": "#22c55e",
+        "owner": "강상규, 이엔디몰"
+      },
+      "W": {
+        "code": "W",
+        "name": "PTW",
+        "fullName": "PTW 사항",
+        "color": "#3b82f6",
+        "owner": "이지영, PSTEC"
+      },
+      "R": {
+        "code": "R",
+        "name": "철근",
+        "fullName": "철근 사항 (기초제외)",
+        "color": "#ef4444",
+        "owner": "담당자 미정"
+      },
+      "S": {
+        "code": "S",
+        "name": "철골",
+        "fullName": "철골 사항",
+        "color": "#8b5cf6",
+        "owner": "담당자 미정"
+      },
+      "D": {
+        "code": "D",
+        "name": "DECK",
+        "fullName": "DECK 사항",
+        "color": "#06b6d4",
+        "owner": "담당자 미정"
+      },
+      "F": {
+        "code": "F",
+        "name": "기초",
+        "fullName": "기초 사항",
+        "color": "#84cc16",
+        "owner": "담당자 미정"
+      }
+    },
+    "locationMapping": {
+      "전체": {
+        "name": "전체",
+        "gridColumns": ["C01", "C02", "C03", "C04", "C05", "C06", "C07", "C08", "C09", "C10", "C11", "C12", "C13", "C14", "C15", "C16", "C17", "C18", "C19", "C20", "C21", "C22", "C23", "C24"],
+        "description": "프로젝트 전체 영역"
+      },
+      "1절주": {
+        "name": "1절주",
+        "gridColumns": ["C01", "C02", "C03", "C04", "C05", "C06", "C07", "C08"],
+        "description": "1절주 영역 (C01-C08)"
+      },
+      "2절주": {
+        "name": "2절주",
+        "gridColumns": ["C09", "C10", "C11", "C12", "C13", "C14", "C15", "C16"],
+        "description": "2절주 영역 (C09-C16)"
+      },
+      "3절주": {
+        "name": "3절주",
+        "gridColumns": ["C17", "C18", "C19", "C20", "C21", "C22", "C23", "C24"],
+        "description": "3절주 영역 (C17-C24)"
+      }
+    },
+    "statusDefinitions": {
+      "O": {
+        "code": "O",
+        "name": "반영완료",
+        "color": "#3fb950",
+        "icon": "✓"
+      },
+      "X": {
+        "code": "X",
+        "name": "미반영",
+        "color": "#f85149",
+        "icon": "✕"
+      },
+      "": {
+        "code": "",
+        "name": "확인중",
+        "color": "#8b949e",
+        "icon": "-"
+      }
+    },
+    "methodTypes": ["메일", "질의서", "주간회의"],
+    "csvColumnMapping": {
+      "sentDate": 0,
+      "method": 1,
+      "sender": 2,
+      "receiver": 3,
+      "typeCode": 4,
+      "typeNumber": 5,
+      "title": 6,
+      "description": 7,
+      "location": 8,
+      "notes": 9,
+      "status": 10,
+      "comment": 11
+    }
+  }
 }

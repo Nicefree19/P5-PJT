@@ -104,7 +104,7 @@
                 <div class="notification-message" x-text="notification.message"></div>
                 <div class="notification-time" x-text="formatNotificationTime(notification.timestamp)"></div>
             </div>
-            <button class="notification-close" @click.stop="dismissNotification(notification.id)">✕</button>
+            <button class="notification-close" @click.stop="dismissNotification(notification.id)" aria-label="알림 닫기">✕</button>
         </div>
     </template>
 </div>
@@ -120,7 +120,7 @@
             <button class="btn" @click="clearNotificationHistory()" style="font-size:11px; padding:4px 8px;">
                 전체 삭제
             </button>
-            <button class="notification-close" @click="toggleNotificationPanel()" style="font-size:18px;">✕</button>
+            <button class="notification-close" @click="toggleNotificationPanel()" style="font-size:18px;" aria-label="알림 패널 닫기">✕</button>
         </div>
     </div>
     <div class="notification-history-list">
@@ -606,7 +606,7 @@
     <div class="admin-panel" style="max-width:550px;">
         <div class="admin-panel-header">
             <h2>🚨 새 이슈 등록</h2>
-            <button class="btn" @click="showIssueEditor = false">✕</button>
+            <button class="btn" @click="showIssueEditor = false" aria-label="이슈 편집기 닫기">✕</button>
         </div>
         <div class="admin-content">
             <div class="form-row">
@@ -1351,7 +1351,7 @@
         <h3>🚨 Issues <span style="color:#8b949e; font-weight:normal;" x-text="`(${openIssues.length})`"></span></h3>
         <div style="display:flex; gap:8px;">
             <button class="btn btn-primary" style="padding:4px 8px; font-size:11px;" @click="openNewIssueModal()">+ New</button>
-            <button @click="issuePanelOpen = false" style="background:none; border:none; color:#8b949e; cursor:pointer; font-size:16px;">✕</button>
+            <button @click="issuePanelOpen = false" style="background:none; border:none; color:#8b949e; cursor:pointer; font-size:16px;" aria-label="이슈 상세 패널 닫기">✕</button>
         </div>
     </div>
     
@@ -2484,6 +2484,16 @@
                 📄
             </button>
         </div>
+        <div class="fab-action">
+            <span class="fab-action-label">Shop 이슈</span>
+            <button class="fab-action-btn"
+                    :class="{ 'has-badge': shopIssueStats.unresolved > 0 }"
+                    @click="fabOpen = false; showShopIssuePanel = true"
+                    aria-label="Shop Issue 현황 보기">
+                📋
+                <span class="fab-badge" x-show="shopIssueStats.unresolved > 0" x-text="shopIssueStats.unresolved"></span>
+            </button>
+        </div>
     </div>
 
     <!-- Main FAB Button -->
@@ -2521,16 +2531,30 @@
     <div class="context-input-area">
         <textarea
             x-model="contextInput"
-            placeholder="카톡, 메일, 회의록 내용을 붙여넣으세요...&#10;예: 'C-X1~5 설치 완료, A구역 3층 보류'"
+            placeholder="카톡, 메일, 회의록 내용을 붙여넣으세요...&#10;예: 'C-X1~5 설치 완료, A구역 3층 보류'&#10;🤖 AI 모드: '거기 아까 말한 3개 기둥 처리해' 같은 자연어도 OK"
             rows="3"
             class="context-textarea"
             @keydown.ctrl.enter="analyzeContext()"
             aria-label="컨텍스트 입력"></textarea>
+
+        <!-- Phase 12-3: AI Enhanced Analysis Toggle -->
+        <div class="context-ai-toggle">
+            <label class="toggle-switch" title="AI 강화 분석: 모호한 표현도 이해합니다">
+                <input type="checkbox" x-model="useAiNlp" aria-label="AI 강화 분석 토글">
+                <span class="toggle-slider"></span>
+            </label>
+            <span class="toggle-label" :class="{ 'active': useAiNlp }">
+                <span x-show="!useAiNlp">🔤 패턴</span>
+                <span x-show="useAiNlp">🤖 AI</span>
+            </span>
+        </div>
+
         <button class="context-analyze-btn"
                 @click="analyzeContext()"
                 :disabled="!contextInput.trim() || contextProcessing"
-                :class="{ 'processing': contextProcessing }">
-            <span x-show="!contextProcessing">🔍 분석하기</span>
+                :class="{ 'processing': contextProcessing, 'ai-mode': useAiNlp }">
+            <span x-show="!contextProcessing && !useAiNlp">🔍 분석하기</span>
+            <span x-show="!contextProcessing && useAiNlp">🤖 AI 분석</span>
             <span x-show="contextProcessing">⏳ 분석 중...</span>
         </button>
     </div>
@@ -2755,6 +2779,118 @@
             <button class="btn btn-primary" @click="showSummaryPanel = false">
                 확인
             </button>
+        </div>
+    </div>
+</div>
+
+<!-- Shop Issue Analysis Panel -->
+<div class="shop-issue-panel-overlay"
+     x-show="showShopIssuePanel"
+     x-cloak
+     @click.self="showShopIssuePanel = false"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="shop-issue-panel-title">
+
+    <div class="shop-issue-panel" id="shop-issue-panel-content">
+        <!-- Header -->
+        <div class="shop-issue-panel-header">
+            <h3 id="shop-issue-panel-title">Shop Issue 현황</h3>
+            <div class="shop-issue-header-actions">
+                <button class="btn-issue-import"
+                        @click="$refs.shopIssueFileInput.click()"
+                        title="Shop Issue CSV 가져오기">
+                    📂 파일 가져오기
+                </button>
+                <input type="file"
+                       x-ref="shopIssueFileInput"
+                       accept=".csv,.xlsx,.xls"
+                       @change="handleShopIssueFileUpload($event)"
+                       style="display:none">
+                <button class="shop-issue-close-btn"
+                        @click="showShopIssuePanel = false"
+                        aria-label="닫기">x</button>
+            </div>
+        </div>
+
+        <!-- 요약 통계 -->
+        <div class="shop-issue-summary-stats">
+            <div class="shop-issue-stat-item total">
+                <span class="shop-issue-stat-value" x-text="shopIssueStats.total"></span>
+                <span class="shop-issue-stat-label">전체</span>
+            </div>
+            <div class="shop-issue-stat-item resolved">
+                <span class="shop-issue-stat-value" x-text="shopIssueStats.resolved"></span>
+                <span class="shop-issue-stat-label">반영</span>
+            </div>
+            <div class="shop-issue-stat-item unresolved">
+                <span class="shop-issue-stat-value" x-text="shopIssueStats.unresolved"></span>
+                <span class="shop-issue-stat-label">미반영</span>
+            </div>
+        </div>
+
+        <!-- 유형별 진행 바 -->
+        <div class="shop-issue-type-bars" x-show="Object.keys(shopIssueStats.byType).length > 0">
+            <template x-for="(stats, type) in shopIssueStats.byType" :key="type">
+                <div class="shop-issue-type-bar-item">
+                    <span class="shop-issue-type-badge" :class="'type-' + type.toLowerCase().replace(/[^a-z0-9]/g, '')" x-text="type"></span>
+                    <div class="shop-issue-progress-bar">
+                        <div class="shop-issue-progress-fill" :style="'width:' + (stats.total > 0 ? (stats.resolved/stats.total*100) : 0) + '%'"></div>
+                    </div>
+                    <span class="shop-issue-type-count" x-text="stats.resolved + '/' + stats.total"></span>
+                </div>
+            </template>
+        </div>
+
+        <!-- 필터/정렬 -->
+        <div class="shop-issue-filters">
+            <select x-model="shopIssueFilter" class="shop-issue-filter-select">
+                <option value="all">전체</option>
+                <option value="unresolved">미반영만</option>
+                <option value="resolved">반영만</option>
+            </select>
+            <select x-model="shopIssueSortBy" class="shop-issue-sort-select">
+                <option value="type">유형별</option>
+                <option value="location">위치별</option>
+                <option value="id">번호순</option>
+            </select>
+        </div>
+
+        <!-- 이슈 목록 -->
+        <div class="shop-issue-list">
+            <template x-if="shopIssues.length === 0">
+                <div class="shop-issue-empty">
+                    <p>등록된 Shop Issue가 없습니다.</p>
+                    <p class="shop-issue-empty-hint">CSV 파일을 가져와서 이슈를 등록하세요.</p>
+                </div>
+            </template>
+            <template x-for="issue in getFilteredShopIssues()" :key="issue.id">
+                <div class="shop-issue-item" 
+                     :class="{'unresolved': issue.status !== 'O', 'has-columns': issue.linkedColumns?.length > 0}"
+                     @click="highlightIssueColumns(issue)">
+                    <span class="shop-issue-id" x-text="issue.id"></span>
+                    <div class="shop-issue-content">
+                        <span class="shop-issue-title" x-text="issue.title || issue.description || '-'"></span>
+                        <div class="shop-issue-meta">
+                            <span class="shop-issue-location" x-text="issue.location || '-'"></span>
+                            <span class="shop-issue-columns-badge" 
+                                  x-show="issue.linkedColumns?.length > 0"
+                                  x-text="'🏗️ ' + (issue.linkedColumns?.length || 0) + '개 기둥'"
+                                  :title="issue.linkedColumns?.join(', ')"></span>
+                        </div>
+                    </div>
+                    <span class="shop-issue-type-tag" x-text="issue.type || '-'"></span>
+                    <span class="shop-issue-status"
+                          :class="issue.status === 'O' ? 'resolved' : 'pending'"
+                          x-text="issue.status === 'O' ? '반영' : '미반영'"></span>
+                </div>
+            </template>
+        </div>
+
+        <!-- Footer -->
+        <div class="shop-issue-panel-footer">
+            <span class="shop-issue-count-info" x-text="'총 ' + getFilteredShopIssues().length + '건'"></span>
+            <button class="btn btn-primary" @click="showShopIssuePanel = false">닫기</button>
         </div>
     </div>
 </div>
@@ -3250,8 +3386,29 @@ function dashboard() {
             context: null              // 현재 보기 중인 컨텍스트
         },
 
+        // Phase 12-3: Advanced NLP State
+        useAiNlp: false,               // AI 강화 분석 사용 여부
+        nlpPreviousColumns: [],        // 이전에 언급된 기둥 (컨텍스트 유지)
+
         // Phase 13: Summary Panel (실무자용 요약 뷰)
         showSummaryPanel: false,
+
+        // Shop Issue Module State
+        shopIssues: [],
+        shopIssueStats: {
+            total: 0,
+            resolved: 0,
+            unresolved: 0,
+            byType: {},
+            byLocation: {}
+        },
+        showShopIssuePanel: false,
+        shopIssueFilter: 'all',   // all|resolved|unresolved
+        shopIssueSortBy: 'type',  // type|location|date
+
+        // Phase 15: Excel 회의록 파서 통합
+        issueColumnLinks: [],     // 이슈 ID ↔ 기둥 ID 매핑
+        highlightedColumns: [],   // 현재 하이라이트된 기둥들
 
         // WP-5: Export Libraries Lazy Loading State
         _exportLibsLoading: false,
@@ -4120,6 +4277,7 @@ function dashboard() {
 
         /**
          * Context Intelligence: 텍스트 분석 실행
+         * Phase 12-3: AI NLP 모드 지원
          */
         analyzeContext() {
             if (!this.contextInput.trim()) {
@@ -4131,7 +4289,18 @@ function dashboard() {
             this.contextSuggestions = [];
             this.highlightedColumns = [];
 
-            // 파싱 실행
+            // Phase 12-3: AI NLP 모드 분기
+            if (this.useAiNlp) {
+                this.analyzeContextWithAI();
+            } else {
+                this.analyzeContextWithRegex();
+            }
+        },
+
+        /**
+         * Phase 12-1: 정규식 기반 파싱 (기본 모드)
+         */
+        analyzeContextWithRegex() {
             const parsed = this.smartPaste.parse(this.contextInput);
 
             setTimeout(() => {
@@ -4141,7 +4310,6 @@ function dashboard() {
                     return;
                 }
 
-                // 제안 생성
                 const suggestion = {
                     id: Date.now(),
                     type: parsed.hasIssue ? 'issue_create' : 'status_change',
@@ -4155,13 +4323,100 @@ function dashboard() {
                 };
 
                 this.contextSuggestions = [suggestion];
-
-                // 하이라이트할 기둥 ID 목록
                 this.highlightedColumns = parsed.columns.map(c => c.id);
-
                 this.contextProcessing = false;
                 this.showToast(`${parsed.columns.length}개 기둥 인식됨 (신뢰도: ${parsed.confidence}%)`, 'success');
             }, 300);
+        },
+
+        /**
+         * Phase 12-3: AI NLP 기반 분석 (Gemini API)
+         */
+        async analyzeContextWithAI() {
+            try {
+                // API 엔드포인트 호출
+                const apiUrl = this.sheetSync?.apiUrl;
+                if (!apiUrl) {
+                    // API 없으면 Regex fallback
+                    this.showToast('API 연결 없음. 패턴 분석으로 전환합니다.', 'warning');
+                    this.analyzeContextWithRegex();
+                    return;
+                }
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'analyzeContextNLP',
+                        text: this.contextInput,
+                        context: {
+                            previousColumns: this.nlpPreviousColumns
+                        }
+                    })
+                });
+
+                const result = await response.json();
+
+                if (!result.success) {
+                    // API 실패 시 Regex fallback
+                    if (result.fallback) {
+                        this.showToast('AI 분석 불가. 패턴 분석으로 전환합니다.', 'warning');
+                        this.analyzeContextWithRegex();
+                        return;
+                    }
+                    throw new Error(result.error || 'AI 분석 실패');
+                }
+
+                // AI 결과 처리
+                const columns = result.columns || [];
+
+                if (columns.length === 0 && result.ambiguousRefs?.length > 0) {
+                    // 모호한 표현만 있는 경우
+                    this.showToast(`모호한 표현 감지: ${result.ambiguousRefs.join(', ')}. 더 구체적으로 입력해주세요.`, 'warning');
+                    this.contextProcessing = false;
+                    return;
+                }
+
+                if (columns.length === 0) {
+                    this.showToast('AI가 기둥 정보를 찾지 못했습니다.', 'warning');
+                    this.contextProcessing = false;
+                    return;
+                }
+
+                // AI 컨텍스트 기억 (다음 분석에 활용)
+                this.nlpPreviousColumns = columns.map(c => c.id);
+
+                // 제안 생성
+                const suggestion = {
+                    id: Date.now(),
+                    type: result.intent === 'issue_create' ? 'issue_create' : 'status_change',
+                    columns: columns,
+                    floor: result.analysis?.floor,
+                    newStatus: result.suggestedStatus || 'installed',
+                    hasIssue: result.intent === 'issue_create',
+                    confidence: result.statusConfidence || 70,
+                    sourceText: this.contextInput.substring(0, 200),
+                    timestamp: new Date().toISOString(),
+                    aiSummary: result.summary,
+                    ambiguousRefs: result.ambiguousRefs
+                };
+
+                this.contextSuggestions = [suggestion];
+                this.highlightedColumns = columns.map(c => c.id);
+                this.contextProcessing = false;
+
+                // AI 요약 표시
+                if (result.summary) {
+                    this.showToast(`🤖 ${result.summary}`, 'success');
+                } else {
+                    this.showToast(`🤖 ${columns.length}개 기둥 인식됨 (AI 신뢰도: ${result.statusConfidence || 70}%)`, 'success');
+                }
+
+            } catch (error) {
+                console.error('[NLP] Analysis error:', error);
+                this.showToast('AI 분석 오류. 패턴 분석으로 전환합니다.', 'warning');
+                this.analyzeContextWithRegex();
+            }
         },
 
         /**
@@ -5276,6 +5531,640 @@ function dashboard() {
         get filteredIssues() {
             if (this.issueFilter === 'all') return this.issues;
             return this.issues.filter(i => i.status === this.issueFilter);
+        },
+
+        // === Shop Issue Module Functions ===
+
+        /**
+         * Shop Issue 필터링 및 정렬
+         * @returns {Array} 필터링/정렬된 Shop Issue 목록
+         */
+        getFilteredShopIssues() {
+            let filtered = [...this.shopIssues];
+
+            // 필터 적용
+            if (this.shopIssueFilter === 'unresolved') {
+                filtered = filtered.filter(i => i.status !== 'O');
+            } else if (this.shopIssueFilter === 'resolved') {
+                filtered = filtered.filter(i => i.status === 'O');
+            }
+
+            // 정렬 적용
+            if (this.shopIssueSortBy === 'type') {
+                filtered.sort((a, b) => (a.type || '').localeCompare(b.type || ''));
+            } else if (this.shopIssueSortBy === 'location') {
+                filtered.sort((a, b) => (a.location || '').localeCompare(b.location || ''));
+            } else if (this.shopIssueSortBy === 'id') {
+                filtered.sort((a, b) => {
+                    const numA = parseInt((a.id || '0').replace(/\D/g, '')) || 0;
+                    const numB = parseInt((b.id || '0').replace(/\D/g, '')) || 0;
+                    return numA - numB;
+                });
+            }
+
+            return filtered;
+        },
+
+        /**
+         * Shop Issue 파일 업로드 처리 (CSV + Excel 지원)
+         * Phase 15: Excel 회의록 파서 통합
+         * @param {Event} event - 파일 입력 이벤트
+         */
+        async handleShopIssueFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const fileName = file.name.toLowerCase();
+
+            try {
+                let result;
+
+                // Phase 15: Excel 파일 지원
+                if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+                    this.showToast('Excel 파일 분석 중...', 'info');
+                    result = await this.parseMeetingMinutesExcel(file);
+                } else if (fileName.endsWith('.csv')) {
+                    const text = await file.text();
+                    result = this.parseShopIssueCSV(text);
+                } else {
+                    this.showToast('지원하지 않는 파일 형식입니다 (CSV, XLSX 지원)', 'error');
+                    return;
+                }
+
+                if (result.success) {
+                    this.shopIssues = result.issues;
+                    this.shopIssueStats = result.stats;
+                    // 기둥 ID 연결 정보가 있으면 저장
+                    if (result.columnLinks) {
+                        this.issueColumnLinks = result.columnLinks;
+                    }
+                    const sourceType = fileName.endsWith('.xlsx') || fileName.endsWith('.xls') ? 'Excel' : 'CSV';
+                    const sheetInfo = result.sheetsProcessed ? ` (${result.sheetsProcessed}개 시트)` : '';
+                    this.showToast(`${sourceType}에서 이슈 ${result.issues.length}건 로드 완료${sheetInfo}`, 'success');
+                } else {
+                    this.showToast('파일 파싱 실패: ' + result.error, 'error');
+                }
+            } catch (err) {
+                console.error('[ShopIssue] File upload error:', err);
+                this.showToast('파일 읽기 실패: ' + err.message, 'error');
+            }
+
+            // 파일 입력 초기화 (동일 파일 재선택 허용)
+            event.target.value = '';
+        },
+
+        /**
+         * Shop Issue CSV 파싱
+         * @param {string} csvData - CSV 문자열
+         * @returns {Object} 파싱 결과 { success, issues, stats, error }
+         */
+        parseShopIssueCSV(csvData) {
+            try {
+                const lines = csvData.split(/\r?\n/).filter(line => line.trim());
+                if (lines.length < 2) {
+                    return { success: false, error: 'CSV 데이터가 비어있습니다', issues: [], stats: {} };
+                }
+
+                // 헤더 파싱 (첫 번째 행)
+                const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+
+                // 필수 컬럼 인덱스 찾기 (유연한 매핑)
+                const idxMap = {
+                    id: headers.findIndex(h => h.includes('no') || h.includes('id') || h === '#'),
+                    type: headers.findIndex(h => h.includes('type') || h.includes('유형') || h.includes('분류')),
+                    title: headers.findIndex(h => h.includes('title') || h.includes('제목') || h.includes('내용') || h.includes('description')),
+                    location: headers.findIndex(h => h.includes('location') || h.includes('위치') || h.includes('zone') || h.includes('구역')),
+                    status: headers.findIndex(h => h.includes('status') || h.includes('상태') || h.includes('반영'))
+                };
+
+                const issues = [];
+                const stats = {
+                    total: 0,
+                    resolved: 0,
+                    unresolved: 0,
+                    byType: {},
+                    byLocation: {}
+                };
+
+                // 데이터 행 파싱
+                for (let i = 1; i < lines.length; i++) {
+                    const values = this.parseCSVLine(lines[i]);
+                    if (values.length < 2) continue; // 빈 행 스킵
+
+                    const issue = {
+                        id: idxMap.id >= 0 ? values[idxMap.id]?.trim() : `SI-${i}`,
+                        type: idxMap.type >= 0 ? values[idxMap.type]?.trim() : '',
+                        title: idxMap.title >= 0 ? values[idxMap.title]?.trim() : values[1]?.trim() || '',
+                        description: idxMap.title >= 0 ? values[idxMap.title]?.trim() : '',
+                        location: idxMap.location >= 0 ? values[idxMap.location]?.trim() : '',
+                        status: idxMap.status >= 0 ? values[idxMap.status]?.trim().toUpperCase() : ''
+                    };
+
+                    // ID가 없으면 자동 생성
+                    if (!issue.id) issue.id = `SI-${i}`;
+
+                    issues.push(issue);
+                    stats.total++;
+
+                    // 상태별 집계
+                    if (issue.status === 'O') {
+                        stats.resolved++;
+                    } else {
+                        stats.unresolved++;
+                    }
+
+                    // 유형별 집계
+                    const type = issue.type || 'Unknown';
+                    if (!stats.byType[type]) {
+                        stats.byType[type] = { total: 0, resolved: 0 };
+                    }
+                    stats.byType[type].total++;
+                    if (issue.status === 'O') {
+                        stats.byType[type].resolved++;
+                    }
+
+                    // 위치별 집계
+                    const location = issue.location || 'Unknown';
+                    if (!stats.byLocation[location]) {
+                        stats.byLocation[location] = { total: 0, resolved: 0 };
+                    }
+                    stats.byLocation[location].total++;
+                    if (issue.status === 'O') {
+                        stats.byLocation[location].resolved++;
+                    }
+                }
+
+                console.log('[ShopIssue] Parsed:', stats);
+                return { success: true, issues, stats };
+
+            } catch (err) {
+                console.error('[ShopIssue] Parse error:', err);
+                return { success: false, error: err.message, issues: [], stats: {} };
+            }
+        },
+
+        /**
+         * CSV 라인 파싱 (따옴표 처리 포함)
+         * @param {string} line - CSV 라인
+         * @returns {Array} 파싱된 값 배열
+         */
+        parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+
+                if (char === '"') {
+                    if (inQuotes && line[i + 1] === '"') {
+                        current += '"';
+                        i++;
+                    } else {
+                        inQuotes = !inQuotes;
+                    }
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current);
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            result.push(current);
+
+            return result;
+        },
+
+        /**
+         * Phase 15: Excel 회의록 파서
+         * 다중 시트 순회하여 이슈 추출, 기둥 ID 자동 연결
+         * @param {File} file - Excel 파일
+         * @returns {Object} { success, issues, stats, columnLinks, sheetsProcessed, error }
+         */
+        async parseMeetingMinutesExcel(file) {
+            try {
+                // SheetJS 라이브러리 로드
+                const loaded = await this.loadExportLibs();
+                if (!loaded || typeof XLSX === 'undefined') {
+                    return { success: false, error: 'Excel 라이브러리 로드 실패', issues: [], stats: {} };
+                }
+
+                // 파일 읽기
+                const arrayBuffer = await file.arrayBuffer();
+                const workbook = XLSX.read(arrayBuffer, { type: 'array', cellDates: true });
+
+                const issues = [];
+                const columnLinks = [];
+                const stats = {
+                    total: 0,
+                    resolved: 0,
+                    unresolved: 0,
+                    byType: {},
+                    byLocation: {},
+                    bySheet: {}
+                };
+
+                let issueIdCounter = 1;
+                const sheetsProcessed = workbook.SheetNames.length;
+
+                console.log(`[Phase15] Processing ${sheetsProcessed} sheets from Excel`);
+
+                // 모든 시트 순회
+                for (const sheetName of workbook.SheetNames) {
+                    const worksheet = workbook.Sheets[sheetName];
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet, {
+                        header: 1,
+                        defval: '',
+                        raw: false
+                    });
+
+                    if (jsonData.length < 2) continue;
+
+                    // 헤더 행 찾기
+                    let headerRowIdx = this.findMeetingIssueHeader(jsonData);
+                    if (headerRowIdx < 0) headerRowIdx = 0;
+
+                    const headers = jsonData[headerRowIdx];
+                    const idxMap = this.mapMeetingExcelHeaders(headers);
+
+                    // 데이터 행 파싱
+                    for (let i = headerRowIdx + 1; i < jsonData.length; i++) {
+                        const row = jsonData[i];
+                        if (!row || row.length < 2) continue;
+
+                        const issueData = this.extractMeetingIssue(row, idxMap, sheetName, issueIdCounter);
+                        if (!issueData) continue;
+
+                        // 기둥 ID 추출
+                        const linkedColumns = this.extractColumnIdsFromIssue(issueData.title + ' ' + issueData.description);
+                        if (linkedColumns.length > 0) {
+                            issueData.linkedColumns = linkedColumns;
+                            columnLinks.push({ issueId: issueData.id, columns: linkedColumns });
+                        }
+
+                        issues.push(issueData);
+                        issueIdCounter++;
+                        stats.total++;
+
+                        // 통계 업데이트
+                        const isResolved = issueData.status === 'O' || issueData.status === '완료';
+                        if (isResolved) stats.resolved++;
+                        else stats.unresolved++;
+
+                        // 유형별/위치별/시트별 집계
+                        const type = issueData.type || 'Unknown';
+                        if (!stats.byType[type]) stats.byType[type] = { total: 0, resolved: 0 };
+                        stats.byType[type].total++;
+                        if (isResolved) stats.byType[type].resolved++;
+
+                        const location = issueData.location || 'Unknown';
+                        if (!stats.byLocation[location]) stats.byLocation[location] = { total: 0, resolved: 0 };
+                        stats.byLocation[location].total++;
+                        if (isResolved) stats.byLocation[location].resolved++;
+
+                        if (!stats.bySheet[sheetName]) stats.bySheet[sheetName] = { total: 0, resolved: 0 };
+                        stats.bySheet[sheetName].total++;
+                        if (isResolved) stats.bySheet[sheetName].resolved++;
+                    }
+                }
+
+                console.log(`[Phase15] Parsed ${issues.length} issues from ${sheetsProcessed} sheets, ${columnLinks.length} column links`);
+                return { success: true, issues, stats, columnLinks, sheetsProcessed };
+
+            } catch (err) {
+                console.error('[Phase15] Excel parse error:', err);
+                return { success: false, error: err.message, issues: [], stats: {} };
+            }
+        },
+
+        /**
+         * 회의록 이슈 테이블 헤더 찾기
+         */
+        findMeetingIssueHeader(jsonData) {
+            const keywords = ['발송일자', '발송', '분류', '내용', '반영', '구분', '번호'];
+            for (let i = 0; i < Math.min(jsonData.length, 50); i++) {
+                const row = jsonData[i];
+                if (!row) continue;
+                const rowText = row.join(' ').toLowerCase();
+                const matchCount = keywords.filter(kw => rowText.includes(kw.toLowerCase())).length;
+                if (matchCount >= 3) return i;
+            }
+            return -1;
+        },
+
+        /**
+         * Excel 헤더 컬럼 매핑
+         */
+        mapMeetingExcelHeaders(headers) {
+            const h = headers.map(x => (x || '').toString().toLowerCase().trim());
+            return {
+                id: h.findIndex(x => x.includes('번호') || x.includes('no') || x.includes('id')),
+                type: h.findIndex(x => x.includes('분류') || x.includes('유형') || x.includes('구분')),
+                title: h.findIndex(x => x.includes('내용') || x.includes('제목') || x.includes('이슈')),
+                location: h.findIndex(x => x.includes('위치') || x.includes('절주') || x.includes('zone')),
+                status: h.findIndex(x => x.includes('반영') || x.includes('상태') || x.includes('완료')),
+                date: h.findIndex(x => x.includes('일자') || x.includes('날짜') || x.includes('발송')),
+                assignee: h.findIndex(x => x.includes('담당') || x.includes('처리') || x.includes('발송처'))
+            };
+        },
+
+        /**
+         * 행 데이터에서 이슈 추출
+         */
+        extractMeetingIssue(row, idxMap, sheetName, counter) {
+            const titleIdx = idxMap.title >= 0 ? idxMap.title : 1;
+            const title = (row[titleIdx] || '').toString().trim();
+            if (!title || title.length < 3) return null;
+            if (title.includes('내용') && title.length < 10) return null;
+
+            return {
+                id: idxMap.id >= 0 && row[idxMap.id] ? `${sheetName}-${row[idxMap.id]}` : `MI-${counter}`,
+                type: idxMap.type >= 0 ? (row[idxMap.type] || '').toString().trim() : '',
+                title: title.substring(0, 200),
+                description: title,
+                location: idxMap.location >= 0 ? (row[idxMap.location] || '').toString().trim() : '',
+                status: idxMap.status >= 0 ? (row[idxMap.status] || '').toString().trim().toUpperCase() : '',
+                date: idxMap.date >= 0 ? (row[idxMap.date] || '').toString().trim() : '',
+                assignee: idxMap.assignee >= 0 ? (row[idxMap.assignee] || '').toString().trim() : '',
+                sourceSheet: sheetName,
+                linkedColumns: []
+            };
+        },
+
+        /**
+         * Phase 15: 이슈와 연결된 기둥 하이라이트
+         * @param {Object} issue - 선택된 Shop Issue
+         */
+        highlightIssueColumns(issue) {
+            if (!issue.linkedColumns || issue.linkedColumns.length === 0) {
+                this.showToast('연결된 기둥이 없습니다', 'info');
+                return;
+            }
+
+            // 기존 하이라이트 제거
+            this.highlightedColumns = [];
+
+            // 연결된 기둥들 하이라이트
+            this.highlightedColumns = [...issue.linkedColumns];
+
+            // Shop Issue 패널 닫고 그리드 보여주기
+            this.showShopIssuePanel = false;
+
+            // 토스트 알림
+            this.showToast(`📍 ${issue.id}: ${issue.linkedColumns.length}개 기둥 하이라이트`, 'success');
+
+            console.log('[Phase15] Highlighting columns for issue:', issue.id, issue.linkedColumns);
+        },
+
+        /**
+         * Phase 15: 이슈 텍스트에서 기둥 ID 추출 (Smart Paste 정규식 재사용)
+         * @param {string} text - 이슈 텍스트
+         * @returns {Array<string>} 추출된 기둥 ID 배열
+         */
+        extractColumnIdsFromIssue(text) {
+            if (!text) return [];
+
+            const columnIds = [];
+
+            // 범위 패턴: C-X1~5, A-X10~15
+            const rangePattern = /([A-C])-?[Xx]?(\d{1,3})\s*[~\-~－까지]\s*[Xx]?(\d{1,3})/gi;
+            let match;
+            while ((match = rangePattern.exec(text)) !== null) {
+                const zone = match[1].toUpperCase();
+                const start = parseInt(match[2], 10);
+                const end = parseInt(match[3], 10);
+                for (let i = Math.min(start, end); i <= Math.max(start, end); i++) {
+                    columnIds.push(`${zone}-X${i}`);
+                }
+            }
+
+            // 단일 기둥 패턴: C-X15, A-X3
+            const singlePattern = /([A-C])-?[Xx]?(\d{1,3})(?![~\-~－까지\d])/gi;
+            while ((match = singlePattern.exec(text)) !== null) {
+                const id = `${match[1].toUpperCase()}-X${match[2]}`;
+                if (!columnIds.includes(id)) {
+                    columnIds.push(id);
+                }
+            }
+
+            return columnIds;
+        },
+
+        /**
+         * Phase 15 Step 5: Shop Issues를 Google Sheets에 동기화
+         * @param {Array} issues - 동기화할 이슈 목록 (기본: this.shopIssues)
+         * @returns {Object} { success, synced, error }
+         */
+        async syncShopIssuesToGAS(issues = null) {
+            const issuesToSync = issues || this.shopIssues;
+            
+            if (!issuesToSync || issuesToSync.length === 0) {
+                this.showToast('동기화할 이슈가 없습니다', 'info');
+                return { success: false, synced: 0, error: 'No issues to sync' };
+            }
+
+            const apiUrl = this.sheetSync?.apiUrl;
+            if (!apiUrl) {
+                this.showToast('API 연결이 설정되지 않았습니다', 'warning');
+                return { success: false, synced: 0, error: 'API not configured' };
+            }
+
+            try {
+                this.showToast('Shop Issues 동기화 중...', 'info');
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'syncShopIssues',
+                        issues: issuesToSync.map(issue => ({
+                            id: issue.id,
+                            type: issue.type || '',
+                            title: issue.title || '',
+                            description: issue.description || '',
+                            location: issue.location || '',
+                            status: issue.status || '',
+                            linkedColumns: issue.linkedColumns || [],
+                            sourceSheet: issue.sourceSheet || '',
+                            sourceDate: issue.sourceDate || '',
+                            timestamp: new Date().toISOString()
+                        })),
+                        stats: this.shopIssueStats
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    const synced = result.synced || issuesToSync.length;
+                    this.showToast(`✅ ${synced}건 이슈 동기화 완료`, 'success');
+                    console.log('[Phase15] Synced to GAS:', synced, 'issues');
+                    
+                    // LocalStorage에도 저장 (WP-7 Sparse Storage 활용)
+                    this.saveShopIssuesToLocal();
+                    
+                    return { success: true, synced, error: null };
+                } else {
+                    throw new Error(result.error || 'Sync failed');
+                }
+
+            } catch (error) {
+                console.error('[Phase15] GAS sync error:', error);
+                this.showToast('GAS 동기화 실패: ' + error.message, 'error');
+                
+                // LocalStorage fallback
+                this.saveShopIssuesToLocal();
+                
+                return { success: false, synced: 0, error: error.message };
+            }
+        },
+
+        /**
+         * Phase 15 Step 5: Google Sheets에서 Shop Issues 로드
+         * @returns {Object} { success, issues, stats, error }
+         */
+        async loadShopIssuesFromGAS() {
+            const apiUrl = this.sheetSync?.apiUrl;
+            if (!apiUrl) {
+                // LocalStorage에서 로드 시도
+                return this.loadShopIssuesFromLocal();
+            }
+
+            try {
+                this.showToast('Shop Issues 로딩 중...', 'info');
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'loadShopIssues'
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success && result.issues) {
+                    this.shopIssues = result.issues;
+                    this.shopIssueStats = result.stats || this.calculateShopIssueStats(result.issues);
+                    
+                    this.showToast(`✅ ${result.issues.length}건 이슈 로드됨 (GAS)`, 'success');
+                    console.log('[Phase15] Loaded from GAS:', result.issues.length, 'issues');
+                    
+                    // LocalStorage 캐시 업데이트
+                    this.saveShopIssuesToLocal();
+                    
+                    return { success: true, issues: result.issues, stats: this.shopIssueStats, error: null };
+                } else {
+                    throw new Error(result.error || 'Load failed');
+                }
+
+            } catch (error) {
+                console.error('[Phase15] GAS load error:', error);
+                // LocalStorage fallback
+                return this.loadShopIssuesFromLocal();
+            }
+        },
+
+        /**
+         * Phase 15 Step 5: LocalStorage에 Shop Issues 저장 (WP-7 Sparse Storage 패턴)
+         */
+        saveShopIssuesToLocal() {
+            try {
+                const data = {
+                    issues: this.shopIssues,
+                    stats: this.shopIssueStats,
+                    issueColumnLinks: this.issueColumnLinks || [],
+                    timestamp: new Date().toISOString()
+                };
+                localStorage.setItem('p5_shop_issues', JSON.stringify(data));
+                console.log('[Phase15] Saved to LocalStorage:', this.shopIssues.length, 'issues');
+            } catch (error) {
+                console.error('[Phase15] LocalStorage save error:', error);
+            }
+        },
+
+        /**
+         * Phase 15 Step 5: LocalStorage에서 Shop Issues 로드
+         * @returns {Object} { success, issues, stats, error }
+         */
+        loadShopIssuesFromLocal() {
+            try {
+                const stored = localStorage.getItem('p5_shop_issues');
+                if (!stored) {
+                    return { success: true, issues: [], stats: {}, error: null };
+                }
+
+                const data = JSON.parse(stored);
+                this.shopIssues = data.issues || [];
+                this.shopIssueStats = data.stats || this.calculateShopIssueStats(data.issues);
+                this.issueColumnLinks = data.issueColumnLinks || [];
+
+                console.log('[Phase15] Loaded from LocalStorage:', this.shopIssues.length, 'issues');
+                return { success: true, issues: this.shopIssues, stats: this.shopIssueStats, error: null };
+
+            } catch (error) {
+                console.error('[Phase15] LocalStorage load error:', error);
+                return { success: false, issues: [], stats: {}, error: error.message };
+            }
+        },
+
+        /**
+         * Phase 15 Step 5: Shop Issue 통계 재계산
+         * @param {Array} issues - 이슈 목록
+         * @returns {Object} 통계 객체
+         */
+        calculateShopIssueStats(issues) {
+            if (!issues || !Array.isArray(issues)) return { total: 0, resolved: 0, unresolved: 0, byType: {}, byLocation: {} };
+
+            const stats = {
+                total: issues.length,
+                resolved: 0,
+                unresolved: 0,
+                byType: {},
+                byLocation: {}
+            };
+
+            issues.forEach(issue => {
+                if (issue.status === 'O') {
+                    stats.resolved++;
+                } else {
+                    stats.unresolved++;
+                }
+
+                // 유형별 집계
+                const type = issue.type || 'Unknown';
+                if (!stats.byType[type]) {
+                    stats.byType[type] = { total: 0, resolved: 0 };
+                }
+                stats.byType[type].total++;
+                if (issue.status === 'O') stats.byType[type].resolved++;
+
+                // 위치별 집계
+                const location = issue.location || 'Unknown';
+                if (!stats.byLocation[location]) {
+                    stats.byLocation[location] = { total: 0, resolved: 0 };
+                }
+                stats.byLocation[location].total++;
+                if (issue.status === 'O') stats.byLocation[location].resolved++;
+            });
+
+            return stats;
+        },
+
+        /**
+         * Phase 15 Step 5: 자동 동기화 (Hybrid 모드)
+         * LocalStorage에 즉시 저장 + 백그라운드 GAS 동기화
+         */
+        async autoSyncShopIssues() {
+            // 즉시 LocalStorage 저장
+            this.saveShopIssuesToLocal();
+
+            // 백그라운드 GAS 동기화 (실패해도 무시)
+            if (this.sheetSync?.apiUrl) {
+                this.syncShopIssuesToGAS().catch(err => {
+                    console.warn('[Phase15] Background GAS sync failed:', err);
+                });
+            }
         },
 
         saveIssue() {
@@ -10346,7 +11235,7 @@ document.addEventListener('alpine:init', () => {
 <div class="history-panel" :class="historyPanelOpen ? 'open' : ''">
     <div class="history-panel-header">
         <h3>📜 변경 히스토리</h3>
-        <button class="notification-close" @click="historyPanelOpen = false">✕</button>
+        <button class="notification-close" @click="historyPanelOpen = false" aria-label="히스토리 패널 닫기">✕</button>
     </div>
     
     <!-- 필터 버튼 -->
