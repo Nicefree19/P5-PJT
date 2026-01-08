@@ -59,7 +59,10 @@
     <!-- WP-1-A: Modular JS Stores (exposes window.ColumnStore, window.IssueStore) -->
     <script src="./js/stores/column-store.js"></script>
     <script src="./js/stores/issue-store.js"></script>
-    
+
+    <!-- WP-1-A: Utility Modules (exposes window.PdfGenerator) -->
+    <script src="./js/utils/pdf-generator.js"></script>
+
     <!-- Production Status Data (PSRC 제작현황) -->
     <script src="./data/production_status_import.js"></script>
     
@@ -9923,11 +9926,11 @@ function dashboard() {
 
         /**
          * Generate PDF Report
-         * WP-5: Now uses lazy-loaded libraries
+         * WP-1-A: Uses external PdfGenerator module
          * @param {string} type - Report type: 'summary' | 'detailed' | 'issues'
          */
         async generatePDFReport(type = 'summary') {
-            // WP-5: Load export libraries on demand
+            // Load export libraries on demand
             const loaded = await this.loadExportLibs();
             if (!loaded || typeof window.jspdf === 'undefined') {
                 this.showToast('PDF 라이브러리 로드 실패. 페이지를 새로고침 후 다시 시도해주세요.', 'error');
@@ -9938,55 +9941,22 @@ function dashboard() {
             this.showToast('PDF 보고서 생성 중...', 'info');
 
             try {
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF('p', 'mm', 'a4');
-                const pageWidth = doc.internal.pageSize.getWidth();
-                const pageHeight = doc.internal.pageSize.getHeight();
-                const margin = 15;
-                const contentWidth = pageWidth - (margin * 2);
-
-                // Generate timestamp
-                const now = new Date();
-                const timestamp = now.toLocaleString('ko-KR', {
-                    year: 'numeric', month: '2-digit', day: '2-digit',
-                    hour: '2-digit', minute: '2-digit'
+                // WP-1-A: Call external PdfGenerator module
+                const result = window.PdfGenerator.generatePdfReport(type, {
+                    columns: this.columns,
+                    issues: this.issues,
+                    zones: this.zones,
+                    statusCodes: this.statusCodes,
+                    selectedFloor: this.selectedFloor,
+                    selectedJeolju: this.selectedJeolju
                 });
-                const fileTimestamp = now.toISOString().replace(/[-:]/g, '').slice(0, 15);
 
-                // === Page 1: Cover Page ===
-                this.addPdfCoverPage(doc, timestamp, type);
-
-                // === Page 2: Summary Dashboard ===
-                doc.addPage();
-                this.addPdfSummaryPage(doc, margin, contentWidth);
-
-                // === Detailed Report: Floor-by-Floor Pages ===
-                if (type === 'detailed') {
-                    this.addPdfDetailedPages(doc, margin, contentWidth);
+                if (result.success) {
+                    this.showToast(`PDF 보고서가 생성되었습니다: ${result.filename}`, 'success');
+                    this.pdfReportModalOpen = false;
+                } else {
+                    this.showToast('PDF 생성 중 오류가 발생했습니다: ' + result.error, 'error');
                 }
-
-                // === Issues Report ===
-                if (type === 'issues' || type === 'detailed') {
-                    doc.addPage();
-                    this.addPdfIssuesPage(doc, margin, contentWidth);
-                }
-
-                // Add page numbers to all pages
-                this.addPdfPageNumbers(doc);
-
-                // Generate filename and save
-                const reportTypeLabel = {
-                    'summary': '요약',
-                    'detailed': '상세',
-                    'issues': '이슈'
-                }[type] || '요약';
-
-                const filename = `P5_구조관리_${reportTypeLabel}_보고서_${fileTimestamp}.pdf`;
-                doc.save(filename);
-
-                this.showToast(`PDF 보고서가 생성되었습니다: ${filename}`, 'success');
-                this.pdfReportModalOpen = false;
-
             } catch (error) {
                 console.error('[PDF Report] Error:', error);
                 this.showToast('PDF 생성 중 오류가 발생했습니다: ' + error.message, 'error');
@@ -9995,232 +9965,30 @@ function dashboard() {
             }
         },
 
+        // WP-1-A: PDF helper functions moved to js/utils/pdf-generator.js
+        // addPdfCoverPage, addPdfSummaryPage moved to external module
+
         /**
-         * Add Cover Page to PDF
+         * @deprecated WP-1-A: Moved to external PdfGenerator module
+         * Keeping stub for reference - see js/utils/pdf-generator.js
          */
-        addPdfCoverPage(doc, timestamp, reportType) {
-            const pageWidth = doc.internal.pageSize.getWidth();
-            const pageHeight = doc.internal.pageSize.getHeight();
-            const centerX = pageWidth / 2;
-
-            // Background header bar
-            doc.setFillColor(31, 111, 235); // Primary blue
-            doc.rect(0, 0, pageWidth, 60, 'F');
-
-            // Project badge
-            doc.setFillColor(35, 134, 54); // Green
-            doc.roundedRect(centerX - 30, 15, 60, 12, 3, 3, 'F');
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(10);
-            doc.text('P5 FAB PROJECT', centerX, 23, { align: 'center' });
-
-            // Main title
-            doc.setFontSize(24);
-            doc.setTextColor(255, 255, 255);
-            doc.text('P5 복합동 구조 통합 관리', centerX, 45, { align: 'center' });
-
-            // Subtitle with report type
-            const reportTypeLabels = {
-                'summary': '요약 보고서',
-                'detailed': '상세 보고서',
-                'issues': '이슈 보고서'
-            };
-            doc.setFontSize(16);
-            doc.text(reportTypeLabels[reportType] || '요약 보고서', centerX, 55, { align: 'center' });
-
-            // Project info section
-            doc.setTextColor(100, 100, 100);
-            doc.setFontSize(11);
-
-            const infoY = 90;
-            const lineHeight = 10;
-
-            // Statistics summary box
-            const totalColumns = Object.keys(this.columns).length;
-            const completedCount = Object.values(this.columns).filter(c => c.status === 'installed').length;
-            const progressRate = totalColumns > 0 ? ((completedCount / totalColumns) * 100).toFixed(1) : 0;
-            const openIssues = this.issues.filter(i => i.status === 'open' || i.status === 'in_progress').length;
-
-            // Info box
-            doc.setDrawColor(200, 200, 200);
-            doc.setFillColor(248, 249, 250);
-            doc.roundedRect(30, infoY - 5, pageWidth - 60, 55, 3, 3, 'FD');
-
-            doc.setTextColor(60, 60, 60);
-            doc.setFontSize(10);
-            doc.text('프로젝트 정보', 40, infoY + 5);
-
-            doc.setTextColor(100, 100, 100);
-            doc.setFontSize(9);
-            doc.text(`총 기둥 수: ${totalColumns.toLocaleString()}개 (11개 층 x 828개 기둥/층)`, 40, infoY + 15);
-            doc.text(`전체 진행률: ${progressRate}%`, 40, infoY + 23);
-            doc.text(`완료: ${completedCount.toLocaleString()}개 | 미해결 이슈: ${openIssues}건`, 40, infoY + 31);
-            doc.text(`보고서 생성일시: ${timestamp}`, 40, infoY + 39);
-
-            // Floor and Jeolju context
-            const floorContext = this.selectedFloor || 'ALL';
-            const jeoljuContext = this.selectedJeolju || '전체';
-            doc.text(`현재 조회 범위: ${floorContext}층 / ${jeoljuContext}절주`, 40, infoY + 47);
-
-            // Footer
-            doc.setFontSize(8);
-            doc.setTextColor(150, 150, 150);
-            doc.text('Generated by P5 Live Grid Dashboard v2.3', centerX, pageHeight - 20, { align: 'center' });
-            doc.text('PSRC/HMB 공법 기반 반도체 FAB 구조 관리 시스템', centerX, pageHeight - 14, { align: 'center' });
+        _pdfHelpersMoved() {
+            // PDF generation functions moved to window.PdfGenerator:
+            // - addPdfCoverPage()
+            // - addPdfSummaryPage()
+            // - calculateFloorProgress()
+            // - addPdfDetailedPages()
+            // - addPdfIssuesPage()
+            // - addPdfPageNumbers()
         },
 
-        /**
-         * Add Summary Dashboard Page to PDF
-         */
-        addPdfSummaryPage(doc, margin, contentWidth) {
-            const pageWidth = doc.internal.pageSize.getWidth();
-            let yPos = 20;
-
-            // Page header
-            doc.setFillColor(31, 111, 235);
-            doc.rect(0, 0, pageWidth, 15, 'F');
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(12);
-            doc.text('요약 대시보드', margin, 10);
-
-            yPos = 25;
-
-            // === Key Metrics Section ===
-            doc.setTextColor(60, 60, 60);
-            doc.setFontSize(11);
-            doc.text('핵심 지표', margin, yPos);
-            yPos += 8;
-
-            // Calculate metrics
-            const totalColumns = Object.keys(this.columns).length;
-            const statusCounts = {};
-            Object.values(this.columns).forEach(col => {
-                const status = col.status || 'pending';
-                statusCounts[status] = (statusCounts[status] || 0) + 1;
-            });
-
-            const completedCount = statusCounts['installed'] || 0;
-            const activeCount = statusCounts['active'] || 0;
-            const holdCount = (statusCounts['hold_tc'] || 0) + (statusCounts['hold_design'] || 0);
-            const progressRate = totalColumns > 0 ? ((completedCount / totalColumns) * 100).toFixed(1) : 0;
-
-            // Metrics table
-            const metricsData = [
-                ['전체 기둥', totalColumns.toLocaleString() + '개'],
-                ['설치 완료', completedCount.toLocaleString() + '개 (' + progressRate + '%)'],
-                ['진행중', activeCount.toLocaleString() + '개'],
-                ['Hold (TC/설계)', holdCount.toLocaleString() + '개'],
-                ['미해결 이슈', this.issues.filter(i => i.status !== 'resolved' && i.status !== 'closed').length + '건']
-            ];
-
-            doc.autoTable({
-                startY: yPos,
-                head: [['항목', '값']],
-                body: metricsData,
-                margin: { left: margin, right: margin },
-                headStyles: { fillColor: [31, 111, 235], fontSize: 9 },
-                bodyStyles: { fontSize: 9 },
-                columnStyles: { 0: { cellWidth: 60 }, 1: { cellWidth: 60 } },
-                tableWidth: 130
-            });
-
-            yPos = doc.lastAutoTable.finalY + 15;
-
-            // === Floor Progress Section ===
-            doc.setTextColor(60, 60, 60);
-            doc.setFontSize(11);
-            doc.text('층별 진행률', margin, yPos);
-            yPos += 8;
-
-            // Calculate floor progress
-            const floorProgress = this.calculateFloorProgress();
-            const floorData = Object.entries(floorProgress).map(([floorId, data]) => [
-                floorId,
-                data.total.toString(),
-                data.completed.toString(),
-                data.active.toString(),
-                data.hold.toString(),
-                data.progress + '%'
-            ]);
-
-            doc.autoTable({
-                startY: yPos,
-                head: [['층', '전체', '완료', '진행중', 'Hold', '진행률']],
-                body: floorData,
-                margin: { left: margin, right: margin },
-                headStyles: { fillColor: [31, 111, 235], fontSize: 8 },
-                bodyStyles: { fontSize: 8 },
-                alternateRowStyles: { fillColor: [248, 249, 250] },
-                columnStyles: {
-                    0: { cellWidth: 20 },
-                    1: { cellWidth: 25, halign: 'right' },
-                    2: { cellWidth: 25, halign: 'right' },
-                    3: { cellWidth: 25, halign: 'right' },
-                    4: { cellWidth: 25, halign: 'right' },
-                    5: { cellWidth: 25, halign: 'right' }
-                }
-            });
-
-            yPos = doc.lastAutoTable.finalY + 15;
-
-            // === Status Distribution Section ===
-            doc.setTextColor(60, 60, 60);
-            doc.setFontSize(11);
-            doc.text('상태별 분포', margin, yPos);
-            yPos += 8;
-
-            const statusData = Object.entries(this.statusCodes).map(([code, info]) => {
-                const count = statusCounts[code] || 0;
-                const percent = totalColumns > 0 ? ((count / totalColumns) * 100).toFixed(1) : 0;
-                return [info.label || code, count.toString(), percent + '%'];
-            });
-
-            doc.autoTable({
-                startY: yPos,
-                head: [['상태', '개수', '비율']],
-                body: statusData,
-                margin: { left: margin, right: margin },
-                headStyles: { fillColor: [31, 111, 235], fontSize: 8 },
-                bodyStyles: { fontSize: 8 },
-                alternateRowStyles: { fillColor: [248, 249, 250] }
-            });
-        },
+        // WP-1-A: calculateFloorProgress() moved to js/utils/pdf-generator.js
 
         /**
-         * Calculate floor progress data
-         */
-        calculateFloorProgress() {
-            const floorIds = ['F01', 'F02', 'F03', 'F04', 'F05', 'F06', 'F07', 'F08', 'F09', 'F10', 'RF'];
-            const progress = {};
-
-            floorIds.forEach(floorId => {
-                const floorColumns = Object.values(this.columns).filter(c =>
-                    c.floor === floorId || c.floorId === floorId
-                );
-
-                const total = floorColumns.length || 828; // Default expected count
-                const completed = floorColumns.filter(c => c.status === 'installed').length;
-                const active = floorColumns.filter(c => c.status === 'active').length;
-                const hold = floorColumns.filter(c =>
-                    c.status === 'hold_tc' || c.status === 'hold_design'
-                ).length;
-
-                progress[floorId] = {
-                    total,
-                    completed,
-                    active,
-                    hold,
-                    progress: total > 0 ? ((completed / total) * 100).toFixed(1) : '0.0'
-                };
-            });
-
-            return progress;
-        },
-
-        /**
+         * @deprecated WP-1-A: Moved to PdfGenerator module
          * Add Detailed Floor Pages to PDF
          */
-        addPdfDetailedPages(doc, margin, contentWidth) {
+        _addPdfDetailedPages_REMOVED(doc, margin, contentWidth) {
             const floorIds = ['F01', 'F02', 'F03', 'F04', 'F05', 'F06', 'F07', 'F08', 'F09', 'F10', 'RF'];
             const pageWidth = doc.internal.pageSize.getWidth();
 
