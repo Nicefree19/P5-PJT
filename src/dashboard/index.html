@@ -4818,21 +4818,29 @@ function dashboard() {
         // Phase 7: 층-절주 데이터 초기화
         // ⚠️ 중요: "절주" = 수직 분절 (층 그룹), "열 구간" = 수평 분절 (컬럼 범위)
         initFloorJeoljuData() {
-            // 기본 층 데이터 (11개 층) - 레거시 ID 형식 (F1, F2, ...)
+            // ★ P5 복합동 11개 층 데이터 (실제 규격)
             this.floors = [
-                { floorId: 'base', label: '1층(기초)', order: 1, level: 0.3, hasVariation: false },
-                { floorId: '2F', label: '2층', order: 2, level: 7.8, hasVariation: false },
-                { floorId: '3F', label: '3층', order: 3, level: 14.3, hasVariation: false },
-                { floorId: '4F', label: '4층', order: 4, level: 21.3, hasVariation: false },
-                { floorId: '5F', label: '5층', order: 5, level: 28.3, hasVariation: true, variationNote: '부분 차이' },
-                { floorId: 'RF', label: 'Roof', order: 6, level: 99.4, hasVariation: true, variationNote: '지붕층' }
+                { floorId: '1F', label: '1F (기초)', order: 1, level: 0.3, hasVariation: false },
+                { floorId: '2F', label: '2F', order: 2, level: 7.8, hasVariation: false },
+                { floorId: '3F', label: '3F', order: 3, level: 14.3, hasVariation: false },
+                { floorId: '4F', label: '4F', order: 4, level: 21.3, hasVariation: false },
+                { floorId: '5F', label: '5F', order: 5, level: 28.3, hasVariation: false },
+                { floorId: '6F', label: '6F', order: 6, level: 35.3, hasVariation: false },
+                { floorId: '7F', label: '7F', order: 7, level: 42.3, hasVariation: false },
+                { floorId: '8F', label: '8F', order: 8, level: 49.3, hasVariation: false },
+                { floorId: '9F', label: '9F', order: 9, level: 56.3, hasVariation: false },
+                { floorId: '10F', label: '10F', order: 10, level: 63.3, hasVariation: false },
+                { floorId: 'RF', label: 'RF (지붕)', order: 11, level: 99.4, hasVariation: true, variationNote: '지붕층' }
             ];
 
-            // ★ 절주 (수직 분절 - 층 그룹) - floor_jeolju_implementation_plan.md 기준
-            // 절주 = 기둥 수직분절 계획에 따른 층 그룹 (8개 절주)
+            // ★ 6개 절주 (수직 분절 - 층 그룹) - column_data_generator.js jeoljuMap 기준
             this.jeoljuConfig = [
-                { jeoljuId: '1절주', label: '1절주', floors: ['2F', '3F'], heightRange: '7.8m ~ 14.3m', length: 6.5, columnSize: 'PSRC/HMB', description: '1절주 (2~3F) 제작 현황' },
-                { jeoljuId: '2절주', label: '2절주', floors: ['4F', '5F'], heightRange: '21.3m~', length: 7.0, columnSize: '1600x1600', description: '2절주 제작 현황' }
+                { jeoljuId: '1절주', label: '1절주', floors: ['1F', '2F', '3F'], heightRange: '0.3m ~ 14.3m', length: 14.0, columnSize: 'PSRC/HMB', description: '1절주 (1~3F)' },
+                { jeoljuId: '2절주', label: '2절주', floors: ['4F', '5F'], heightRange: '21.3m ~ 28.3m', length: 7.0, columnSize: '1600x1600', description: '2절주 (4~5F)' },
+                { jeoljuId: '3절주', label: '3절주', floors: ['6F', '7F'], heightRange: '35.3m ~ 42.3m', length: 7.0, columnSize: '1400x1400', description: '3절주 (6~7F)' },
+                { jeoljuId: '4절주', label: '4절주', floors: ['8F'], heightRange: '49.3m ~', length: 7.0, columnSize: '1200x1200', description: '4절주 (8F)' },
+                { jeoljuId: '5절주', label: '5절주', floors: ['9F'], heightRange: '56.3m ~', length: 7.0, columnSize: '1000x1000', description: '5절주 (9F)' },
+                { jeoljuId: '6절주', label: '6절주', floors: ['10F', 'RF'], heightRange: '63.3m ~ 99.4m', length: 36.1, columnSize: '800x800', description: '6절주 (10F~RF)' }
             ];
 
             // ★ 열 구간 (수평 분절 - 컬럼 범위) - 기존 jeoljuList를 명칭 변경
