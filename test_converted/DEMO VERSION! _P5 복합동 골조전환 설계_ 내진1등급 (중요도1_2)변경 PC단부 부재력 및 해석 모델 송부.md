@@ -1,0 +1,36 @@
+# DEMO VERSION! [P5 복합동 골조전환 설계] 내진1등급 (중요도1.2)변경 PC단부 부재력 및 해석 모델 송부
+
+- **From**: 이동혁 [소장] [EPC팀]
+- **Date**: 2023-03-28 20:08:22
+- **Source**: DEMO VERSION! _P5 복합동 골조전환 설계_ 내진1등급 (중요도1_2)변경 PC단부 부재력 및 해석 모델 송부.msg
+
+---
+
+| 대용량 첨부 (Big Attach ) **2개(files)** | |
+| --- | --- |
+| [230328\_P5\_복합동 내진1등급(중요도1.2)\_PC단부부재력.xlsx](http://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/274f0cc35c0e82c58c5d98f65176a4ce/202303282008220832661q9eZOZAZl4t "230328_P5_복합동 내진1등급(중요도1.2)_PC단부부재력.xlsx") | (23 KB) | [Download](http://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/274f0cc35c0e82c58c5d98f65176a4ce/202303282008220832661q9eZOZAZl4t) |
+| [230328 P5&P6 T.FAB 복합동 모델링\_(활하중저감X)\_중요도1.2\_REV09.mgb](http://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/274f0cc35c0e82c58c5d98f65176a4ce/2023032820082208426620rnqLbaOYGK "230328 P5&P6 T.FAB 복합동 모델링_(활하중저감X)_중요도1.2_REV09.mgb") | (20 MB) | [Download](http://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/274f0cc35c0e82c58c5d98f65176a4ce/2023032820082208426620rnqLbaOYGK) |
+| 다운로드 기간(Download Term):2023-03-28~2023-04-27 | |
+
+
+
+
+안녕하세요? 김대훈 대표님
+
+금일 회의때 말씀드린 부재력과 해석 모델 공유드립니다.
+
+궁금하신 내용있으면 연락주세요.
+
+확인 부탁드립니다.
+
+감사합니다.
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+|  |  |
+| --- | --- |
+| 이동혁   EPC | 소장 | senkuzo |
+
+|  |  |
+| --- | --- |
+| t: 02-2629-3104  m: 010-4249-7140  e: dhlee@senkuzo.com  www.senkuzo.com | (주)센구조연구소 SEN ENGINEERING GROUP 07226 서울시 영등포구 버드나루로 19길 6 (센스빌딩) |

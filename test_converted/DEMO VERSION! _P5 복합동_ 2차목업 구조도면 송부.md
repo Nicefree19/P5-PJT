@@ -1,0 +1,38 @@
+# DEMO VERSION! [P5 복합동] 2차목업 구조도면 송부 
+
+- **From**: 이동혁 [소장] [EPC팀]
+- **Date**: 2023-04-21 16:16:28
+- **Source**: DEMO VERSION! _P5 복합동_ 2차목업 구조도면 송부 .msg
+
+---
+
+| 대용량 첨부 (Big Attach ) **2개(files)** | |
+| --- | --- |
+| [230421\_P5복합동 HMB 2차 목업 구조도면\_Rev1.dwg](http://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/b6f2dc5205b5d471657ebd4edcfa7337/202304211616276255485p4t77grJDCd "230421_P5복합동 HMB 2차 목업 구조도면_Rev1.dwg") | (11 MB) | [Download](http://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/b6f2dc5205b5d471657ebd4edcfa7337/202304211616276255485p4t77grJDCd) |
+| [230420\_PSRC+HMB 2차 MOCK UP 예정 공정표 - SHOP 츨도관련 일정수정).pptx](http://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/b6f2dc5205b5d471657ebd4edcfa7337/202304211616276385486ti6F15mdXba "230420_PSRC+HMB 2차 MOCK UP 예정 공정표 - SHOP 츨도관련 일정수정).pptx") | (140 KB) | [Download](http://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/b6f2dc5205b5d471657ebd4edcfa7337/202304211616276385486ti6F15mdXba) |
+| 다운로드 기간(Download Term):2023-04-21~2023-05-21 | |
+
+
+
+
+안녕하세요? 센구조 이동혁 소장입니다.
+
+P5복합동 HMB 2차 목업 구조도면을 송부드립니다.
+
+궁금하신 내용있으시면 연락주세요.
+
+확정된 구조도면 출도 시기가 늦어져 기존 대비 일정이 조금씩 미뤄질걸로 예상이 됩니다.
+
+첨부된 일정상 문제가 없을지도 확인 부탁드립니다.
+
+감사합니다.
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+|  |  |
+| --- | --- |
+| 이동혁   EPC | 소장 | senkuzo |
+
+|  |  |
+| --- | --- |
+| t: 02-2629-3104  m: 010-4249-7140  e: dhlee@senkuzo.com  www.senkuzo.com | (주)센구조연구소 SEN ENGINEERING GROUP 07226 서울시 영등포구 버드나루로 19길 6 (센스빌딩) |

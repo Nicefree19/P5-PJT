@@ -2,6 +2,10 @@ import win32com.client
 import os
 import re
 import base64
+import requests
+import email
+from email import policy
+from email.parser import BytesParser
 from pathlib import Path
 from markdownify import markdownify as md
 
@@ -62,6 +66,37 @@ def get_base64_image(attachment):
         return None
 
 
+def download_external_images(html_body, logger=None):
+    """외부 URL 이미지를 다운로드하여 Base64로 변환"""
+    if logger is None:
+        logger = default_logger
+
+    # <img src="http..." 또는 <img src="https..." 패턴 찾기
+    img_pattern = r'<img[^>]+src=["\']?(https?://[^"\'\s>]+)["\']?'
+
+    def replace_with_base64(match):
+        url = match.group(1)
+        try:
+            response = requests.get(
+                url,
+                timeout=10,
+                headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"},
+            )
+            if response.status_code == 200:
+                content_type = response.headers.get("Content-Type", "image/png")
+                # Content-Type에서 charset 등 제거
+                if ";" in content_type:
+                    content_type = content_type.split(";")[0].strip()
+                encoded = base64.b64encode(response.content).decode("utf-8")
+                new_src = f"data:{content_type};base64,{encoded}"
+                return match.group(0).replace(url, new_src)
+        except Exception as e:
+            logger(f"  ⚠️ 외부이미지 다운로드 실패: {url[:50]}...")
+        return match.group(0)  # 실패 시 원본 유지
+
+    return re.sub(img_pattern, replace_with_base64, html_body)
+
+
 def default_logger(message):
     print(message)
 
@@ -105,6 +140,9 @@ def convert_single_msg_to_md(msg_path, output_folder, logger=None):
                     if base64_img:
                         html_body = html_body.replace(f"cid:{cid}", base64_img)
 
+        # 2.5 외부 URL 이미지 다운로드 및 Base64 변환
+        html_body = download_external_images(html_body, logger)
+
         # 3. HTML -> Markdown 변환
         markdown_content = md(html_body, heading_style="atx")
 
@@ -139,29 +177,141 @@ def convert_single_msg_to_md(msg_path, output_folder, logger=None):
         outlook = None
 
 
+def convert_single_eml_to_md(eml_path, output_folder, logger=None):
+    """단일 .eml 파일을 .md로 변환 (이미지 Base64 임베딩)"""
+    if logger is None:
+        logger = default_logger
+
+    try:
+        with open(eml_path, "rb") as f:
+            msg = BytesParser(policy=policy.default).parse(f)
+
+        # 1. 메타데이터 추출
+        subject = msg.get("Subject", "No Subject") or "No Subject"
+        sender = msg.get("From", "Unknown Sender") or "Unknown Sender"
+        date_str = msg.get("Date", "Unknown Date") or "Unknown Date"
+
+        # 2. HTML/텍스트 본문 추출
+        html_body = None
+        text_body = None
+        cid_images = {}  # Content-ID -> Base64 매핑
+
+        # 멀티파트 메시지 처리
+        if msg.is_multipart():
+            for part in msg.walk():
+                content_type = part.get_content_type()
+                content_id = part.get("Content-ID", "")
+
+                # CID 이미지 수집
+                if content_type.startswith("image/"):
+                    if content_id:
+                        cid = content_id.strip("<>")
+                        img_data = part.get_payload(decode=True)
+                        if img_data:
+                            encoded = base64.b64encode(img_data).decode("utf-8")
+                            cid_images[cid] = f"data:{content_type};base64,{encoded}"
+
+                # HTML 본문
+                if content_type == "text/html" and not html_body:
+                    payload = part.get_payload(decode=True)
+                    charset = part.get_content_charset() or "utf-8"
+                    try:
+                        html_body = payload.decode(charset)
+                    except Exception:
+                        html_body = payload.decode("utf-8", errors="ignore")
+
+                # 텍스트 본문 (HTML 없을 때 fallback)
+                if content_type == "text/plain" and not text_body:
+                    payload = part.get_payload(decode=True)
+                    charset = part.get_content_charset() or "utf-8"
+                    try:
+                        text_body = payload.decode(charset)
+                    except Exception:
+                        text_body = payload.decode("utf-8", errors="ignore")
+        else:
+            content_type = msg.get_content_type()
+            payload = msg.get_payload(decode=True)
+            charset = msg.get_content_charset() or "utf-8"
+            try:
+                if content_type == "text/html":
+                    html_body = payload.decode(charset)
+                else:
+                    text_body = payload.decode(charset)
+            except Exception:
+                text_body = payload.decode("utf-8", errors="ignore") if payload else ""
+
+        # HTML이 없으면 텍스트를 HTML로 변환
+        if not html_body:
+            html_body = f"<pre>{text_body or ''}</pre>"
+
+        # 3. CID 이미지 치환
+        for cid, base64_img in cid_images.items():
+            html_body = html_body.replace(f"cid:{cid}", base64_img)
+
+        # 4. 외부 URL 이미지 다운로드 및 Base64 변환
+        html_body = download_external_images(html_body, logger)
+
+        # 5. HTML -> Markdown 변환
+        markdown_content = md(html_body, heading_style="atx")
+
+        # 6. 최종 마크다운 조립
+        final_md = f"""# {subject}
+
+- **From**: {sender}
+- **Date**: {date_str}
+- **Source**: {os.path.basename(eml_path)}
+
+---
+
+{markdown_content}
+"""
+
+        # 7. 파일 저장
+        base_name = Path(eml_path).stem
+        safe_name = sanitize_filename(base_name)
+        output_path = os.path.join(output_folder, f"{safe_name}.md")
+
+        with open(output_path, "w", encoding="utf-8") as f:
+            f.write(final_md)
+
+        logger(f"✅ 변환 완료: {os.path.basename(output_path)}")
+        return True
+
+    except Exception as e:
+        logger(f"❌ 변환 실패 ({os.path.basename(eml_path)}): {e}")
+        return False
+
+
 def batch_convert(source_folder, output_folder, logger=None, merge_options=None):
-    """폴더 내 모든 msg 파일 변환 및 선택적 병합"""
+    """폴더 내 모든 msg/eml 파일 변환 및 선택적 병합"""
     if logger is None:
         logger = default_logger
 
     source_path = Path(source_folder)
     msg_files = list(source_path.rglob("*.msg"))
+    eml_files = list(source_path.rglob("*.eml"))
+    all_files = msg_files + eml_files
 
-    if not msg_files:
-        logger("MSG 파일이 없습니다.")
+    if not all_files:
+        logger("MSG/EML 파일이 없습니다.")
         return
 
     os.makedirs(output_folder, exist_ok=True)
 
-    logger(f"총 {len(msg_files)}개의 파일을 변환합니다...")
+    logger(f"총 {len(all_files)}개의 파일을 변환합니다...")
+    logger(f"  - MSG: {len(msg_files)}개, EML: {len(eml_files)}개")
 
     success = 0
-    for idx, f in enumerate(msg_files, 1):
-        # logger(f"[{idx}/{len(msg_files)}] {f.name}")
-        if convert_single_msg_to_md(f, output_folder, logger):
-            success += 1
+    for idx, f in enumerate(all_files, 1):
+        ext = f.suffix.lower()
+        if ext == ".msg":
+            if convert_single_msg_to_md(f, output_folder, logger):
+                success += 1
+        elif ext == ".eml":
+            if convert_single_eml_to_md(f, output_folder, logger):
+                success += 1
 
-    logger(f"\n완료: {success}/{len(msg_files)} 성공")
+    logger(f"\n완료: {success}/{len(all_files)} 성공")
     logger(f"저장 폴더: {output_folder}")
 
     # 2단계: NotebookLM용 병합 실행 (옵션이 있거나 기본 실행)

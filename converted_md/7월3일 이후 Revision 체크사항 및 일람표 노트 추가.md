@@ -1,7 +1,7 @@
 # 7월3일 이후 Revision 체크사항 및 일람표 노트 추가
 
 - **From**: 양상관 [소장] [EPC팀]
-- **Date**: 2023-07-13 14:39:00
+- **Date**: Unknown Date
 - **Source**: 7월3일 이후 Revision 체크사항 및 일람표 노트 추가.msg
 
 ---

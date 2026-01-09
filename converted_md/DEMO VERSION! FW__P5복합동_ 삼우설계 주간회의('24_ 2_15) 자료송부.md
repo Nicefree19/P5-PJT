@@ -1,0 +1,74 @@
+# DEMO VERSION! FW:[P5복합동] 삼우설계 주간회의('24. 2/15) 자료송부
+
+- **From**: 이동혁 [소장] [EPC팀]
+- **Date**: Unknown Date
+- **Source**: DEMO VERSION! FW__P5복합동_ 삼우설계 주간회의('24_ 2_15) 자료송부.msg
+
+---
+
+| 대용량 첨부 (Big Attach ) **2개(files)** | |
+| --- | --- |
+| [(P5 복합동) 삼우설계 회의록 종합 R.0(240215).xlsx](https://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/fd301f84079fdb8938798e53483e63da/202402151442429615538sk1aSzF9E8G "(P5 복합동) 삼우설계 회의록 종합 R.0(240215).xlsx") | (406 KB) | [Download](https://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/fd301f84079fdb8938798e53483e63da/202402151442429615538sk1aSzF9E8G) |
+| [240214\_P5\_복합동\_삼우 설계회의 자료 (SECL\_R0).pptx](https://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/fd301f84079fdb8938798e53483e63da/202402151442429615539wXnFb0v1KNi "240214_P5_복합동_삼우 설계회의 자료 (SECL_R0).pptx") | (10 MB) | [Download](https://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/fd301f84079fdb8938798e53483e63da/202402151442429615539wXnFb0v1KNi) |
+| 다운로드 기간(Download Term):2024-02-15~2024-03-16 | |
+
+
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+|  |  |
+| --- | --- |
+| 이동혁   EPC | 소장 | senkuzo |
+
+|  |  |
+| --- | --- |
+| t: 02-2629-3104  m: 010-4249-7140  e: dhlee@senkuzo.com  www.senkuzo.com | (주)센구조연구소 SEN ENGINEERING GROUP 07226 서울시 영등포구 버드나루로 19길 6 (센스빌딩) |
+
+**------ Original Message ------**  
+**Date:** 2024-02-15 14:39:18  
+**From:**서성현 < sunghyun.seo@samsung.com >  
+**To:** 강동균 < ddkkang.kang@samoo.com >  
+**Cc:** 풍경아 < pung.pung@samoo.com >,김해수 < kim.6117@samoo.com >,samoocon04@samoo.co.kr < samoocon04@samoo.co.kr >,이인호 [이사] [epc팀] < ihlee@senkuzo.com >,이동혁 [소장] [epc팀] < dhlee@senkuzo.com >,endmall01 < endmall.01@partner.samsung.com >,endmall02 < endmall.02@partner.samsung.com >,senkuzo02 < senkuzo.02@partner.samsung.com >,강상규 < sk-.kang@samsung.com >,강대호 < dh23.kang@samsung.com >,정주영 < jytara.jung@samsung.com >   
+**Subject:** [P5복합동] 삼우설계 주간회의('24. 2/15) 자료송부
+
+수신 : 강동균 마스터님
+
+ 
+
+안녕하세요
+
+금일 삼우설계 주간회의(2/15) 회의자료 및 회의록 송부합니다.
+
+ 
+
+ 
+
+ 
+
+ 
+
+|  |  |
+| --- | --- |
+|  | **Sung Hyun, Seo** |
+| **Principal Engineer** ㅣ 건축구조기술사 ㅣ Industrial Engineering Dept. |
+| **Samsung Engineering Co., Ltd.** |
+| T  82 2 2053 3670     M  82 10 9984 4428     E  [sunghyun.seo](mailto:sunghyun.seo@samsung.com)[@samsung.com](mailto:sunghyun.seo@samsung.com) |
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+|  |
+| --- |
+|  |
+
+|  |
+| --- |
+|  |

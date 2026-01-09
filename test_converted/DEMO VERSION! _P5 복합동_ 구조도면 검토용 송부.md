@@ -1,0 +1,43 @@
+# DEMO VERSION! [P5 복합동] 구조도면 검토용 송부
+
+- **From**: 이동혁 [소장] [EPC팀]
+- **Date**: 2023-06-28 23:10:21
+- **Source**: DEMO VERSION! _P5 복합동_ 구조도면 검토용 송부.msg
+
+---
+
+| 대용량 첨부 (Big Attach ) **3개(files)** | |
+| --- | --- |
+| [230628\_P5 복합동\_구조평면도\_REV.0(검토용).dwg](https://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/792d0399a9e211848807510a7967cac7/202306282310210457838DufE9UELQot "230628_P5 복합동_구조평면도_REV.0(검토용).dwg") | (12 MB) | [Download](https://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/792d0399a9e211848807510a7967cac7/202306282310210457838DufE9UELQot) |
+| [230628\_P5 복합동\_HMB+PC보 일람표\_REV.0(검토용).dwg](https://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/792d0399a9e211848807510a7967cac7/2023062823102128178390m2KeuF3ifR "230628_P5 복합동_HMB+PC보 일람표_REV.0(검토용).dwg") | (9 MB) | [Download](https://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/792d0399a9e211848807510a7967cac7/2023062823102128178390m2KeuF3ifR) |
+| [230628\_P5 복합동 HMB\_설계 결과 정리.xlsx](https://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/792d0399a9e211848807510a7967cac7/2023062823102131578403BfytAo0D41 "230628_P5 복합동 HMB_설계 결과 정리.xlsx") | (62 KB) | [Download](https://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/792d0399a9e211848807510a7967cac7/2023062823102131578403BfytAo0D41) |
+| 다운로드 기간(Download Term):2023-06-28~2023-07-28 | |
+
+
+
+
+안녕하세요? 센구조 이동혁 소장입니다.
+
+ 
+
+요청하신 REVIEW용 구조도면을 송부드립니다.
+
+ 
+
+아직 내부적으로 면밀히 검토중에 있으며, 완성본은 아닙니다. 이점 양해부탁드립니다.
+
+상세도는 명일중으로 송부드리겠습니다.
+
+내용 확인 부탁드립니다.
+
+감사합니다.
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+|  |  |
+| --- | --- |
+| 이동혁   EPC | 소장 | senkuzo |
+
+|  |  |
+| --- | --- |
+| t: 02-2629-3104  m: 010-4249-7140  e: dhlee@senkuzo.com  www.senkuzo.com | (주)센구조연구소 SEN ENGINEERING GROUP 07226 서울시 영등포구 버드나루로 19길 6 (센스빌딩) |

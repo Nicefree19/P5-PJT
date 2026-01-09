@@ -1,0 +1,151 @@
+# [P5복합동] 구조해석 모델링 파일 송부 (REV30)
+
+- **From**: 손근영 [과장] [EPC팀]
+- **Date**: Unknown Date
+- **Source**: _P5복합동_ 구조해석 모델링 파일 송부 (REV30).msg
+
+---
+
+| 대용량 첨부 (Big Attach ) **2개(files)** | |
+| --- | --- |
+| [230601 P5&P6 복합동 모델링\_(활하중저감O)\_중요도(1)\_REV30\_M.mgb](http://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/5d155e8d154ff050d25b3f1d951b20b7/202306011608292749955xVWMzKeDeTa "230601 P5&P6 복합동 모델링_(활하중저감O)_중요도(1)_REV30_M.mgb") | (31 MB) | [Download](http://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/5d155e8d154ff050d25b3f1d951b20b7/202306011608292749955xVWMzKeDeTa) |
+| [230601 P5&P6 복합동 모델링\_(활하중저감X)\_중요도(1)\_REV30\_M.mgb](http://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/5d155e8d154ff050d25b3f1d951b20b7/202306011608293069956JAt4qT2rBL9 "230601 P5&P6 복합동 모델링_(활하중저감X)_중요도(1)_REV30_M.mgb") | (31 MB) | [Download](http://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/5d155e8d154ff050d25b3f1d951b20b7/202306011608293069956JAt4qT2rBL9) |
+| 다운로드 기간(Download Term):2023-06-01~2023-07-01 | |
+
+
+
+
+
+
+
+
+수         신 :  이동혁 소장님, 양상관 소장님
+
+참         조 :  참조처 제위
+
+ 
+
+발         신 :  손근영 과장
+
+ 
+
+내         용 :  [P5복합동] 구조해석 모델링 파일 및 관련자료 송부 (MAIN DESIGN, REV30)
+
+ 
+
+안녕하십니까? 손근영 과장입니다.
+
+ 
+
+표제와 같이 유첨 드립니다.
+
+ 
+
+문의사항 있으시면 연락 부탁드립니다.
+
+ 
+
+\*수정내용
+
+(1) 이앤디몰 부재일람표 반영 (REF: FW:[P56복합동] 행잉로드 및 실구분 구체화 자료 송부드립니다.)
+
+(2) 상기 파일 CHECK 및 가스트영향계수 수정
+
+감사합니다.
+
+손근영 드림.
+
+---------------------------------------------------------------------------------
+
+손 근 영 과장 / EPC 팀
+
+**T** 02-2629-3102 **M** 010-6638-7048
+
+**F** 02-2629-2600 **H** [www.senkuzo.com](http://www.senkuzo.com/)
+
+07226 서울시 영등포구 버드나루로 19길 6 (당산동 SENSE빌딩)
+
+SENSE B/D Beodeunaru-ro 19-gil 6, Youngdeungpo-gu, Seoul, 07226, Korea
+
+![senkuzo](data:image/png;base64,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)
+
+|  |
+| --- |
+| **(주)센구조연구소 ｜****(주)센벡스****｜****(주)센코어테크** |
+
+**------ Original Message ------**  
+**Date:** 2023-06-01 13:12:10  
+**From:**이동혁 [소장] [epc팀] < dhlee@senkuzo.com >  
+**To:** team epc < epc@senvex.net >  
+**Subject:** FW:[P56복합동] 행잉로드 및 실구분 구체화 자료 송부드립니다.
+
+| 대용량 첨부 (Big Attach ) **3개(files)** | |
+| --- | --- |
+| [구조평면도\_P56복합동\_20230601(행잉로드 파생).dwg](http://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/7d706ad37fb2ae4bd53fd94df29d7e92/202306011311269367797D52pbZePpo3 "구조평면도_P56복합동_20230601(행잉로드 파생).dwg") | (13 MB) | [Download](http://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/7d706ad37fb2ae4bd53fd94df29d7e92/202306011311269367797D52pbZePpo3) |
+| [230601\_(이앤디몰) P5복합동 부재력 및 PC부재크기(행잉로드 파생).xlsx](http://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/7d706ad37fb2ae4bd53fd94df29d7e92/202306011311269367798n69jCMdC2Vd "230601_(이앤디몰) P5복합동 부재력 및 PC부재크기(행잉로드 파생).xlsx") | (2 MB) | [Download](http://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/7d706ad37fb2ae4bd53fd94df29d7e92/202306011311269367798n69jCMdC2Vd) |
+| [230530 P5&P6 복합동 모델링\_(활하중저감X)\_중요도(1)\_REV29\_M(행잉로드 파생).mgb](http://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/7d706ad37fb2ae4bd53fd94df29d7e92/202306011311269367799xaFuwAcKxdc "230530 P5&P6 복합동 모델링_(활하중저감X)_중요도(1)_REV29_M(행잉로드 파생).mgb") | (31 MB) | [Download](http://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/7d706ad37fb2ae4bd53fd94df29d7e92/202306011311269367799xaFuwAcKxdc) |
+| 다운로드 기간(Download Term):2023-06-01~2023-07-01 | |
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+|  |  |
+| --- | --- |
+| 이동혁   EPC | 소장 | senkuzo |
+
+|  |  |
+| --- | --- |
+| t: 02-2629-3104  m: 010-4249-7140  e: dhlee@senkuzo.com  www.senkuzo.com | (주)센구조연구소 SEN ENGINEERING GROUP 07226 서울시 영등포구 버드나루로 19길 6 (센스빌딩) |
+
+**------ Original Message ------**  
+**Date:** 2023-06-01 11:44:03  
+**From:**endmall02 < endmall.02@partner.samsung.com >  
+**To:** dhlee@senkuzo.com < dhlee@senkuzo.com >,ihlee@senkuzo.com < ihlee@senkuzo.com >,senkuzo01 < senkuzo.01@partner.samsung.com >,senkuzo02 < senkuzo.02@partner.samsung.com >  
+**Subject:** [P56복합동] 행잉로드 및 실구분 구체화 자료 송부드립니다.
+
+안녕하십니까 이동혁 소장님, 이앤디몰 강기림 프로입니다.
+
+ 
+
+05.31 수요일 회의에서 논의되었던 삼우설계측 피드백에 따라
+
+ 
+
+행잉로드별 부재 구분, 실하중별 구체적 일람구분
+
+ 
+
+완료된 자료  송부드립니다.
+
+ 
+
+ 
+
+ 
+
+부재일람표 (엑셀Ver)에 신규파생 및 변경부재 마크하여 송부드리며,
+
+![](data:image/png;base64,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)
+
+ 
+
+해당 부재 반영된 구조평면도 및 MIDAS 모델링 함께 첨부드리오니 확인 요청드립니다.
+
+ 
+
+감사합니다.
+
+ 
+
+(구조평면도상 PB 가로폭은 실치수가 아닌 구조기호만 우선 변경하여 송부드림을 알려드립니다.)
+
+|  |
+| --- |
+|  |
+
+|  |
+| --- |
+|  |
+
+|  |
+| --- |
+|  |

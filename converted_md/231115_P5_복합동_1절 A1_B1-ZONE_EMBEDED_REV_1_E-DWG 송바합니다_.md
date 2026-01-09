@@ -1,7 +1,7 @@
 # 231115_P5_복합동_1절 A1,B1-ZONE_EMBEDED_REV.1_E-DWG 송바합니다.
 
 - **From**: 김명수 [차장] [BIM설계부]
-- **Date**: 2023-11-15 15:20:50
+- **Date**: Unknown Date
 - **Source**: 231115_P5_복합동_1절 A1_B1-ZONE_EMBEDED_REV_1_E-DWG 송바합니다_.msg
 
 ---

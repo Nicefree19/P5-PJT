@@ -1,0 +1,330 @@
+# Re:p5복합동 공사재개 관련 회의 
+
+- **From**: 이동혁 [소장] [EPC팀]
+- **Date**: Unknown Date
+- **Source**: Re_p5복합동 공사재개 관련 회의 .msg
+
+---
+
+| 대용량 첨부 (Big Attach ) **3개(files)** | |
+| --- | --- |
+| [251120\_L-BAR 레이저 가공\_R1.dwg](https://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/1f690abce71bb77e98348258c770dd7d/202511202207555278154l8DlpBinVHS "251120_L-BAR 레이저 가공_R1.dwg") | (11 MB) | [Download](https://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/1f690abce71bb77e98348258c770dd7d/202511202207555278154l8DlpBinVHS) |
+| [(코어위치 이동 반영)[구조기호 변경 체크용] 251120\_P5 복합동\_구조평면도\_센수정.dwg](https://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/1f690abce71bb77e98348258c770dd7d/2025112022075553981552TZUYlzIKWb "(코어위치 이동 반영)[구조기호 변경 체크용] 251120_P5 복합동_구조평면도_센수정.dwg") | (15 MB) | [Download](https://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/1f690abce71bb77e98348258c770dd7d/2025112022075553981552TZUYlzIKWb) |
+| [251120\_P5복합동 재개 회의자료 및\_4F이후 반영해야할 아이템 .pptx](https://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/1f690abce71bb77e98348258c770dd7d/202511202207555548156G0PBmheDXRE "251120_P5복합동 재개 회의자료 및_4F이후 반영해야할 아이템 .pptx") | (1 MB) | [Download](https://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/1f690abce71bb77e98348258c770dd7d/202511202207555548156G0PBmheDXRE) |
+| 다운로드 기간(Download Term):2025-11-20~2026-05-24 | |
+
+
+
+
+
+안녕하세요? 센구조 이동혁 소장입니다.
+
+명일 회의를 위한 자료 송부드립니다.
+
+확인 부탁드립니다.
+
+감사합니다.
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+|  |  |
+| --- | --- |
+| 이동혁   EPC | 소장 | senkuzo |
+
+|  |  |
+| --- | --- |
+| t: 02-2629-3104  m: 010-4249-7140  e: dhlee@senkuzo.com  www.senkuzo.com | (주)센구조연구소 SEN ENGINEERING GROUP 07226 서울시 영등포구 버드나루로 19길 6 (센스빌딩) |
+
+**------ Original Message ------**  
+**Date:** 2025-11-20 09:08:30  
+**From:**류재호 [전무] [임원실] < jhryoo@senkuzo.com >  
+**To:** 이동혁 [소장] [EPC팀] < dhlee@senkuzo.com >  
+**Cc:** 박성경 [전무] [임원실] < skpark@senkuzo.com >,이재용(JaeYong Lee) [이사] [설계팀] < jylee@senkuzo.com >,김태주(TaeJoo Kim) [이사] [생산관리팀] < tjkim@senkuzo.com >,원유엽 [이사] [생산4파트] < yywon@senkuzo.com >,김보경 [부장] [생산4파트] < bkkim@senkuzo.com >,이인호 [이사] [EPC팀] < ihlee@senkuzo.com >,양재영(JaeYoung Yang) [이사] [BIM설계부] < jyyang@senkuzo.com >   
+**Subject:** Re:p5복합동 공사재개 관련 회의
+
+회신 감사 합니다
+
+정리 되는일정 확인후 대면회의 일자 시간 확정 회신 바랍니다
+
+**------ Original Message ------**  
+**Date:** 2025-11-20 08:57:18  
+**From:**이동혁 [소장] [EPC팀] < dhlee@senkuzo.com >  
+**To:** 류재호 [전무] [임원실] < jhryoo@senkuzo.com >  
+**Cc:** 박성경 [전무] [임원실] < skpark@senkuzo.com >,이재용(JaeYong Lee) [이사] [설계팀] < jylee@senkuzo.com >,김태주(TaeJoo Kim) [이사] [생산관리팀] < tjkim@senkuzo.com >,원유엽 [이사] [생산4파트] < yywon@senkuzo.com >,김보경 [부장] [생산4파트] < bkkim@senkuzo.com >,이인호 [이사] [EPC팀] < ihlee@senkuzo.com >,양재영(JaeYoung Yang) [이사] [BIM설계부] < jyyang@senkuzo.com >   
+**Subject:** Re:p5복합동 공사재개 관련 회의
+
+전무님, 안녕하세요.
+
+EPC팀 이동혁 소장입니다.
+
+말씀 주신 회의 건에 대해 회신이 늦어진 점 먼저 양해 부탁드립니다.
+
+최근 ENA 측 로딩맵 정리 이후 해석 모델 업데이트에 집중하고 있어, 변경 사항을 명확히 파악하는 작업을 내부적으로 우선 진행하고 있습니다.
+
+현재는 구조 해석 모델이 마무리 단계이며, 금일중으로 변경점을 파악할 예정입니다.
+
+금일 오후에 BIM팀과의 협의 후 공장 측 미팅 준비까지 일련의 검토 절차가 필요하다 보니 회신이 다소 지연되었습니다.
+
+BIM팀과 내부 협의하여 정리된 협의할 사항들 정리해서 내용 금일중으로 공유드리겠습니다.
+
+저희 입장에서는 화상회의로 협의하는것보다는 대면회의를 진행했으면 합니다.
+
+양해 부탁드립니다.
+
+감사합니다.
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+|  |  |
+| --- | --- |
+| 이동혁   EPC | 소장 | senkuzo |
+
+|  |  |
+| --- | --- |
+| t: 02-2629-3104  m: 010-4249-7140  e: dhlee@senkuzo.com  www.senkuzo.com | (주)센구조연구소 SEN ENGINEERING GROUP 07226 서울시 영등포구 버드나루로 19길 6 (센스빌딩) |
+
+**------ Original Message ------**  
+**Date:** 2025-11-20 08:27:38  
+**From:**류재호 [전무] [임원실] < jhryoo@senkuzo.com >  
+**To:** 이동혁 [소장] [EPC팀] < dhlee@senkuzo.com >,이인호 [이사] [EPC팀] < ihlee@senkuzo.com >,양재영(JaeYoung Yang) [이사] [BIM설계부] < jyyang@senkuzo.com >  
+**Cc:** 박성경 [전무] [임원실] < skpark@senkuzo.com >,이재용(JaeYong Lee) [이사] [설계팀] < jylee@senkuzo.com >,김태주(TaeJoo Kim) [이사] [생산관리팀] < tjkim@senkuzo.com >,원유엽 [이사] [생산4파트] < yywon@senkuzo.com >,김보경 [부장] [생산4파트] < bkkim@senkuzo.com >   
+**Subject:** p5복합동 공사재개 관련 회의
+
+| 대용량 첨부 (Big Attach ) **4개(files)** | |
+| --- | --- |
+| [20251115 - P5복합동 공사수행 INFORM.pptx](https://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/33564e298dd3c02e108bfa6c0c8ad260/202511200827383227743mmQDD3BB2KB "20251115 - P5복합동 공사수행 INFORM.pptx") | (5 MB) | [Download](https://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/33564e298dd3c02e108bfa6c0c8ad260/202511200827383227743mmQDD3BB2KB) |
+| [P5샵 승인 현황.pptx](https://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/33564e298dd3c02e108bfa6c0c8ad260/202511200827384847744XfpVYtqcapL "P5샵 승인 현황.pptx") | (8 MB) | [Download](https://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/33564e298dd3c02e108bfa6c0c8ad260/202511200827384847744XfpVYtqcapL) |
+| [P5,P6 복합동 기초 일정 \_ L형 (251110)\_조닝변경.xlsx](https://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/33564e298dd3c02e108bfa6c0c8ad260/2025112008273856577451oOQQWO1n30 "P5,P6 복합동 기초 일정 _ L형 (251110)_조닝변경.xlsx") | (6 MB) | [Download](https://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/33564e298dd3c02e108bfa6c0c8ad260/2025112008273856577451oOQQWO1n30) |
+| [P5 앙카 시공현황.pdf](https://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/33564e298dd3c02e108bfa6c0c8ad260/202511200827386247746xjQ8KBOSRlO "P5 앙카 시공현황.pdf") | (416 KB) | [Download](https://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/33564e298dd3c02e108bfa6c0c8ad260/202511200827386247746xjQ8KBOSRlO) |
+| 다운로드 기간(Download Term):2025-11-20~2026-05-24 | |
+
+상기 재목의건 회신이 없어
+
+11월21일 오전 09시 일전회의 방식대로 화상 미팅을 진행토록 하겠읍니다
+
+  참석자 ; 메일수신자
+
+\*\* 본회의 결과정리후 차주 수요일경 삼성E&A와 업무협의 진행계획입니다
+
+회의 진행
+
+A 센구조
+
+  1 2023년 1월30일 이후 설계 진행사항( 각 업무담당자)
+
+     1) 설계변경 확정부분 설명및 설계도서 출도일
+
+     2) 설계변경 예상부분 설명및 확정예정일
+
+     3) 금회 시공 축소로인한 변경부분 설명
+
+     4) T/C 설치 위치변경에 따른 사전 조치사항(FPSRC와 JOINT 방법) 설명
+
+     5) K LINE에서 T/C로 F LIN으로 4층으로 FPSRC,PC 설치 부재 적치 하중시문재검토???(첨부파일 복합동수행계획서 참조 )
+
+     5) 향후 업무 진행 계획
+
+B 센코어테크
+
+   1 2023년 1월30일 공사 종료전까지  진행사항
+
+     1) SHOP DWG 승인및 반려 현황 ( 이재용이사)
+
+     2) SHOP DWG 진행시 문재점 (이재용이사)
+
+     3) 현장 항공사진 설명( 현재 현장 공사 현황) ( 원유엽이사)
+
+     4) A/B 제작납품 현황 (원유엽이사)
+
+     5) FPSRC 제작납품 현황( 원유엽이사)
+
+     6) 자재 발주 현황 ( 원유엽이사)
+
+     7) 현장 보관부재 재 반입및 향후 일정 계획(원유엽이사)
+
+     8) 기타 사항 (공통)
+
+   \*\*  현장 보관 FPSRC 완제품은 외부업체에 건전도 TEST 검정받겠다고하는대 건전도 TEST POINT가 무엇인지??? 법적 강제사항은 아닌걸로 알고 있음
+
+       FAB동은 현재까지 계획없음
+
+회신이 없어 재 전송합니다
+
+시간확인후 회신 바랍니다
+
+본건관련 금주 금요일 미팅 가능시간회신 바랍니다
+
+**------ Original Message ------**  
+**Date:** 2025-11-12 11:05:44  
+**From:**이동혁 [소장] [EPC팀] < dhlee@senkuzo.com >  
+**To:** 김태주(TaeJoo Kim) [이사] [생산관리팀] < tjkim@senkuzo.com >,원유엽 [이사] [생산4파트] < yywon@senkuzo.com >,이재용(JaeYong Lee) [이사] [설계팀] < jylee@senkuzo.com >  
+**Cc:** 박성경 [전무] [임원실] < skpark@senkuzo.com >,류재호 [전무] [임원실] < jhryoo@senkuzo.com >,이인호 [이사] [EPC팀] < ihlee@senkuzo.com >,양재영(JaeYoung Yang) [이사] [BIM설계부] < jyyang@senkuzo.com >   
+**Subject:** FW:Re:P5 복합동 - LOADING MAP 송부
+
+안녕하세요? EPC팀 이동혁 소장입니다.
+
+금일 회의때 보여드린 자료 공유드립니다.
+
+궁금하신 사항이나 더요청하실 내용이있으면 언제든 연락 주세요.
+
+확인 부탁드립니다.
+
+감사합니다.
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+|  |  |
+| --- | --- |
+| 이동혁   EPC | 소장 | senkuzo |
+
+|  |  |
+| --- | --- |
+| t: 02-2629-3104  m: 010-4249-7140  e: dhlee@senkuzo.com  www.senkuzo.com | (주)센구조연구소 SEN ENGINEERING GROUP 07226 서울시 영등포구 버드나루로 19길 6 (센스빌딩) |
+
+**------ Original Message ------**  
+**Date:** 2025-11-07 13:19:55  
+**From:**이동혁 [소장] [EPC팀] < dhlee@senkuzo.com >  
+**To:** 강상규 < sk-.kang@samsung.com >  
+**Cc:** 윤성환 < sh7752.youn@samsung.com >,김대훈 대표 < dhkim2630@naver.com >,epc@senvex.net < epc@senvex.net >   
+**Subject:** Re:P5 복합동 - LOADING MAP 송부
+
+안녕하세요, 센구조 이동혁 소장입니다.
+
+ 
+
+보내주신 자료(P5/P6 L자형 시공 계획)를 검토하여 의견 및 요청 사항을 회신 드립니다.
+
+## 검토 의견 및 요청 사항
+
+### 1. P6 4층 바닥(3F 지붕)의 하중 확인 요청
+
+L자형 단계별 시공 계획에 따라, P5+P6 Full 모델과 P5+P6 일부(L-Frame) 모델의 2-Type 해석 관리가 필요.
+
+- 두 모델의 해석 결과를 비교하여 부재별 Worst Case를 도출하고, 이를 기준으로 부재 검토필요.
+
+### 2. P6 구간 타워크레인(T.C.) 반력 및 설치 위치 요청
+
+P6 영역 T.C. 설치에 따른 PSRC영향성 검토를 위한 반력요청.
+
+- 해당 정보가 설계 및 제작 일정보다 지연될 경우, 기존 구조물 검토만으로는 대응하는 방법이 있으나 추가 보강 및 한계가 있을 수 있음.
+
+### 3. 부등 침하 영향 검토 이력 확인
+
+P5와 P6의 단계별 운영 시, 장기 지속 하중의 차이로 인한 부등 침하 영향 이슈
+
+기존 원설계(삼우) 의사결정 시 부등 침하 검토 이력 확인
+
+## ==============================================
+
+현재 파편화된 로딩맵과 여러 설계 이슈로 인해 불확실한 정보가 많은 상황입니다.
+
+급하게 모델링을 진행할 경우, 추후 재작업으로 인한 일정 지연 리스크가 더 크다고 판단됩니다.
+
+## 삼우의 Loading Map이 최종 확정되는 시점에 모델링 작업을 진행하는 것이 적절할것으로 판단됩니다.
+
+회의에서 논의된 "하부 기초 보강이 없는 조건의 레이아웃" 확정과 그에 따른 일부 실 계획레이아웃이 확정된 이후부터
+
+모델링 작업을 시작하여 기존 제작된 부재의 설계 영향성 검토에 집중하여 일정을 준수하겠습니다.
+
+ 
+
+확인 부탁드립니다.
+
+ 
+
+감사합니다.
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+|  |  |
+| --- | --- |
+| 이동혁   EPC | 소장 | senkuzo |
+
+|  |  |
+| --- | --- |
+| t: 02-2629-3104  m: 010-4249-7140  e: dhlee@senkuzo.com  www.senkuzo.com | (주)센구조연구소 SEN ENGINEERING GROUP 07226 서울시 영등포구 버드나루로 19길 6 (센스빌딩) |
+
+**------ Original Message ------**  
+**Date:** 2025-11-06 17:43:45  
+**From:**강상규 < sk-.kang@samsung.com >  
+**To:** 이동혁 [소장] [epc팀] < dhlee@senkuzo.com >,김대훈 대표 < dhkim2630@naver.com >,이인호 [이사] [epc팀] < ihlee@senkuzo.com >  
+**Cc:** 윤성환 < sh7752.youn@samsung.com >   
+**Subject:** P5 복합동 - LOADING MAP 송부
+
+수신 : 수신자 제위
+
+ 
+
+안녕하십니까 
+
+금일 회의자료 송부드립니다.
+
+상당히 일정 단축에 대한 요구가 많으니 참고 부탁드립니다.
+
+ 1. 삼우에서 LOADING MAP 확정를 차주 월요일에 확정하면 
+
+    화요일에 바로 모델링을 진행할 수 있도록 준비 부탁드립니다.
+
+    LAYOUT상 문의 사항 회신 부탁드립니다.
+
+2. 공사팀 확인 결과 기존 공사와 다르게 P5부터 골조 진행 후 P6는 시간차를 두고 공사할 수도 있습니다.
+
+    HMB 막음에 관련하여 변경사항 있다면 회신 부탁드립니다.
+
+3. F열 방화 구획 관련하여 아이디어 명일 회신 부탁드립니다.
+
+ 
+
+감사합니다.
+
+Best Regard.
+
+  
+
+강상규 프로 (SANG-KYOU KANG)
+
+산업환경구조토목설계그룹
+
+SAMSUNG E&A CO., LTD.
+
+Office:  +82-2-2053-4872
+
+Mobile: +82-10-4872-5730
+
+e-mail: sk-.kang@samsung.com
+
+![](data:image/jpeg;base64,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)
+
+ 위 전자우편에 포함된 정보는 위에 기재된 수신인만을 위해 발송되는 것으로서
+
+보안을 유지해야 하는 정보 및 법률상 또는 다른 사유로 인하여 공개가 금지된 정보가 들어 있을 수 있습니다.
+
+귀하가 이 전자우편의 지정 수신인이 아니면 이를 무단으로 보유, 전송, 배포할 수 없으며,
+
+일부의 내용이라도 공개, 복사해서는 안됩니다.
+
+그러므로, 잘못 수신된 경우에는 즉시 전화 또는 전자우편 주소로 연락하여 주시고,
+
+원본 및 사본과 그에 따른 첨부 문서를 모두 삭제하여 주시기 바랍니다.
+
+Confidentiality Notice: This e-mail is intended for the addressee named in the above.
+
+The information contained in this e-mail is confidential and privileged. If you are not the intended recipient,
+
+you are hereby notified that any dissemination, distribution or copying ofthis communication is strictly prohibited.
+
+If you have received this e-mail in error, please notify the sender immediately and destroy this e-mail message. 
+
+Thank you. 
+
+|  |
+| --- |
+|  |
+
+|  |
+| --- |
+|  |
+
+|  |
+| --- |
+|  |

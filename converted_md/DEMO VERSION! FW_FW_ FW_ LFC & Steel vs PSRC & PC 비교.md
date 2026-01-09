@@ -1,7 +1,7 @@
 # DEMO VERSION! FW:FW: FW: LFC & Steel vs PSRC & PC 비교
 
 - **From**: 이동혁 [소장] [EPC팀]
-- **Date**: 2024-05-10 09:59:50
+- **Date**: Unknown Date
 - **Source**: DEMO VERSION! FW_FW_ FW_ LFC & Steel vs PSRC & PC 비교.msg
 
 ---

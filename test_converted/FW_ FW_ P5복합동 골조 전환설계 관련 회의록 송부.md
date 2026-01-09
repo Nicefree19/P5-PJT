@@ -1,0 +1,117 @@
+# FW: FW: P5복합동 골조 전환설계 관련 회의록 송부
+
+- **From**: senkuzo01
+- **Date**: 2023-02-21 08:31:41
+- **Source**: FW_ FW_ P5복합동 골조 전환설계 관련 회의록 송부.msg
+
+---
+
+ 
+
+ 
+
+--------- **Original Message** ---------
+
+**Sender** : 서성현 <sunghyun.seo@samsung.com> LE/산업환경구조설계그룹/삼성엔지니어링
+
+**Date** : 2023-02-21 08:00 (GMT+9)
+
+**Title** : FW: P5복합동 골조 전환설계 관련 회의록 송부
+
+ 
+
+수신 : 센구조 및 E&D Mall
+
+ 
+
+안녕하세요
+
+어제 송부드린 회의록중 날짜 오타있어서 수정 송부드립니다.
+
+![](data:image/png;base64,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) 
+
+--------- **Original Message** ---------
+
+**Sender** : 서성현 <sunghyun.seo@samsung.com> LE/산업환경구조설계그룹/삼성엔지니어링
+
+**Date** : 2023-02-20 18:04 (GMT+9)
+
+**Title** : P5복합동 골조 전환설계 관련 회의록 송부
+
+ 
+
+수신 : 센구조 및 E&D Mall
+
+ 
+
+안녕하세요
+
+금일 Meeting 회의록 송부드립니다.
+
+일정 확인하시고 검토사항 송부 부탁드립니다.
+
+(전환설계 Schedule도 Update하여 송부드립니다.)
+
+ 
+
+다음회의는 2/23(목) AM8:30입니다.
+
+ 
+
+감사합니다. 
+
+ 
+
+ 
+
+ 
+
+|  |  |
+| --- | --- |
+|  | **Sung Hyun, Seo** |
+| **Principal Engineer** ㅣ 건축구조기술사 ㅣ Industrial Engineering Dept. |
+| **Samsung Engineering Co., Ltd.** |
+| T  82 2 2053 3670     M  82 10 9984 4428     E  [sunghyun.seo](mailto:sunghyun.seo@samsung.com)[@samsung.com](mailto:sunghyun.seo@samsung.com) |
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+|  |  |
+| --- | --- |
+|  | **Sung Hyun, Seo** |
+| **Principal Engineer** ㅣ 건축구조기술사 ㅣ Industrial Engineering Dept. |
+| **Samsung Engineering Co., Ltd.** |
+| T  82 2 2053 3670     M  82 10 9984 4428     E  [sunghyun.seo](mailto:sunghyun.seo@samsung.com)[@samsung.com](mailto:sunghyun.seo@samsung.com) |
+
+ 
+
+ 
+
+ 
+
+ 
+
+|  |
+| --- |
+|  |
+
+|  |
+| --- |
+|  |
+
+|  |
+| --- |
+|  |

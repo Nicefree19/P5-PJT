@@ -1,0 +1,61 @@
+# Re:P5&P6 복합동 구조해석 모델링 송부
+
+- **From**: 양상관 [소장] [EPC팀]
+- **Date**: 2023-01-30 11:09:50
+- **Source**: Re_P5&P6 복합동 구조해석 모델링 송부.msg
+
+---
+
+수신자 제위
+
+안녕하세요 센구조연구소 양상관 소장입니다.
+
+구조해석 모델링 압축파일로 보내드립니다.
+
+업무에 참고하시기 바랍니다.
+
+감사합니다.
+
+.
+
+|  |  |
+| --- | --- |
+| |  | | --- | | . |   양 상 관 소장 / EPC팀  **T** 02-2629-3189 **M** 010-9261-1483  **F** 02-2629-2600 **H** [www.senkuzo.com](http://www.senkuzo.com/)  image001  **07226 서울시 영등포구 버드나루로19길6(당산동, 센스빌딩)** |
+
+**------ Original Message ------**  
+**Date:** 2023-01-27 17:04:37  
+**From:**양상관 [소장] [EPC팀] < skyang@senkuzo.com >  
+**To:** lcg0521@naver.com < lcg0521@naver.com >,김대훈 < dhkim2630@naver.com >  
+**Cc:** seil74.kim@samsung.com < seil74.kim@samsung.com >,joungho.kang@samsung.com < joungho.kang@samsung.com >,sunghyun.seo@samsung.com < sunghyun.seo@samsung.com >,이인호 [이사] [EPC팀] < ihlee@senkuzo.com >,이동혁 [소장] [EPC팀] < dhlee@senkuzo.com >,손근영 [과장] [EPC팀] < kyson@senkuzo.com >,오형석 [대리] [EPC팀] < hsoh@senkuzo.com >   
+**Subject:** P5&P6 복합동 구조해석 모델링 송부
+
+| 대용량 첨부 (Big Attach ) **3개(files)** | |
+| --- | --- |
+| [230127 P5&P6 T.FAB 복합동 모델링\_(활하중저감X)(Member Assignment).mgb](http://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/686a2f0d662fc39b4e6afab906cd078d/2023012717043716883572fOiyBkWOeA "230127 P5&P6 T.FAB 복합동 모델링_(활하중저감X)(Member Assignment).mgb") | (18 MB) | [Download](http://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/686a2f0d662fc39b4e6afab906cd078d/2023012717043716883572fOiyBkWOeA) |
+| [230127 P5&P6 T.FAB 복합동 모델링\_(활하중저감X).mgb](http://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/686a2f0d662fc39b4e6afab906cd078d/202301271704372058358kbevLrydUA0 "230127 P5&P6 T.FAB 복합동 모델링_(활하중저감X).mgb") | (16 MB) | [Download](http://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/686a2f0d662fc39b4e6afab906cd078d/202301271704372058358kbevLrydUA0) |
+| [P5+P6 복합동 PSRC 일람표\_230126.dwg](http://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/686a2f0d662fc39b4e6afab906cd078d/20230127170437223835913YHrDdmGZn "P5+P6 복합동 PSRC 일람표_230126.dwg") | (1 MB) | [Download](http://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/686a2f0d662fc39b4e6afab906cd078d/20230127170437223835913YHrDdmGZn) |
+| 다운로드 기간(Download Term):2023-01-27~2023-02-26 | |
+
+수신자 제위
+
+안녕하세요 센구조연구소 양상관 소장입니다.
+
+P5&P6 복합동 구조해석 모델링 및 PSRC 일람표 보내드립니다.
+
+1. 첨부파일중, Member Assigment(MA) 가 없는 파일이
+
+부재 MA가 적용되지 않은 것이며, 거더 부재 단부 중앙부 단면섹션이 나누어져 있습니다.
+
+(해석 빠름)
+
+2. MA가 있는 파일은 MA가 적용되어 있으며, 단면섹션은 따로 구분되어 있지 않습니다. 이점 참고하시기 바랍니다.
+
+(해석 느림)
+
+감사합니다.
+
+.
+
+|  |  |
+| --- | --- |
+| |  | | --- | | . |   양 상 관 소장 / EPC팀  **T** 02-2629-3189 **M** 010-9261-1483  **F** 02-2629-2600 **H** [www.senkuzo.com](http://www.senkuzo.com/)  image001  **07226 서울시 영등포구 버드나루로19길6(당산동, 센스빌딩)** |

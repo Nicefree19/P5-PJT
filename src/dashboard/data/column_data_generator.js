@@ -15,37 +15,32 @@
 const COLUMN_CONFIG = {
   floors: ['F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'RF'],
   
-  // 절주 매핑 (층 → 절주)
+  // 절주 매핑 (층 → 절주) - Updated aligned with index.html
+  // 1절주: 2F~3F (index.html defines refined levels, here keeping legacy map structure)
   jeoljuMap: {
     'F1': '1절주', 'F2': '1절주',
-    'F3': '2절주',
-    'F4': '3절주',
-    'F5': '4절주',
-    'F6': '5절주', 'F7': '5절주',
-    'F8': '6절주',
-    'F9': '7절주',
-    'F10': '8절주', 'RF': '8절주'
+    'F3': '1절주', // Updated to match 1st Tier (2-3F) logic
+    'F4': '2절주', 'F5': '2절주',
+    'F6': '3절주', 'F7': '3절주',
+    'F8': '4절주',
+    'F9': '5절주',
+    'F10': '6절주', 'RF': '6절주'
   },
   
-  // 행 라벨 (A~ZZ, 55개)
+  // 행 라벨 (A~K, 11개) - P5 Actual Floor Plan
   rowLabels: [
-    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
-    'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
-    'U', 'V', 'W', 'X', 'Y', 'Z',
-    'AA', 'AB', 'AC', 'AD', 'AE', 'AF', 'AG', 'AH', 'AI', 'AJ',
-    'AK', 'AL', 'AM', 'AN', 'AO', 'AP', 'AQ', 'AR', 'AS', 'AT',
-    'AU', 'AV', 'AW', 'AX', 'AY', 'AZ', 'BA', 'BB', 'BC'
+    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K'
   ],
   
-  // 열 범위 (1-2 제외)
-  columnRange: { start: 3, end: 329 },
-  excludedColumns: [1, 2],
+  // 열 범위 (1-69) - P5 Actual
+  columnRange: { start: 1, end: 69 },
+  excludedColumns: [],
   
-  // Zone 정의
+  // Zone 정의 (P5 Specific)
   zones: [
-    { id: 'zone_a', name: 'ZONE A', startCol: 3, endCol: 111 },
-    { id: 'zone_b', name: 'ZONE B', startCol: 112, endCol: 220 },
-    { id: 'zone_c', name: 'ZONE C', startCol: 221, endCol: 329 }
+    { id: 'zone_a', name: 'ZONE A', startCol: 1, endCol: 23 },
+    { id: 'zone_b', name: 'ZONE B', startCol: 24, endCol: 46 },
+    { id: 'zone_c', name: 'ZONE C', startCol: 47, endCol: 69 }
   ]
 };
 

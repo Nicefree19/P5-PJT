@@ -1,0 +1,70 @@
+# FW: P5 복합동 감리도서 검토서 확인 요청
+
+- **From**: 서성현
+- **Date**: 2023-09-01 13:10:20
+- **Source**: FW_ P5 복합동 감리도서 검토서 확인 요청.msg
+
+---
+
+수신 : 이인호 이사님, 이동혁 소장님
+
+안녕하세요
+
+첨부 감리 질의사항 답변작성하셔서 송부부탁합니다. 
+
+ 
+
+--------- **Original Message** ---------
+
+**Sender** : 김형섭 <hyungsup.kim@samoo.com> EM/마스터/하이테크3본부/삼우종합건축사사무소
+
+**Date** : 2023-09-01 12:05 (GMT+9)
+
+**Title** : P5 복합동 감리도서 검토서 확인 요청
+
+ 
+
+안녕하십니까?
+
+첨부된 파일은 감리의 도서검토 내용입니다.
+
+공법의 상세 및 표현방법에 대한 문의가 있습니다.
+
+내용보시고 답변을 적어서 보내주시면 감사하겠습니다.
+
+감사합니다.
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+|  |  |
+| --- | --- |
+|  | **Sung Hyun, Seo** |
+| **Principal Engineer** ㅣ 건축구조기술사 ㅣ Industrial Engineering Dept. |
+| **Samsung Engineering Co., Ltd.** |
+| T  82 2 2053 3670     M  82 10 9984 4428     E  [sunghyun.seo](mailto:sunghyun.seo@samsung.com)[@samsung.com](mailto:sunghyun.seo@samsung.com) |
+
+ 
+
+ 
+
+ 
+
+|  |
+| --- |
+|  |
+
+|  |
+| --- |
+|  |
+
+|  |
+| --- |
+|  |

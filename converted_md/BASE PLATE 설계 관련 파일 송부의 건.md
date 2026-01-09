@@ -1,7 +1,7 @@
 # BASE PLATE 설계 관련 파일 송부의 건
 
 - **From**: 석영진 [사원] [EPC팀]
-- **Date**: 2023-05-17 13:04:42
+- **Date**: Unknown Date
 - **Source**: BASE PLATE 설계 관련 파일 송부의 건.msg
 
 ---

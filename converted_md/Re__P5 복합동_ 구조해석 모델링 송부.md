@@ -1,0 +1,184 @@
+# Re:[P5 복합동] 구조해석 모델링 송부
+
+- **From**: 양상관 [소장] [EPC팀]
+- **Date**: Unknown Date
+- **Source**: Re__P5 복합동_ 구조해석 모델링 송부.msg
+
+---
+
+안녕하세요 조남규 소장님
+
+센구조연구소 양상관 소장입니다.
+
+PSRC 기둥 일람표 보내드립니다.
+
+계산근거는 대표부재로 C1, C3 첨부하였습니다.
+
+업무에 참고하시기 바랍니다.
+
+감사합니다.
+
+.
+
+|  |  |
+| --- | --- |
+| |  | | --- | | . |   양 상 관 소장 / EPC팀  **T** 02-2629-3189 **M** 010-9261-1483  **F** 02-2629-2600 **H** [www.senkuzo.com](http://www.senkuzo.com/)  image001  **07226 서울시 영등포구 버드나루로19길6(당산동, 센스빌딩)** |
+
+**------ Original Message ------**  
+**Date:** 2023-04-25 15:33:32  
+**From:**양상관 [소장] [EPC팀] < skyang@senkuzo.com >  
+**To:** 조남규 < nkcho@kdpt.co.kr >  
+**Cc:** 서성현 < sunghyun.seo@samsung.com >,강상규 < sk-.kang@samsung.com >,김세일 < seil74.kim@samsung.com >,김혜진 < hye-jin.kim@samsung.com >,강정호 < joungho.kang@samsung.com >,epc@senvex.net < epc@senvex.net >,김대훈 소장 < dhkim2630@naver.com >,endmall01 < endmall.01@partner.samsung.com >,endmall02 < endmall.02@partner.samsung.com >,이규현 < ghlee@kdpt.co.kr >,정국기 < gkjeong@kdpt.co.kr >   
+**Subject:** Re:[P5 복합동] 구조해석 모델링 송부
+
+안녕하세요 조남규 소장님
+
+센구조연구소 양상관 소장입니다.
+
+부재일람표 송부 일정 입니다.
+
+4/26(수) : PSRC 기둥 일람표 및 계산근거
+
+4/27(목) : 2F, 3F PC보 및 HMB 일람표(엑셀 리스트) 및 계산근거
+
+5/3(수) : 나머지 부재리스트 송부 예정
+
+업무에 참고하시기 바랍니다.
+
+감사합니다.
+
+.
+
+|  |  |
+| --- | --- |
+| |  | | --- | | . |   양 상 관 소장 / EPC팀  **T** 02-2629-3189 **M** 010-9261-1483  **F** 02-2629-2600 **H** [www.senkuzo.com](http://www.senkuzo.com/)  image001  **07226 서울시 영등포구 버드나루로19길6(당산동, 센스빌딩)** |
+
+**------ Original Message ------**  
+**Date:** 2023-04-24 15:05:37  
+**From:**양상관 [소장] [EPC팀] < skyang@senkuzo.com >  
+**To:** 조남규 < nkcho@kdpt.co.kr >  
+**Cc:** 서성현 < sunghyun.seo@samsung.com >,강상규 < sk-.kang@samsung.com >,김세일 < seil74.kim@samsung.com >,김혜진 < hye-jin.kim@samsung.com >,강정호 < joungho.kang@samsung.com >,epc@senvex.net < epc@senvex.net >,김대훈 소장 < dhkim2630@naver.com >,endmall01 < endmall.01@partner.samsung.com >,endmall02 < endmall.02@partner.samsung.com >,이규현 < ghlee@kdpt.co.kr >,정국기 < gkjeong@kdpt.co.kr >   
+**Subject:** [P5 복합동] 구조해석 모델링 송부
+
+| 대용량 첨부 (Big Attach ) **1개(files)** | |
+| --- | --- |
+| [230424 P5&P6 복합동 모델링\_(활하중저감X)\_중요도1.2\_REV20\_M.mgb](http://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/9af2b35ff62c850eb731df2351c61d6c/2023042415053710660057d7UNdCliwM "230424 P5&P6 복합동 모델링_(활하중저감X)_중요도1.2_REV20_M.mgb") | (27 MB) | [Download](http://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/9af2b35ff62c850eb731df2351c61d6c/2023042415053710660057d7UNdCliwM) |
+| 다운로드 기간(Download Term):2023-04-24~2023-05-24 | |
+
+안녕하세요 조남규 소장님
+
+센구조연구소 양상관 소장입니다.
+
+P5 복합동 최신 레이아웃 기준으로 구조해석 모델링 보내드립니다.
+
+기둥일람표는 26일 보내드릴 예정이며,
+
+PC보 및 HMB 일람표(엑셀리스트)는 PC설계 일정 확인 및 협의 후 명일 알려드리겠습니다.
+
+감사합니다.
+
+.
+
+|  |  |
+| --- | --- |
+| |  | | --- | | . |   양 상 관 소장 / EPC팀  **T** 02-2629-3189 **M** 010-9261-1483  **F** 02-2629-2600 **H** [www.senkuzo.com](http://www.senkuzo.com/)  image001  **07226 서울시 영등포구 버드나루로19길6(당산동, 센스빌딩)** |
+
+**------ Original Message ------**  
+**Date:** 2023-04-21 15:05:42  
+**From:**양상관 [소장] [EPC팀] < skyang@senkuzo.com >  
+**To:** 조남규 < nkcho@kdpt.co.kr >  
+**Cc:** 서성현 < sunghyun.seo@samsung.com >,강상규 < sk-.kang@samsung.com >,김세일 < seil74.kim@samsung.com >,김혜진 < hye-jin.kim@samsung.com >,강정호 < joungho.kang@samsung.com >,epc@senvex.net < epc@senvex.net >,김대훈 소장 < dhkim2630@naver.com >,endmall01 < endmall.01@partner.samsung.com >,endmall02 < endmall.02@partner.samsung.com >,이규현 < ghlee@kdpt.co.kr >,정국기 < gkjeong@kdpt.co.kr >   
+**Subject:** Re:[P5복합동-PC단면 설계 요청] 해석모델 송부
+
+| 대용량 첨부 (Big Attach ) **3개(files)** | |
+| --- | --- |
+| [230421 P5&P6 T.FAB 복합동 모델링\_(활하중저감X)\_중요도1.2\_REV18\_M.mgb](http://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/23a3f2a7e1a25fe2747a63c29193e4c2/202304211505420224414x7Lr2XMBCBw "230421 P5&P6 T.FAB 복합동 모델링_(활하중저감X)_중요도1.2_REV18_M.mgb") | (27 MB) | [Download](http://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/23a3f2a7e1a25fe2747a63c29193e4c2/202304211505420224414x7Lr2XMBCBw) |
+| [230421\_P5 복합동\_기둥주심도\_REV17\_M.pptx](http://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/23a3f2a7e1a25fe2747a63c29193e4c2/202304211505420514415v5RBEYtvdBb "230421_P5 복합동_기둥주심도_REV17_M.pptx") | (3 MB) | [Download](http://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/23a3f2a7e1a25fe2747a63c29193e4c2/202304211505420514415v5RBEYtvdBb) |
+| [230421\_P5 복합동\_설계하중 (4.14일 레이아웃 기준)\_센작성\_행잉하중 구분\_REV.03.pptx](http://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/23a3f2a7e1a25fe2747a63c29193e4c2/202304211505420564416RSqNRyWSyHZ "230421_P5 복합동_설계하중 (4.14일 레이아웃 기준)_센작성_행잉하중 구분_REV.03.pptx") | (291 KB) | [Download](http://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/23a3f2a7e1a25fe2747a63c29193e4c2/202304211505420564416RSqNRyWSyHZ) |
+| 다운로드 기간(Download Term):2023-04-21~2023-05-21 | |
+
+안녕하세요 조남규 소장님
+
+센구조연구소 양상관 소장입니다.
+
+엔지니어링의 강상규 프로님의 요청으로 현재 작업중인 해석 모델링 파일을 우선 보내드립니다.
+
+유선으로 통화 되셨을 거라 생각합니다. 최종 PC단면은 반영되어 있진 않습니다. 
+
+현재 모델링 반영사항은 하기 내용 확인 부탁드립니다.
+
+감사합니다.
+
+.
+
+|  |  |
+| --- | --- |
+| |  | | --- | | . |   양 상 관 소장 / EPC팀  **T** 02-2629-3189 **M** 010-9261-1483  **F** 02-2629-2600 **H** [www.senkuzo.com](http://www.senkuzo.com/)  image001  **07226 서울시 영등포구 버드나루로19길6(당산동, 센스빌딩)** |
+
+**------ Original Message ------**  
+**Date:** 2023-04-21 11:59:00  
+**From:**이동혁 [소장] [epc팀] < dhlee@senkuzo.com >  
+**To:** endmall01 < endmall.01@partner.samsung.com >,endmall02 < endmall.02@partner.samsung.com >,김대훈 소장 < dhkim2630@naver.com >  
+**Cc:** 서성현 < sunghyun.seo@samsung.com >,강상규 < sk-.kang@samsung.com >,김세일 < seil74.kim@samsung.com >,김혜진 < hye-jin.kim@samsung.com >,강정호 < joungho.kang@samsung.com >,epc@senvex.net < epc@senvex.net >   
+**Subject:** [P5복합동-PC단면 설계 요청] 해석모델 송부
+
+| 대용량 첨부 (Big Attach ) **3개(files)** | |
+| --- | --- |
+| [230421 P5&P6 T.FAB 복합동 모델링\_(활하중저감X)\_중요도1.2\_REV17\_M.mgb](http://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/a7e020ab2d3012115290947961a80110/202304211158047242272WZp6DmKo99a "230421 P5&P6 T.FAB 복합동 모델링_(활하중저감X)_중요도1.2_REV17_M.mgb") | (28 MB) | [Download](http://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/a7e020ab2d3012115290947961a80110/202304211158047242272WZp6DmKo99a) |
+| [230421\_P5 복합동\_기둥주심도\_REV17\_M.pptx](http://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/a7e020ab2d3012115290947961a80110/202304211158047632273Paqwkb24Ur8 "230421_P5 복합동_기둥주심도_REV17_M.pptx") | (3 MB) | [Download](http://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/a7e020ab2d3012115290947961a80110/202304211158047632273Paqwkb24Ur8) |
+| [230421\_P5 복합동\_설계하중 (4.14일 레이아웃 기준)\_센작성\_행잉하중 구분\_REV.03.pptx](http://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/a7e020ab2d3012115290947961a80110/202304211158047852274V8tM57VW000 "230421_P5 복합동_설계하중 (4.14일 레이아웃 기준)_센작성_행잉하중 구분_REV.03.pptx") | (291 KB) | [Download](http://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/a7e020ab2d3012115290947961a80110/202304211158047852274V8tM57VW000) |
+| 다운로드 기간(Download Term):2023-04-21~2023-05-21 | |
+
+안녕하세요? 김대훈 대표님
+
+센구조 이동혁 소장입니다.
+
+최신 레이아웃 기준 해석 모델링 송부드립니다.
+
+PC단면 설계 후 사이즈 회신 부탁드립니다.
+
+< 모델링 반영사항 >
+
+ 
+
+1. 4.14일 레이아웃 반영.
+
+2. 캔티슬래브 (내민길이 1.5m )영역 하중 반영
+
+3. 외벽 하중 반영
+
+   ( 판넬 하중 : 0.3 kN/m2)
+
+4. 옥상 파라펫 (1.5m 가정 ) 하중 반영
+
+5. 오버브릿지 하중 반영 (각층별 접합되는 기둥에 하중 추가)
+
+\* 단,골조 단차 및 구배에 의한 추가되는 마감(무근)하중 미고려
+
+ 
+
+이상입니다.
+
+궁금하신 내용있으면 연락주세요.
+
+확인 부탁드립니다.
+
+감사합니다.
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+|  |  |
+| --- | --- |
+| 이동혁   EPC | 소장 | senkuzo |
+
+|  |  |
+| --- | --- |
+| t: 02-2629-3104  m: 010-4249-7140  e: dhlee@senkuzo.com  www.senkuzo.com | (주)센구조연구소 SEN ENGINEERING GROUP 07226 서울시 영등포구 버드나루로 19길 6 (센스빌딩) |
+
+|  |
+| --- |
+|  |
+
+|  |
+| --- |
+|  |

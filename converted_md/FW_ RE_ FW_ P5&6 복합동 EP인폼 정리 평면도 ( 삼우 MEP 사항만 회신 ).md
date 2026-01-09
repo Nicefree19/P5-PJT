@@ -1,0 +1,178 @@
+# FW: RE: FW: P5&6 복합동 EP인폼 정리 평면도 ( 삼우 MEP 사항만 회신 )
+
+- **From**: senkuzo02
+- **Date**: Unknown Date
+- **Source**: FW_ RE_ FW_ P5&6 복합동 EP인폼 정리 평면도 ( 삼우 MEP 사항만 회신 ).msg
+
+---
+
+ 
+
+ 
+
+--------- **Original Message** ---------
+
+**Sender** : 강상규 <sk-.kang@samsung.com> AE/전자 P5-PJT 복합동/설계/구조/삼성엔지니어링
+
+**Date** : 2023-08-29 14:56 (GMT+9)
+
+**Title** : RE: FW: P5&6 복합동 EP인폼 정리 평면도 ( 삼우 MEP 사항만 회신 )
+
+ 
+
+수신 : 서성현 수석님
+
+안녕하십니까 
+
+이철기 이사님의 질의사항에서 삼우 MEP관련 사항만 정리해 보내드립니다.
+
+1. 삼우 자료에 사이드 매입 위치가 하부에서 300mm로 되어있습니다.
+
+   따라서 PC 보, 거더중 보춤이 작은 기준으로 TOS를 통일하여 EP를 반영하고
+
+   TOS는 삼우에 전달하기로 이야기 했습니다. ( TOS 통일 적용 )
+
+ ![](http://kr3.samsung.net/mail/rest/v1/files/image/download/%EC%A0%9C%EB%AA%A9+%EC%97%86%EB%8A%94+%EC%B2%A8%EB%B6%80+%ED%8C%8C%EC%9D%BC+3914_10.png?1=1&filepath=/SHARED/TEMP/ML/image/s/20230830/1_772_cafe_image_0@s-core.co.kr_10_sk-.kang&user=sk-.kang&partno=10&folderId=1&seqid=772&contentType=image%2Fpng)
+
+![](http://kr3.samsung.net/mail/rest/v1/files/image/download/%EC%A0%9C%EB%AA%A9+%EC%97%86%EB%8A%94+%EC%B2%A8%EB%B6%80+%ED%8C%8C%EC%9D%BC+29818_9.png?1=1&filepath=/SHARED/TEMP/ML/image/s/20230830/1_772_cafe_image_1@s-core.co.kr_9_sk-.kang&user=sk-.kang&partno=9&folderId=1&seqid=772&contentType=image%2Fpng)
+
+2. 임베디드 위치 이동
+
+   아래의 임베디드는 삼우에 위치이동 요청
+
+![](http://kr3.samsung.net/mail/rest/v1/files/image/download/%EC%A0%9C%EB%AA%A9+%EC%97%86%EB%8A%94+%EC%B2%A8%EB%B6%80+%ED%8C%8C%EC%9D%BC+143254_4.png?1=1&filepath=/SHARED/TEMP/ML/image/s/20230830/1_772_cafe_image_6@s-core.co.kr_4_sk-.kang&user=sk-.kang&partno=4&folderId=1&seqid=772&contentType=image%2Fpng)
+
+3. Embedded Plate 상세 확인
+
+  - 아래의 상세를 그대로 적용할지 삼우에 확인
+
+  - 행잉의 경우에 상당히 과도하게 반영되어 있음
+
+  - 측면부착 상세중 hook이 반영된 상세는 센구조에서 shop 작업 시 재설계 필요
+
+![](http://kr3.samsung.net/mail/rest/v1/files/image/download/%EC%A0%9C%EB%AA%A9+%EC%97%86%EB%8A%94+%EC%B2%A8%EB%B6%80+%ED%8C%8C%EC%9D%BC+90342_6.png?1=1&filepath=/SHARED/TEMP/ML/image/s/20230830/1_772_cafe_image_4@s-core.co.kr_6_sk-.kang&user=sk-.kang&partno=6&folderId=1&seqid=772&contentType=image%2Fpng)
+
+![](http://kr3.samsung.net/mail/rest/v1/files/image/download/%EC%A0%9C%EB%AA%A9+%EC%97%86%EB%8A%94+%EC%B2%A8%EB%B6%80+%ED%8C%8C%EC%9D%BC+41596_7.png?1=1&filepath=/SHARED/TEMP/ML/image/s/20230830/1_772_cafe_image_3@s-core.co.kr_7_sk-.kang&user=sk-.kang&partno=7&folderId=1&seqid=772&contentType=image%2Fpng)
+
+![](http://kr3.samsung.net/mail/rest/v1/files/image/download/%EC%A0%9C%EB%AA%A9+%EC%97%86%EB%8A%94+%EC%B2%A8%EB%B6%80+%ED%8C%8C%EC%9D%BC+67980_8.png?1=1&filepath=/SHARED/TEMP/ML/image/s/20230830/1_772_cafe_image_2@s-core.co.kr_8_sk-.kang&user=sk-.kang&partno=8&folderId=1&seqid=772&contentType=image%2Fpng)
+
+![](http://kr3.samsung.net/mail/rest/v1/files/image/download/%EC%A0%9C%EB%AA%A9+%EC%97%86%EB%8A%94+%EC%B2%A8%EB%B6%80+%ED%8C%8C%EC%9D%BC+38446_5.png?1=1&filepath=/SHARED/TEMP/ML/image/s/20230830/1_772_cafe_image_5@s-core.co.kr_5_sk-.kang&user=sk-.kang&partno=5&folderId=1&seqid=772&contentType=image%2Fpng)
+
+![](http://kr3.samsung.net/mail/rest/v1/files/image/download/%EC%A0%9C%EB%AA%A9+%EC%97%86%EB%8A%94+%EC%B2%A8%EB%B6%80+%ED%8C%8C%EC%9D%BC+37744_3.png?1=1&filepath=/SHARED/TEMP/ML/image/s/20230830/1_772_cafe_image_7@s-core.co.kr_3_sk-.kang&user=sk-.kang&partno=3&folderId=1&seqid=772&contentType=image%2Fpng)
+
+![](http://kr3.samsung.net/mail/rest/v1/files/image/download/%EC%A0%9C%EB%AA%A9+%EC%97%86%EB%8A%94+%EC%B2%A8%EB%B6%80+%ED%8C%8C%EC%9D%BC+40072_2.png?1=1&filepath=/SHARED/TEMP/ML/image/s/20230830/1_772_cafe_image_8@s-core.co.kr_2_sk-.kang&user=sk-.kang&partno=2&folderId=1&seqid=772&contentType=image%2Fpng).
+
+![](http://kr3.samsung.net/mail/rest/v1/files/image/download/%EC%A0%9C%EB%AA%A9+%EC%97%86%EB%8A%94+%EC%B2%A8%EB%B6%80+%ED%8C%8C%EC%9D%BC+78760_0.png?1=1&filepath=/SHARED/TEMP/ML/image/s/20230830/1_772_cafe_image_10@s-core.co.kr_0_sk-.kang&user=sk-.kang&partno=0&folderId=1&seqid=772&contentType=image%2Fpng)
+
+감사합니다.
+
+Best Regard.
+
+  
+
+강상규 프로 (SANG-KYOU KANG)
+
+I & E Structural Eng’g Group
+
+SAMSUNG ENGINEERING Co., LTD.
+
+Office:  +82-2-2053-4872
+
+Mobile: +82-10-4872-5730
+
+e-mail: sk-.kang@samsung.com
+
+![](data:image/jpeg;base64,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)
+
+ **위 전자우편에 포함된 정보는 위에 기재된 수신인만을 위해 발송되는 것으로서**
+
+**보안을 유지해야 하는 정보 및 법률상****또는 다른 사유로 인하여 공개가 금지된 정보가 들어 있을 수 있습니다.**
+
+**귀하가 이 전자우편의 지정 수신인이 아니면 이를 무단으로 보유, 전송, 배포할 수 없으며,**
+
+**일부의 내용이라도 공개,****복사해서는 안됩니다.**
+
+**그러므로, 잘못 수신된 경우에는 즉시 전화 또는 전자우편 주소로 연락하여 주시고,**
+
+**원본 및 사본과 그에 따른 첨부 문서를 모두 삭제하여 주시기 바랍니다.**
+
+**Confidentiality Notice: This e-mail is intended for the addressee named in the above.**
+
+**The information contained in this e-mail is confidential and privileged. If you are not the intended recipient,**
+
+**you are hereby notified that any dissemination, distribution or copying ofthis communication is strictly prohibited.**
+
+**If you have received this e-mail in error, please notify the sender immediately and destroy this e-mail message.**
+
+**Thank you.**
+
+ 
+
+ 
+
+--------- **Original Message** ---------
+
+**Sender** : 서성현 <sunghyun.seo@samsung.com> AE/전자 P5-PJT 복합동/설계/구조/삼성엔지니어링
+
+**Date** : 2023-08-28 16:45 (GMT+9)
+
+**Title** : FW: P5&6 복합동 EP인폼 정리 평면도
+
+ 
+
+ 
+
+ 
+
+--------- **Original Message** ---------
+
+**Sender** : 이철기 <lcg0521@naver.com>
+
+**Date** : 2023-08-28 16:38 (GMT+9)
+
+**Title** : P5&6 복합동 EP인폼 정리 평면도
+
+**To :** 김세일<seil74.kim@samsung.com>, 김준영<jy0923.kim@samsung.com>
+
+**CC :** endmall01<endmall.01@partner.samsung.com>, 서성현<sunghyun.seo@samsung.com>
+
+ 
+
+|  |  |  |
+| --- | --- | --- |
+| 안녕하십니까.  업무에 노고가 많으십니다.    금일 전기 TRAY인폼까지 접수되어 1차 도면 출도 날짜(9/10일)에 맞춰서 열심히 PC SHOP중에 있습니다  첨부도면은 현재까지 접수받은 EP인폼을 정리해봤는데 혹시나 누락된 부분이 없는지 한번 크로스 체크 부탁드립니다    또한 추가되어야할 부분이 있다면 체크해주시면 추가하도록 하겠습니다  감사합니다       |  |  | | --- | --- | | |  | | --- | | **이   철   기  이 사**       **T. 070-4762-0138      F. 02-6233-8237**  **M. 010-4272-0521**  **E. [lcg0521@naver.com](mailto:lcg0521@naver.com)**  **A. 서울시 성동구 성수일로 8길 5 A-603**  **(성수동2가 서울숲 SK V1타워)** | | |
+
+|  |
+| --- |
+|  |
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+|  |  |
+| --- | --- |
+|  | **Sung Hyun, Seo** |
+| **Principal Engineer** ㅣ 건축구조기술사 ㅣ Industrial Engineering Dept. |
+| **Samsung Engineering Co., Ltd.** |
+| T  82 2 2053 3670     M  82 10 9984 4428     E  [sunghyun.seo](mailto:sunghyun.seo@samsung.com)[@samsung.com](mailto:sunghyun.seo@samsung.com) |
+
+ 
+
+ 
+
+ 
+
+|  |
+| --- |
+|  |
+
+|  |
+| --- |
+|  |

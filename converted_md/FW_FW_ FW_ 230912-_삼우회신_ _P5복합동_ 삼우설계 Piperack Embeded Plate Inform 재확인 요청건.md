@@ -1,0 +1,180 @@
+# FW:FW: FW: 230912-[삼우회신] [P5복합동] 삼우설계 Piperack Embeded Plate Inform 재확인 요청건
+
+- **From**: 이동혁 [소장] [EPC팀]
+- **Date**: Unknown Date
+- **Source**: FW_FW_ FW_ 230912-_삼우회신_ _P5복합동_ 삼우설계 Piperack Embeded Plate Inform 재확인 요청건.msg
+
+---
+
+| 대용량 첨부 (Big Attach ) **2개(files)** | |
+| --- | --- |
+| [230912-복합동\_전기\_EB3~EB4\_반력값.zip](https://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/2635995730ca8adea778d825584f670f/2023091217235785595640Pe6N7oTySe "230912-복합동_전기_EB3~EB4_반력값.zip") | (14 MB) | [Download](https://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/2635995730ca8adea778d825584f670f/2023091217235785595640Pe6N7oTySe) |
+| [230912-복합동\_배관\_EB1~EB4\_반력값.zip](https://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/2635995730ca8adea778d825584f670f/202309121723578559565ShqYen6mjNC "230912-복합동_배관_EB1~EB4_반력값.zip") | (4 MB) | [Download](https://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/2635995730ca8adea778d825584f670f/202309121723578559565ShqYen6mjNC) |
+| 다운로드 기간(Download Term):2023-09-12~2023-10-12 | |
+
+
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+|  |  |
+| --- | --- |
+| 이동혁   EPC | 소장 | senkuzo |
+
+|  |  |
+| --- | --- |
+| t: 02-2629-3104  m: 010-4249-7140  e: dhlee@senkuzo.com  www.senkuzo.com | (주)센구조연구소 SEN ENGINEERING GROUP 07226 서울시 영등포구 버드나루로 19길 6 (센스빌딩) |
+
+**------ Original Message ------**  
+**Date:** 2023-09-12 16:57:51  
+**From:**endmall02 < endmall.02@partner.samsung.com >  
+**To:** dhlee@senkuzo.com < dhlee@senkuzo.com >,ihlee@senkuzo.com < ihlee@senkuzo.com >,senkuzo01 < senkuzo.01@partner.samsung.com >,senkuzo02 < senkuzo.02@partner.samsung.com >  
+**Subject:** FW: FW: 230912-[삼우회신] [P5복합동] 삼우설계 Piperack Embeded Plate Inform 재확인 요청건
+
+ 
+
+ 
+
+--------- **Original Message** ---------
+
+**Sender** : 강상규 <sk-.kang@samsung.com> AE/전자 P5-PJT 복합동/설계/구조/삼성엔지니어링
+
+**Date** : 2023-09-12 16:56 (GMT+9)
+
+**Title** : FW: 230912-[삼우회신] [P5복합동] 삼우설계 Piperack Embeded Plate Inform 재확인 요청건
+
+ 
+
+수신 : 수신자 제위
+
+ 
+
+안녕하십니까 
+
+첨부와 같이 삼우 MEP와 전기팀의 EP반력을 새로 송부드립니다.
+
+삼우 MEP와 전기팀의 EP는 하중값에 차이로 인하여 두께가 일부 다르다고 합니다.
+
+관련 상세 참고 바랍니다.
+
+ 
+
+감사합니다.
+
+Best Regard.
+
+  
+
+강상규 프로 (SANG-KYOU KANG)
+
+I & E Structural Eng’g Group
+
+SAMSUNG ENGINEERING Co., LTD.
+
+Office:  +82-2-2053-4872
+
+Mobile: +82-10-4872-5730
+
+e-mail: sk-.kang@samsung.com
+
+![](data:image/jpeg;base64,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)
+
+ **위 전자우편에 포함된 정보는 위에 기재된 수신인만을 위해 발송되는 것으로서**
+
+**보안을 유지해야 하는 정보 및 법률상****또는 다른 사유로 인하여 공개가 금지된 정보가 들어 있을 수 있습니다.**
+
+**귀하가 이 전자우편의 지정 수신인이 아니면 이를 무단으로 보유, 전송, 배포할 수 없으며,**
+
+**일부의 내용이라도 공개,****복사해서는 안됩니다.**
+
+**그러므로, 잘못 수신된 경우에는 즉시 전화 또는 전자우편 주소로 연락하여 주시고,**
+
+**원본 및 사본과 그에 따른 첨부 문서를 모두 삭제하여 주시기 바랍니다.**
+
+**Confidentiality Notice: This e-mail is intended for the addressee named in the above.**
+
+**The information contained in this e-mail is confidential and privileged. If you are not the intended recipient,**
+
+**you are hereby notified that any dissemination, distribution or copying ofthis communication is strictly prohibited.**
+
+**If you have received this e-mail in error, please notify the sender immediately and destroy this e-mail message.**
+
+**Thank you.**
+
+ 
+
+ 
+
+--------- **Original Message** ---------
+
+**Sender** : 전철식 <chulsik.jeon@samoo.com> EM/마스터/하이테크2본부/삼우종합건축사사무소
+
+**Date** : 2023-09-12 12:39 (GMT+9)
+
+**Title** : 230912-[삼우회신] [P5복합동] 삼우설계 Piperack Embeded Plate Inform 재확인 요청건
+
+ 
+
+업무에 수고가 많으십니다.
+
+삼우설계 전철식 마스터입니다. 
+
+ 
+
+요청하신 사항을 정리하여 첨부파일로 회신드립니다.
+
+ 
+
+ 
+
+감사합니다.
+
+ 
+
+ 
+
+ 
+
+--------- **Original Message** ---------
+
+**Sender** : 편승현 <samoocon03@samoo.co.kr>
+
+**Date** : 2023-09-12 11:18 (GMT+9)
+
+**Title** : Re:FW: [REMIND] FW: RE: RE:(4) FW: RE:(2) 230831-[삼우회신] [P5복합동] 삼우설계 Piperack Embeded Plate Inform 재확인 요청건
+
+**To :** 전철식<chulsik.jeon@samoo.com>
+
+**CC :** 정진우<jjinoo.jeong@samoo.com>, 김상곤<sanggon.kim@samoo.com>, 김정근<samoocon02@samoo.co.kr>
+
+ 
+
+|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 수신 : 전철식 마스터님    안녕하세요 삼우구조 편승현 입니다.    강상규 프로와 유선상 통화한 결과 요청사항은  전기와 배관 반력값을 도면과 함께 쉽게 알아볼수 있게 정리해서 보내달라는 요청입니다.  이에 전기와 배관 폴더 따로 정리해서 보내드립니다.    첨부파일 참조 바랍니다.    ------------ 원본 메일 내용 ------------ **보낸 사람 :** "전철식"<chulsik.jeon@samoo.com> **받는 사람 :** "편승현 소장" <samoocon03@samoo.co.kr>  **참      조 :** "정진우" <jjinoo.jeong@samoo.com> **메일 제목 :** FW: [REMIND] FW: RE: RE:(4) FW: RE:(2) 230831-[삼우회신] [P5복합동] 삼우설계 Piperack Embeded Plate Inform 재확인 요청건 **보낸 날짜 :** 2023/09/12 09:34   |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  | | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | | 업무에 수고가 많으십니다.  삼우설계 전철식 마스터입니다.  하기 내용을 확인요청드립니다.        감사합니다.           --------- **Original Message** ---------  **Sender** : 강상규 <sk-.kang@samsung.com> AE/전자 P5-PJT 복합동/설계/구조/삼성엔지니어링  **Date** : 2023-09-12 09:20 (GMT+9)  **Title** : [REMIND] FW: RE: RE:(4) FW: RE:(2) 230831-[삼우회신] [P5복합동] 삼우설계 Piperack Embeded Plate Inform 재확인 요청건     수신 : 전철식 EM님     안녕하십니까   아래의 메일에 대하여 REMIND 메일을 송부드립니다.  SHOP 질의사항을 최소화 하기위해 필요한 것으로 요청드립니다.     감사합니다.  Best Regard.      강상규 프로 (SANG-KYOU KANG)  I & E Structural Eng’g Group  SAMSUNG ENGINEERING Co., LTD.  Office:  +82-2-2053-4872  Mobile: +82-10-4872-5730  e-mail: sk-.kang@samsung.com     **위 전자우편에 포함된 정보는 위에 기재된 수신인만을 위해 발송되는 것으로서**  **보안을 유지해야 하는 정보 및 법률상****또는 다른 사유로 인하여 공개가 금지된 정보가 들어 있을 수 있습니다.**  **귀하가 이 전자우편의 지정 수신인이 아니면 이를 무단으로 보유, 전송, 배포할 수 없으며,**  **일부의 내용이라도 공개,****복사해서는 안됩니다.**  **그러므로, 잘못 수신된 경우에는 즉시 전화 또는 전자우편 주소로 연락하여 주시고,**  **원본 및 사본과 그에 따른 첨부 문서를 모두 삭제하여 주시기 바랍니다.**  **Confidentiality Notice: This e-mail is intended for the addressee named in the above.**  **The information contained in this e-mail is confidential and privileged. If you are not the intended recipient,**  **you are hereby notified that any dissemination, distribution or copying ofthis communication is strictly prohibited.**  **If you have received this e-mail in error, please notify the sender immediately and destroy this e-mail message.**  **Thank you.**        --------- **Original Message** ---------  **Sender** : 강상규 <sk-.kang@samsung.com> AE/전자 P5-PJT 복합동/설계/구조/삼성엔지니어링  **Date** : 2023-09-08 10:16 (GMT+9)  **Title** : RE: RE:(4) FW: RE:(2) 230831-[삼우회신] [P5복합동] 삼우설계 Piperack Embeded Plate Inform 재확인 요청건  **To :** 김상곤<sanggon.kim@samoo.com>, 전철식<chulsik.jeon@samoo.com>  **CC :** 김영래<yrae8767.kim@samsung.com>, 김우연<wy0513.kim@samsung.com>, 한보희<bohee22.han@samsung.com>, 서성현<sunghyun.seo@samsung.com>, 김세일<seil74.kim@samsung.com>, 김동현<dhyun97.kim@samsung.com>, 김혜진<hye-jin.kim@samsung.com>, 이원걸<wongeol.lee@samsung.com>, 고재영<jy83.ko@samsung.com>, 염대영<dy.youm@samsung.com>, 임미경<mk336.lim@samoo.com>, 풍경아<pung.pung@samoo.com>, 김형섭<hyungsup.kim@samoo.com>, 정주영<jytara.jung@samsung.com>, 김영택<teak30.kim@samsung.com>, 나정환<jungwhan.rha@samsung.com>, 류병삼<byungsam.ryu@samsung.com>     수신 : 전철식 EM님           김상곤 마스터님     안녕하십니까   Shop dwg 진행중인 Embeded Plate의 Stud bolt 간섭조정을 위하여 반력값을 요청드립니다.  반력값은 차주 월요일(11일)까지 급하게 회신 부탁드립니다.     감사합니다.  Best Regard.      강상규 프로 (SANG-KYOU KANG)  I & E Structural Eng’g Group  SAMSUNG ENGINEERING Co., LTD.  Office:  +82-2-2053-4872  Mobile: +82-10-4872-5730  e-mail: sk-.kang@samsung.com     **위 전자우편에 포함된 정보는 위에 기재된 수신인만을 위해 발송되는 것으로서**  **보안을 유지해야 하는 정보 및 법률상****또는 다른 사유로 인하여 공개가 금지된 정보가 들어 있을 수 있습니다.**  **귀하가 이 전자우편의 지정 수신인이 아니면 이를 무단으로 보유, 전송, 배포할 수 없으며,**  **일부의 내용이라도 공개,****복사해서는 안됩니다.**  **그러므로, 잘못 수신된 경우에는 즉시 전화 또는 전자우편 주소로 연락하여 주시고,**  **원본 및 사본과 그에 따른 첨부 문서를 모두 삭제하여 주시기 바랍니다.**  **Confidentiality Notice: This e-mail is intended for the addressee named in the above.**  **The information contained in this e-mail is confidential and privileged. If you are not the intended recipient,**  **you are hereby notified that any dissemination, distribution or copying ofthis communication is strictly prohibited.**  **If you have received this e-mail in error, please notify the sender immediately and destroy this e-mail message.**  **Thank you.**        --------- **Original Message** ---------  **Sender** : 김상곤 <sanggon.kim@samoo.com> ES/마스터/하이테크3본부/삼우종합건축사사무소  **Date** : 2023-09-07 13:28 (GMT+9)  **Title** : RE:(4) FW: RE:(2) 230831-[삼우회신] [P5복합동] 삼우설계 Piperack Embeded Plate Inform 재확인 요청건     수신: 삼성물산 김영래 프로님     안녕하세요 삼우설계 김상곤 입니다.      유선상 문의드린 복합동 전기랙 관련하여,  Embedded plate 크라운인서트 적용에 대한 시공성 검토 의견을 회신 부탁 드립니다.      해당 타입 변경이 필요한 경우   Embedded plate 타입을 변경하여   현재 진행되고 있는 SHOP 도면에 반영이 필요하오니   긴급으로 확인 부탁 드립니다.           --------- **Original Message** ---------  **Sender** : 강상규 <sk-.kang@samsung.com> AE/전자 P5-PJT 복합동/설계/구조/삼성엔지니어링  **Date** : 2023-09-07 13:13 (GMT+9)  **Title** : RE: RE:(2) FW: RE:(2) 230831-[삼우회신] [P5복합동] 삼우설계 Piperack Embeded Plate Inform 재확인 요청건  **To :** 김상곤<sanggon.kim@samoo.com>  **CC :** 한보희<bohee22.han@samsung.com>, 전철식<chulsik.jeon@samoo.com>, 서성현<sunghyun.seo@samsung.com>, 김세일<seil74.kim@samsung.com>, 김동현<dhyun97.kim@samsung.com>, 김혜진<hye-jin.kim@samsung.com>, 이원걸<wongeol.lee@samsung.com>, 고재영<jy83.ko@samsung.com>, 염대영<dy.youm@samsung.com>, 임미경<mk336.lim@samoo.com>, 풍경아<pung.pung@samoo.com>, 김형섭<hyungsup.kim@samoo.com>, 정주영<jytara.jung@samsung.com>, 김영택<teak30.kim@samsung.com>, 나정환<jungwhan.rha@samsung.com>, 류병삼<byungsam.ryu@samsung.com>     수신 : 김상곤 마스터님     안녕하십니까   보내주신 자료는 잘 받았습니다.  금일 삼우구조 담당자와 주간회의시간에 이야기된 사항을 추가로 확인 부탁드립니다.  Shop이 진행중이므로 금일중으로 반드시 회신 부탁드립니다.     1.  크라운 인서트 TYPE 사용에 대한 공사팀의 확인 요청    SECL의 경우 현장용접을 최소하 하기위해서 아래와 같은 크라운인서트 타입의 EP(Embedded Plate)를 사용하고 있습니다.    하지만 삼우 MEP팀의 경우에 기존의 물산의 방식을 사용하였습니다.    따라서 크라운인서트 방식의 EP상세를 사용할 것인지 물산에 금일중으로 확인 요청드립니다.    감사합니다.  Best Regard.      강상규 프로 (SANG-KYOU KANG)  I & E Structural Eng’g Group  SAMSUNG ENGINEERING Co., LTD.  Office:  +82-2-2053-4872  Mobile: +82-10-4872-5730  e-mail: sk-.kang@samsung.com     **위 전자우편에 포함된 정보는 위에 기재된 수신인만을 위해 발송되는 것으로서**  **보안을 유지해야 하는 정보 및 법률상****또는 다른 사유로 인하여 공개가 금지된 정보가 들어 있을 수 있습니다.**  **귀하가 이 전자우편의 지정 수신인이 아니면 이를 무단으로 보유, 전송, 배포할 수 없으며,**  **일부의 내용이라도 공개,****복사해서는 안됩니다.**  **그러므로, 잘못 수신된 경우에는 즉시 전화 또는 전자우편 주소로 연락하여 주시고,**  **원본 및 사본과 그에 따른 첨부 문서를 모두 삭제하여 주시기 바랍니다.**  **Confidentiality Notice: This e-mail is intended for the addressee named in the above.**  **The information contained in this e-mail is confidential and privileged. If you are not the intended recipient,**  **you are hereby notified that any dissemination, distribution or copying ofthis communication is strictly prohibited.**  **If you have received this e-mail in error, please notify the sender immediately and destroy this e-mail message.**  **Thank you.**        --------- **Original Message** ---------  **Sender** : 김상곤 <sanggon.kim@samoo.com> ES/마스터/하이테크3본부/삼우종합건축사사무소  **Date** : 2023-09-06 15:01 (GMT+9)  **Title** : RE:(2) FW: RE:(2) 230831-[삼우회신] [P5복합동] 삼우설계 Piperack Embeded Plate Inform 재확인 요청건      안녕하세요 김상곤 입니다.      요청사항 반영하여 회신 드립니다.           --------- **Original Message** ---------  **Sender** : 강상규 <sk-.kang@samsung.com> AE/전자 P5-PJT 복합동/설계/구조/삼성엔지니어링  **Date** : 2023-09-05 18:52 (GMT+9)  **Title** : RE: FW: RE:(2) 230831-[삼우회신] [P5복합동] 삼우설계 Piperack Embeded Plate Inform 재확인 요청건  **To :** 김상곤<sanggon.kim@samoo.com>  **CC :** 한보희<bohee22.han@samsung.com>, 전철식<chulsik.jeon@samoo.com>, 서성현<sunghyun.seo@samsung.com>, 김세일<seil74.kim@samsung.com>, 김동현<dhyun97.kim@samsung.com>, 김혜진<hye-jin.kim@samsung.com>, 이원걸<wongeol.lee@samsung.com>, 고재영<jy83.ko@samsung.com>, 염대영<dy.youm@samsung.com>, 임미경<mk336.lim@samoo.com>, 풍경아<pung.pung@samoo.com>, 김형섭<hyungsup.kim@samoo.com>, 정주영<jytara.jung@samsung.com>, 김영택<teak30.kim@samsung.com>, 나정환<jungwhan.rha@samsung.com>, 류병삼<byungsam.ryu@samsung.com>     수신 : 김상곤 마스터님     안녕하십니까   보내주신 INFROM에 많은 내용이 포함되어 있어 SHOP업체에 전달하는데 많은 어려움이 있습니다.  아래의 내용을 포함한 EP반영을 위한 정리된 INFROM을 요청드립니다.  PC SHOP 도면의 1절주 이슈는 9월 11일 입니다.  명일 오전까지 반드시 회신 바랍니다.     1. 공통사항    건축도서의 높이는 EL로  되어 있습니다.     INFORM을 EL+로 통일이 요청드립니다.      2. 불필요한 상세는 삭제 요청드립니다.     불필요한 Comment 및 EP 상세 삭제 바랍니다.     여러 상세가 필요시 구조 평면도에 오류를 피하기 위해서 EP MARK 추가 바랍니다.     2. '엠베트 평면도'      행잉 위치에 EP 마크 작성 요청드립니다. (다수 H형강으로 오류 방지)     또는 행잉이 반영되지 않는 불필요한 H형강 삭제 요청드립니다. (오류 방지)           3.  '전기랙 2단 평면도'       상부 철골은 H194를 기준으로 TOS EL+12,094 (FL+11,794) 입니다.       위 기준으로 반영하겠습니다. 확인 바랍니다.     4.  Grid 1~5 사이 구간 구조도면 확인 요청     - Grid 4, 5의 기둥에 반영되는 EP는 상세가 없습니다. 확인 바랍니다.     - Grid 3번구간의 데는 별도의 EP의 마크추가가 필요합니다.                 5. '전기랙 1단 평면도'      기둥과 만나는 부분에 EP를 반영 예정입니다.      TOS는 EL+10,585 (FL+10,285)로 아래의 INFORM으로 반영하겠습니다.      추가 EP 상세가 필요시 EP 위치에 모두 MARK 추가 바랍니다.        감사합니다.  Best Regard.      강상규 프로 (SANG-KYOU KANG)  I & E Structural Eng’g Group  SAMSUNG ENGINEERING Co., LTD.  Office:  +82-2-2053-4872  Mobile: +82-10-4872-5730  e-mail: sk-.kang@samsung.com     **위 전자우편에 포함된 정보는 위에 기재된 수신인만을 위해 발송되는 것으로서**  **보안을 유지해야 하는 정보 및 법률상****또는 다른 사유로 인하여 공개가 금지된 정보가 들어 있을 수 있습니다.**  **귀하가 이 전자우편의 지정 수신인이 아니면 이를 무단으로 보유, 전송, 배포할 수 없으며,**  **일부의 내용이라도 공개,****복사해서는 안됩니다.**  **그러므로, 잘못 수신된 경우에는 즉시 전화 또는 전자우편 주소로 연락하여 주시고,**  **원본 및 사본과 그에 따른 첨부 문서를 모두 삭제하여 주시기 바랍니다.**  **Confidentiality Notice: This e-mail is intended for the addressee named in the above.**  **The information contained in this e-mail is confidential and privileged. If you are not the intended recipient,**  **you are hereby notified that any dissemination, distribution or copying ofthis communication is strictly prohibited.**  **If you have received this e-mail in error, please notify the sender immediately and destroy this e-mail message.**  **Thank you.**        --------- **Original Message** ---------  **Sender** : 김상곤 <sanggon.kim@samoo.com> ES/마스터/하이테크3본부/삼우종합건축사사무소  **Date** : 2023-09-01 15:08 (GMT+9)  **Title** : FW: RE:(2) 230831-[삼우회신] [P5복합동] 삼우설계 Piperack Embeded Plate Inform 재확인 요청건      안녕하세요 삼우설계 김상곤 입니다.      아래 메일 본문 상 Tray 레벨 표기에 오류가 있어 재 송부 드립니다.      최하단 Tray top 기준 FL+10,400mm이며,   Bottom 기준으로는 FL+10,285mm입니다.   해당 레벨 기준으로 P6 구간 접점부 확인바라며   반영완료되시면 BIM상에서 Cross check하도록 요청 드립니다.            --------- **Original Message** ---------  **Sender** : 김상곤 <sanggon.kim@samoo.com> ES/마스터/하이테크3본부/삼우종합건축사사무소  **Date** : 2023-09-01 14:33 (GMT+9)  **Title** : RE:(2) 230831-[삼우회신] [P5복합동] 삼우설계 Piperack Embeded Plate Inform 재확인 요청건  **To :** 강상규<sk-.kang@samsung.com>  **CC :** 전철식<chulsik.jeon@samoo.com>, 서성현<sunghyun.seo@samsung.com>, 김세일<seil74.kim@samsung.com>, 김동현<dhyun97.kim@samsung.com>, 김혜진<hye-jin.kim@samsung.com>, 이원걸<wongeol.lee@samsung.com>, 고재영<jy83.ko@samsung.com>, 염대영<dy.youm@samsung.com>, 임미경<mk336.lim@samoo.com>, 풍경아<pung.pung@samoo.com>, 김형섭<hyungsup.kim@samoo.com>, 정주영<jytara.jung@samsung.com>, 한보희<bohee22.han@samsung.com>, 김영택<teak30.kim@samsung.com>, 나정환<jungwhan.rha@samsung.com>, 류병삼<byungsam.ryu@samsung.com>      안녕하세요 삼우설계 김상곤 입니다.      아래 2-1. 항목 관련하여,   3열 구간 전기랙 Embedded plate 위치 이동 반영한 인폼 자료 송부 드립니다.      아울러, 해당 도면은 앞서 Embedded plate 접합 상세도 변경하면서   수직 Post 규격 변경 및 내부 가로부재 변경 등이 모두 반영된 최신본이며,   Tray 레벨은 당초와 동일(최하단 Tray bottom 기준 FL+10,400mm)하니 참고하시어   UT 전기 담당자께서는 P6 구간 접점부 확인 부탁 드립니다.            --------- **Original Message** ---------  **Sender** : 강상규 <sk-.kang@samsung.com> AE/전자 P5-PJT 복합동/설계/구조/삼성엔지니어링  **Date** : 2023-09-01 09:05 (GMT+9)  **Title** : RE: 230831-[삼우회신] [P5복합동] 삼우설계 Piperack Embeded Plate Inform 재확인 요청건  **To :** 전철식<chulsik.jeon@samoo.com>  **CC :** 서성현<sunghyun.seo@samsung.com>, 김세일<seil74.kim@samsung.com>, 김동현<dhyun97.kim@samsung.com>, 김혜진<hye-jin.kim@samsung.com>, 이원걸<wongeol.lee@samsung.com>, 고재영<jy83.ko@samsung.com>, 염대영<dy.youm@samsung.com>, 임미경<mk336.lim@samoo.com>, 풍경아<pung.pung@samoo.com>, 김상곤<sanggon.kim@samoo.com>, 김형섭<hyungsup.kim@samoo.com>, 정주영<jytara.jung@samsung.com>     수신 : 전철식 EM님     안녕하십니까   빠른 회신에 감사드립니다.  미 확정 사항 아래의 1건이 있습니다.  2-1 삼우 MEP와 삼우 전기의 골조 정리로 확인 후 송부 바랍니다.    확정 사항은 아래와 같이 확인 메일을 보내드립니다.  1. 도면상 엠베드 위치확인 요청건  --> 벽체변경에 따른 임베드 위치 추가 수정.(첨부파일 참조-하늘색 구름마크)  -> 하늘색 클라우드는 모두 변경사항으로 변경 반영     2-2. Grid h ~I / Grid 10  ---> 20230829 엔지니어링 김세일 프로 메일 확인요. (엔지니어링 파이르랙 수정으로 결정)  -> 도면성 Grid H~I / Grid 10에 EP가 표현되어 있는데 미반영하겠습니다. ( SECL 기준 반영 )       3. Embedded Plate EB4 사이즈 재검토 요청 , PL-450X325X28t SM355 인지?  ---> EB4 사이즈는 PL-520X620X28t (SM355)가 맞습니다.(첨부파일 참조)  -> 보내주신 상세로 반영    4. 포스트 설치용 서브빔 TOS EL+13,575 요청  ---> TOS EL+13,500 으로 권장합니다.(첨부파일 참조)  -> CCSS실의 경우에 아래와 같이 위치됩니다.      PC 제작성과 시공성을 고려하여 필요 시 회신드리겠습니다.    5. PC 보 하부 행잉타입 Embedded Plate 최종 확인, SECL 상세 사용 가능한지?  ---> SECL 상세기준로 변경함.(첨부파일 참조)  -> 모든 행잉타입 EP는 아래의 기준으로 반영    6.  PSRC 기둥 측면 Embedded Plate 최종 확인, 세클 엠베드 사용 가능한지?  ---> 측면 엠베드는 모듈랙 상세 이므로 삼우설계 엠베드 상세 적용 바랍니다.(물산에서 랙 시공상 어려움 우려)  -> PSRC에 부착되는 측면은 아래의 기준으로 반영          감사합니다.  Best Regard.      강상규 프로 (SANG-KYOU KANG)  I & E Structural Eng’g Group  SAMSUNG ENGINEERING Co., LTD.  Office:  +82-2-2053-4872  Mobile: +82-10-4872-5730  e-mail: sk-.kang@samsung.com     **위 전자우편에 포함된 정보는 위에 기재된 수신인만을 위해 발송되는 것으로서**  **보안을 유지해야 하는 정보 및 법률상****또는 다른 사유로 인하여 공개가 금지된 정보가 들어 있을 수 있습니다.**  **귀하가 이 전자우편의 지정 수신인이 아니면 이를 무단으로 보유, 전송, 배포할 수 없으며,**  **일부의 내용이라도 공개,****복사해서는 안됩니다.**  **그러므로, 잘못 수신된 경우에는 즉시 전화 또는 전자우편 주소로 연락하여 주시고,**  **원본 및 사본과 그에 따른 첨부 문서를 모두 삭제하여 주시기 바랍니다.**  **Confidentiality Notice: This e-mail is intended for the addressee named in the above.**  **The information contained in this e-mail is confidential and privileged. If you are not the intended recipient,**  **you are hereby notified that any dissemination, distribution or copying ofthis communication is strictly prohibited.**  **If you have received this e-mail in error, please notify the sender immediately and destroy this e-mail message.**  **Thank you.**        --------- **Original Message** ---------  **Sender** : 전철식 <chulsik.jeon@samoo.com> EM/마스터/하이테크2본부/삼우종합건축사사무소  **Date** : 2023-08-31 17:29 (GMT+9)  **Title** : 230831-[삼우회신] [P5복합동] 삼우설계 Piperack Embeded Plate Inform 재확인 요청건      |  | | --- | |  |  |  |  |  | | --- | --- | --- | | |  |  | | --- | --- | | Large Attachment   (대용량첨부)   |    Total  1    (10.91 MB)  Download All | 5 times   downloadable      2023-08-31 ~   2023-09-07(GMT+9) | | | |  | | --- | | * alt  [230831\_P5L 인프라복합동 2F RACK EMBED INFORM.dwg   (10.91 MB)  *download*](https://lfas.samsung.net/large/rest/v1/files/download?token=eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJrbm94cG9ydGFsIiwiZmlsZUlkIjoiRklMRTQwMTk0NjFjMzAxNjQwZGQ4NzhhOTE5MzIyMWZkM2Y2In0.hmJ3gluSWk4yVigQQeRp8WA8ki5K9TpQja-zNVLbKgg) | |  |  | | --- | | ※ Only available for the original recipients (최초 수신인만 다운로드 가능합니다.)  ※ In case of firewall blocking, Files can't be downloaded. (방화벽 차단 환경에서는 다운로드가 안될 수 있습니다.) |  |  | | --- | |  |      업무에 수고가 많으십니다.  삼우설계 전철식 마스터입니다.      검토요청 사항에 대하여 답변드립니다.  1. 도면상 엠베드 위치확인 요청건  --> 벽체변경에 따른 임베드 위치 추가 수정.(첨부파일 참조-하늘색 구름마크)  2-2. Grid h ~I / Grid 10  ---> 20230829 엔지니어링 김세일 프로 메일 확인요. (엔지니어링 파이르랙 수정으로 결정)  2-1. Grid A ~B / Grid 3 , 2-3 Grid J ~K / Grid 3  ---> 삼우 전기에서 전기랙이동으로 검토중 (임베드 인폼 회신예정)  3. Embedded Plate EB4 사이즈 재검토 요청 , PL-450X325X28t SM355 인지?  ---> EB4 사이즈는 PL-520X620X28t (SM355)가 맞습니다.(첨부파일 참조)  4. 포스트 설치용 서브빔 TOS EL+13,575 요청  ---> TOS EL+13,500 으로 권장합니다.(첨부파일 참조)  5. PC 보 하부 행잉타입 Embedded Plate 최종 확인, SECL 상세 사용 가능한지?  ---> SECL 상세기준로 변경함.(첨부파일 참조)  6.  PSRC 기둥 측면 Embedded Plate 최종 확인, 세클 엠베드 사용 가능한지?  ---> 측면 엠베드는 모듈랙 상세 이므로 삼우설계 엠베드 상세 적용 바랍니다.(물산에서 랙 시공상 어려움 우려)    확인사항이 있으면 연락바랍니다.      감사합니다.       --------- **Original Message** ---------  **Sender** : 임미경 <mk336.lim@samoo.com> AM/PL/하이테크3본부/삼우종합건축사사무소  **Date** : 2023-08-31 08:57 (GMT+9)  **Title** : [삼우회신] [P5복합동] 삼우설계 Piperack Embeded Plate Inform 재확인 요청건  **To :** 정주영<jytara.jung@samsung.com>  **CC :** 풍경아<pung.pung@samoo.com>, 서성현<sunghyun.seo@samsung.com>, 김동현<dhyun97.kim@samsung.com>, 김상곤<sanggon.kim@samoo.com>, 김형섭<hyungsup.kim@samoo.com>, 전철식<chulsik.jeon@samoo.com>     정주영 EM님     전기 파이프렉은 전기 담당자의 다른 요청 검토 진행되고 있었습니다.    검토 확인 사항은 상호간 협의 및 정리 시간이 필요할 수 있으니 3일의 시간 갖고 진행될 수 있도록   해주시면 좋겠습니다.    아래 내용 8/30에 주신 내용입니다.  담당자들 안건 정리중이어서 9/1까지 내용 회신하도록 하겠습니다.   감사합니다.  임미경 드림     --------- **Original Message** ---------  **Sender** : 정주영 <jytara.jung@samsung.com> EM/전자 P5-PJT 복합동/설계/삼성엔지니어링  **Date** : 2023-08-30 17:34 (GMT+9)  **Title** : FW: FW: FW: RE: [P5복합동] 삼우설계 Piperack Embeded Plate Inform 재확인 요청건     수신 : 임미경 소장님  발신 : 정주영 EM     업무에 수고 많으십니다.  아래 Embedded plate관련(배관,전기)하여 실무자들의 소통이 좀 어려운것 같습니다.  한번 미팅을 통해 서로 이해하는 자리를 만드는걸 고려해 주셨으면 합니다.     아시겠지만 지금 Embedded plate에 대한 설계를 진행하고 shop을 넘기는 시점이 다가오고 있어  이번주 안으로 협의를 했으면 합니다.  편하신 시간 알려주시면 시간 맞춰 협의 진행했으면 합니다.  의견 부탁드립니다.      --------- **Original Message** ---------  **Sender** : 서성현 <sunghyun.seo@samsung.com> AE/전자 P5-PJT 복합동/설계/구조/삼성엔지니어링  **Date** : 2023-08-30 14:57 (GMT+9)  **Title** : FW: FW: RE: [P5복합동] 삼우설계 Piperack Embeded Plate Inform 재확인 요청건     수신 : 정주영 EM님     1. 아래 메일은 강상규 프로가 어제 삼우설계로 송부한  "삼우 배관용 Embeded Plate Inform의 오류 및 재확인 사항"입니다.     2. 추가로 아래사항은 "삼우 배관 Embeded Plate와 삼우 전기 Embeded Plate간의 간섭사항" 입니다. (첨부상세 사항참조)         현재 삼우설계 Embeded Plate Inform 미확정사항이 많아서 PSRC 및 PC Shop dwg 일정지연이 예상되오니  긴급 회의소집 부탁드립니다.        --------- **Original Message** ---------  **Sender** : 강상규 <sk-.kang@samsung.com> AE/전자 P5-PJT 복합동/설계/구조/삼성엔지니어링  **Date** : 2023-08-30 10:20 (GMT+9)  **Title** : FW: RE: [P5복합동] 삼우설계 Piperack Embeded Plate Inform 재확인 요청건  **To :** 전철식<chulsik.jeon@samoo.com>, 정진우<jjinoo.jeong@samoo.com>  **CC :** 임미경<mk336.lim@samoo.com>, 풍경아<pung.pung@samoo.com>, 김형섭<hyungsup.kim@samoo.com>, samoocon04@samoo.co.kr<samoocon04@samoo.co.kr>, 서성현<sunghyun.seo@samsung.com>, 김세일<seil74.kim@samsung.com>, 김혜진<hye-jin.kim@samsung.com>, 김동현<dhyun97.kim@samsung.com>, 이원걸<wongeol.lee@samsung.com>, 강대호<dh23.kang@samsung.com>, 고재영<jy83.ko@samsung.com>, 염대영<dy.youm@samsung.com>, 정주영<jytara.jung@samsung.com>         |  | | --- | |  |  |  |  |  | | --- | --- | --- | | |  |  | | --- | --- | | Large Attachment   (대용량첨부)   |    Total  1    (52.88 MB)  Download All | 10 times   downloadable      2023-08-30 ~   2023-09-06(GMT+9) | | | |  | | --- | | * zip  [P5L\_PH-1\_복합5동\_AFD\_230811\_공정배관\_P51\_EMBED\_SECL 공유용.zip   (52.88 MB)  *download*](https://lfas.samsung.net/large/rest/v1/files/download?token=eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJrbm94cG9ydGFsIiwiZmlsZUlkIjoiRklMRTk5NjczMmE1ZGZhNTRlZjdhOTc0ZWQ0ZTYzYjdiNmZiIn0.VJ_OddZ7FT2x18Yn07STZtMqmGTMZNbvZDSNG9ksS2g) | |  |  | | --- | | ※ Only available for the original recipients (최초 수신인만 다운로드 가능합니다.)  ※ In case of firewall blocking, Files can't be downloaded. (방화벽 차단 환경에서는 다운로드가 안될 수 있습니다.) |  |  | | --- | |  |      수신 : 전철식 마스터님, 정진우 프로님     안녕하십니까   복합동 골조 구조설계 담당하는 SECL 강상규 프로입니다.  삼우 설계 MEP Embedded Plate 관련하여 긴급 확인사항입니다.     1. E~F열/ 29~37열 Embeded Plate    -> E.P위치가 PC보를 벗어납니다. 위치 재확인 바랍니다. (아래 8/21일 기 확인 요청드렸으나 미회신 상태임)        2. H~I열/ 10열 Embeded Plate - Closed     3.  PC보 사이에 철골보의 EMBEDDED PLATE 크기 확인    - 'EB4' 상세에 도면상 오류 확인       PL-450X325X28t SM355 인지 확인 요청드립니다.                  4. 포스트 설치용 서브빔 TOS 확인 요청     - "PC보 하부에서 300mm이상"을 가장 작은 보에 반영하면 다양한 철골 높이가 계산됩니다. ( 아래 참조 )       따라서 철골의 높이는 TOS EL+13,575 으로 통일하여 반영하고자 합니다. 의견 요청드립니다. (오류 최소화 방안)       (Embedded Plate 높이는 450mm기준입니다.)           5.  PC 보 하부 행잉타입 Embedded Plate 최종 확인    - 행잉 타입 EMBEDDED PLATE는 아래와 같이 양사간에 차이가 발생합니다.      첨부상세로 진행할 것인지 최종 확인 바랍니다.      삼우 전기팀의 경우 SECL의 상세를 반영하기로 하였으니 업무 참조 바랍니다.        [ 삼우 MEP 행잉 EMBEDDED PLATE ]                                                                                    [ SECL MEP 행잉 EMBEDDED PLATE ]           5.  PSRC 기둥 측면 Embedded Plate 최종 확인    - 기둥 측면 타입의 EMBEDDED PLATE는 아래와 같이 양사간에 차이가 발생합니다.      첨부상세로 진행할 것인지 최종 확인 바랍니다.           [ 삼우 MEP 기둥 측면 EMBEDDED PLATE  ]  - STUD 또는 철근 TYPE                                                                                            [ SECL MEP 기둥 및 보 측면 EMBEDDED PLATE ] - 크라운인서트 TYPE    감사합니다.  Best Regard.      강상규 프로 (SANG-KYOU KANG)  I & E Structural Eng’g Group  SAMSUNG ENGINEERING Co., LTD.  Office:  +82-2-2053-4872  Mobile: +82-10-4872-5730  e-mail: sk-.kang@samsung.com     **위 전자우편에 포함된 정보는 위에 기재된 수신인만을 위해 발송되는 것으로서**  **보안을 유지해야 하는 정보 및 법률상****또는 다른 사유로 인하여 공개가 금지된 정보가 들어 있을 수 있습니다.**  **귀하가 이 전자우편의 지정 수신인이 아니면 이를 무단으로 보유, 전송, 배포할 수 없으며,**  **일부의 내용이라도 공개,****복사해서는 안됩니다.**  **그러므로, 잘못 수신된 경우에는 즉시 전화 또는 전자우편 주소로 연락하여 주시고,**  **원본 및 사본과 그에 따른 첨부 문서를 모두 삭제하여 주시기 바랍니다.**  **Confidentiality Notice: This e-mail is intended for the addressee named in the above.**  **The information contained in this e-mail is confidential and privileged. If you are not the intended recipient,**  **you are hereby notified that any dissemination, distribution or copying ofthis communication is strictly prohibited.**  **If you have received this e-mail in error, please notify the sender immediately and destroy this e-mail message.**  **Thank you.**        --------- **Original Message** ---------  **Sender** : 서성현 <sunghyun.seo@samsung.com> AE/전자 P5-PJT 복합동/설계/구조/삼성엔지니어링  **Date** : 2023-08-21 16:33 (GMT+9)  **Title** : [P5복합동] 삼우설계 Piperack Embeded Plate Inform 재확인 요청건     수신 :  전철식 마스터님, 정진우 프로님 / 삼우설계     안녕하세요  복합동 골조 구조설계 담당하는 SECL 서성현 입니다.  현재 3층 바닥 PC Shop dwg 진행중인데 삼우설계에서 송부하신 Piperack Inform 재확인건으로 연락드립니다.     1. E~F열/ 29~37열 Embeded Plate    -> E.P위치가 PC보를 벗어납니다. 위치 재확인 바랍니다.       2. H~I열/ 10열 Embeded Plate    -> 삼우설계 E.P와 SECL설계 E.P가 중복됩니다. Piperack이 서로 중복되는거로 판단됩니다.        SECL PR담당자(김세일 수석)과 협의하시어 위치조정 부탁드립니다.        현재 Shop dwg 진행중인 관계로 빠른 회신 부탁드립니다.  상세칫수등은 첨부 캐드파일 참조하세요     감사합니다.          |  |  | | --- | --- | |  | **Sung Hyun, Seo** | | **Principal Engineer** ㅣ 건축구조기술사 ㅣ Industrial Engineering Dept. | | **Samsung Engineering Co., Ltd.** | | T  82 2 2053 3670     M  82 10 9984 4428     E  [sunghyun.seo](mailto:sunghyun.seo@samsung.com)[@samsung.com](mailto:sunghyun.seo@samsung.com) |                                     |  |  | | --- | --- | |  | **Sung Hyun, Seo** | | **Principal Engineer** ㅣ 건축구조기술사 ㅣ Industrial Engineering Dept. | | **Samsung Engineering Co., Ltd.** | | T  82 2 2053 3670     M  82 10 9984 4428     E  [sunghyun.seo](mailto:sunghyun.seo@samsung.com)[@samsung.com](mailto:sunghyun.seo@samsung.com) |                Joo Young Jung                   Principal Professional   Industrial Engineering Innovation Group   TEL     : +82-2-2053-5384   MOBIL : +82-10-8897-4965   E-mail  : jytara.jung@samsung.com    Confidentiality Notice:    This e-mail message, including any attached documents, is being sent by or on behalf of an attorney. It is intended exclusively for the individual or entity to which it is addressed. This communication may contain information that is proprietary, privileged or confidential and may be an attorney-client communication and work product of counsel. If you are not the intended recipient, you are hereby notified that any disclosure, copying, distribution and/or use of the contents of this e-mail is strictly prohibited.  Please notify the sender by reply e-mail or telephone to advise the sender of the error in transmission and permanently delete the message and any accompanying attachments from your system and any printout thereof. | |
+
+ 
+
+ 
+
+|  |
+| --- |
+| P Please consider the environment before printing this email |
+
+![](data:image/png;base64,) 
+
+ 
+
+ 
+
+|  |
+| --- |
+|  |
+
+|  |
+| --- |
+|  |
+
+|  |
+| --- |
+|  |

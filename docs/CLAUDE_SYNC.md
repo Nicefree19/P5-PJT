@@ -74,7 +74,7 @@ columnRange: /([A-C])-?[Xx]?(\d{1,3})\s*[~\-~－까지]\s*[Xx]?(\d{1,3})/gi
 | 2 | `parseMeetingMinutesExcel()` | Claude Code | ✅ 완료 |
 | 3 | 기둥 ID 추출 로직 | Claude Code | ✅ 완료 |
 | 4 | Issue-Column 연결 UI | Claude Code | ✅ 완료 |
-| 5 | GAS 동기화 확장 | Antigravity | 대기 |
+| 5 | GAS 동기화 확장 | Antigravity | ✅ 완료 |
 
 ### 📝 구현 완료 내용 (Claude Code)
 

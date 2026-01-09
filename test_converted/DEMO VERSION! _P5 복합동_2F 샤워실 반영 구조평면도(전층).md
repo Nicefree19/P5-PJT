@@ -1,0 +1,33 @@
+# DEMO VERSION! [P5 복합동]2F 샤워실 반영 구조평면도(전층)
+
+- **From**: 이동혁 [소장] [EPC팀]
+- **Date**: 2023-09-13 16:57:15
+- **Source**: DEMO VERSION! _P5 복합동_2F 샤워실 반영 구조평면도(전층).msg
+
+---
+
+| 대용량 첨부 (Big Attach ) **1개(files)** | |
+| --- | --- |
+| [230913\_P5 복합동\_구조평면도\_SEN\_shop 전달용.dwg](https://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/20e5714c1b571f0ed2609916db14fecc/202309131657147098617oEQguY7qAcT "230913_P5 복합동_구조평면도_SEN_shop 전달용.dwg") | (23 MB) | [Download](https://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/20e5714c1b571f0ed2609916db14fecc/202309131657147098617oEQguY7qAcT) |
+| 다운로드 기간(Download Term):2023-09-13~2023-10-13 | |
+
+
+
+
+안녕하세요? 센구조 이동혁 소장입니다.
+
+강상규 프로님 요청하신 도면 송부드립니다.
+
+확인 부탁드립니다.
+
+감사합니다. 
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+|  |  |
+| --- | --- |
+| 이동혁   EPC | 소장 | senkuzo |
+
+|  |  |
+| --- | --- |
+| t: 02-2629-3104  m: 010-4249-7140  e: dhlee@senkuzo.com  www.senkuzo.com | (주)센구조연구소 SEN ENGINEERING GROUP 07226 서울시 영등포구 버드나루로 19길 6 (센스빌딩) |

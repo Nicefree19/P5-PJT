@@ -1,7 +1,7 @@
 # DEMO VERSION! FW:FW: FW: FW: [수정요청] [P5 통합 복합동] 슬라브 레벨 송부
 
 - **From**: 이동혁 [소장] [EPC팀]
-- **Date**: 2023-05-08 15:33:23
+- **Date**: Unknown Date
 - **Source**: DEMO VERSION! FW_FW_ FW_ FW_ _수정요청_ _P5 통합 복합동_ 슬라브 레벨 송부.msg
 
 ---
@@ -209,7 +209,7 @@ FL±0 기준으로 다운레벨 표기하였습니다.
 | --- |
 | P Please consider the environment before printing this email |
 
-![](http://email.samoo.com/mail/PutAck.jsp?ack_args=c2VudF9maWxlPXNhbW9vY29uMDRAc2Ftb28uY28ua3IvLlNlbnQvMTY4MjA1NDExMTk4NS40NTUwLnNhbW9vJnNlbmRfZGF0ZT0yMDIzMDQyMTE0MTUxMSZzdWJqZWN0PUZ3ZDpbUDUg7Ya17ZWpIOuzte2VqeuPmV0gMjMwNDE5LVA1IOuzte2VqeuPmSDqtazsobDtj4nrqbTrj4Q=&to_email=pung.pung@samoo.com___________________________________________________________________________________________________________________________________) 
+![](data:image/png;base64,) 
 
  
 

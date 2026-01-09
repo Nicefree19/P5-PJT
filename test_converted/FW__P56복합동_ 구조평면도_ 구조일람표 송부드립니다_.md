@@ -1,0 +1,96 @@
+# FW:[P56복합동] 구조평면도, 구조일람표 송부드립니다.
+
+- **From**: 이인호 [이사] [EPC팀]
+- **Date**: 2023-08-16 15:12:44
+- **Source**: FW__P56복합동_ 구조평면도_ 구조일람표 송부드립니다_.msg
+
+---
+
+| 대용량 첨부 (Big Attach ) **4개(files)** | |
+| --- | --- |
+| [230816\_P5 복합동\_구조평면도.dwg](https://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/3a151cf3818f10d38f75ef5505b2a4bc/202308161512447617545k3xrzZ67qCU "230816_P5 복합동_구조평면도.dwg") | (14 MB) | [Download](https://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/3a151cf3818f10d38f75ef5505b2a4bc/202308161512447617545k3xrzZ67qCU) |
+| [230816\_P5복합동 부재력 및 PC부재크기.xlsx](https://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/3a151cf3818f10d38f75ef5505b2a4bc/202308161512447617546jFIuqrqBKJ6 "230816_P5복합동 부재력 및 PC부재크기.xlsx") | (185 KB) | [Download](https://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/3a151cf3818f10d38f75ef5505b2a4bc/202308161512447617546jFIuqrqBKJ6) |
+| [230816\_P5 복합동\_PC빔 일람표.dwg](https://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/3a151cf3818f10d38f75ef5505b2a4bc/202308161512447617547LYjPf4ppvLi "230816_P5 복합동_PC빔 일람표.dwg") | (1 MB) | [Download](https://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/3a151cf3818f10d38f75ef5505b2a4bc/202308161512447617547LYjPf4ppvLi) |
+| [230816\_P5 복합동\_HMB+PC보 일람표.dwg](https://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/3a151cf3818f10d38f75ef5505b2a4bc/202308161512447617548hMCHnPS0JkE "230816_P5 복합동_HMB+PC보 일람표.dwg") | (8 MB) | [Download](https://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/3a151cf3818f10d38f75ef5505b2a4bc/202308161512447617548hMCHnPS0JkE) |
+| 다운로드 기간(Download Term):2023-08-16~2023-09-15 | |
+
+
+
+
+이인호 이사/ EPC 팀
+
+**T** 02-2629-2619 **M** 010-3106-3005
+
+**F** 02-2629-2600 **H** [www.senkuzo.com](http://www.senkuzo.com/)
+
+07226 서울시 영등포구 버드나루로 19길 6 (당산동 SENSE빌딩)
+
+SENSE B/D Beodeunaru-ro 19-gil 6, Youngdeungpo-gu, Seoul, 07226, Korea
+
+|  |
+| --- |
+| **(주)센구조연구소** |
+
+|  |
+| --- |
+| **(주)센벡스** |
+
+|  |
+| --- |
+| **(주)센코어테크** |
+
+**------ Original Message ------**  
+**Date:** 2023-08-16 15:10:25  
+**From:**endmall02 < endmall.02@partner.samsung.com >  
+**To:** dhlee@senkuzo.com < dhlee@senkuzo.com >,ihlee@senkuzo.com < ihlee@senkuzo.com >,senkuzo01 < senkuzo.01@partner.samsung.com >,senkuzo02 < senkuzo.02@partner.samsung.com >,이철기 < lcg0521@naver.com >,김대훈 < dhkim2630@naver.com >,이진주 < leejj\_1104@naver.com >,이환승 < ghkstmd126@naver.com >  
+**Subject:** [P56복합동] 구조평면도, 구조일람표 송부드립니다.
+
+안녕하십니까, 이앤디몰 강기림 프로입니다.
+
+복합동 구조도면 및 일람표 관련하여 첨부파일 송부드리오니 확인 요청드립니다.
+
+ 
+
+ 
+
+1. 230816\_P5복합동 부재력 및 PC부재크기
+
+\* 7F WSS실 및 3F 행잉로드 파생부재 반영한, 현 최신 자료입니다.
+
+\* 7월 26일자 기존 PC일람엑셀 (230726\_P5복합동 부재력 및 PC부재크기(3F 행잉로드 파생, 7F WSS 파생)) 대비 변경사항을 표기해두었습니다.(주황색칠 구간)
+
+\* 7월 28일 보내주신 해석자료에서 새로 뽑아낸 부재력으로 적용하여 배근 및 사이즈에 변경이 생겼습니다.
+
+\* (08.08 송부자료 대비 변경사항) 성능설계쪽 요구사항을 반영하여 일부 스트럽 배근 및 간격에 추가적으로 변경이 생겼습니다.
+
+ 
+
+ 
+
+2. 230816\_P5 복합동\_HMB+PC보 일람표  ,   230816\_P5 복합동\_PC빔 일람표  ,  23.08.16\_P5 복합동\_구조평면도
+
+\* 상기 PC보엑셀파일 내용을 반영하였으며, 변경사항은 멘트 및 구름마크 표기해두었습니다.
+
+ 
+
+자료 확인 요청드리며, 궁금하신 사항은 언제든지 연락 부탁드립니다.
+
+ 
+
+감사합니다.
+
+ 
+
+ 
+
+|  |
+| --- |
+|  |
+
+|  |
+| --- |
+|  |
+
+|  |
+| --- |
+|  |

@@ -1,0 +1,65 @@
+# DEMO VERSION! [P5 복합동] 화장실 단차부 참고 상세 송부 
+
+- **From**: 이동혁 [소장] [EPC팀]
+- **Date**: 2023-09-15 16:53:05
+- **Source**: DEMO VERSION! _P5 복합동_ 화장실 단차부 참고 상세 송부 .msg
+
+---
+
+안녕하세요? 양재영 이사님
+
+유선상으로 설명드린 화장실 단차부 참고 상세 송부드립니다.
+
+확인 부탁드립니다.
+
+감사합니다.
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+|  |  |
+| --- | --- |
+| 이동혁   EPC | 소장 | senkuzo |
+
+|  |  |
+| --- | --- |
+| t: 02-2629-3104  m: 010-4249-7140  e: dhlee@senkuzo.com  www.senkuzo.com | (주)센구조연구소 SEN ENGINEERING GROUP 07226 서울시 영등포구 버드나루로 19길 6 (센스빌딩) |
+
+**------ Original Message ------**  
+**Date:** 2023-09-15 15:38:47  
+**From:**이동혁 [소장] [EPC팀] < dhlee@senkuzo.com >  
+**To:** 양재영(JaeYoung Yang) [이사] [BIM설계부] < jyyang@senkuzo.com >,김명수 [차장] [BIM설계부] < mskim@senkuzo.com >,천종민 [차장] [BIM설계부] < jmcheon@senkuzo.com >,박진복 [대리] [BIM설계부] < jinbpark@senkuzo.com >,정덕준 [차장] [설계팀] < djjung@senkuzo.com >,정대호 [과장] [설계팀] < dhjung@senkuzo.com >  
+**Cc:** 이재용(JaeYong Lee) [이사] [설계팀] < jylee@senkuzo.com >,김태주(TaeJoo Kim) [이사] [생산관리팀] < tjkim@senkuzo.com >,박성배 [부장] [영업/견적팀] < sbpark@senkuzo.com >,team epc < epc@senvex.net >,원유엽 [부장] [외주제작파트] < yywon@senkuzo.com >,박근호 [소장] [공사관리팀] < ghopark@senkuzo.com >   
+**Subject:** P5 복합동 AFC REV 0.1 도면 공유의 件(구조)
+
+| 대용량 첨부 (Big Attach ) **1개(files)** | |
+| --- | --- |
+| [230915\_복합동 AFC Rev-0.1(구조).zip](https://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/45c1058584cdecdd9787fb2c1bfe9b86/202309151538477397093eXYWIH2mwFR "230915_복합동 AFC Rev-0.1(구조).zip") | (77 MB) | [Download](https://portal.senkuzo.com/rest/ml/mailAttachFile/bigDownload/45c1058584cdecdd9787fb2c1bfe9b86/202309151538477397093eXYWIH2mwFR) |
+| 다운로드 기간(Download Term):2023-09-15~2023-10-15 | |
+
+안녕하세요? EPC팀 이동혁 소장입니다.
+
+P5 복합동 AFC REV 0.1 도면이 접수되어 전달드립니다.
+
+ 
+
+삼우 공식 도면이며, 관련 담당자분들은 확인 부탁드립니다.
+
+ 
+
+감사합니다.
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+|  |  |
+| --- | --- |
+| 이동혁   EPC | 소장 | senkuzo |
+
+|  |  |
+| --- | --- |
+| t: 02-2629-3104  m: 010-4249-7140  e: dhlee@senkuzo.com  www.senkuzo.com | (주)센구조연구소 SEN ENGINEERING GROUP 07226 서울시 영등포구 버드나루로 19길 6 (센스빌딩) |
+
+
+
+|  |
+| --- |
+|  |

@@ -3091,8 +3091,9 @@ const P5Store = {
             },
             // H-4 Fix: productionStages를 P5Store로 이동 (master_config.json과 동기화)
             productionStages: [
+                { code: 'design_shop', label: 'SHOP도면', labelEn: 'SHOP Drawing', order: 0, color: '#8957e5' },
                 { code: 'hmb_fab', label: 'HMB제작', labelEn: 'HMB Fabrication', order: 1, color: '#1f6feb' },
-                { code: 'pre_assem', label: '면조립', labelEn: 'Pre-Assembly', order: 2, color: '#8957e5' },
+                { code: 'pre_assem', label: '면조립', labelEn: 'Pre-Assembly', order: 2, color: '#ab7df8' },
                 { code: 'main_assem', label: '대조립', labelEn: 'Main Assembly', order: 3, color: '#d29922' },
                 { code: 'hmb_psrc', label: 'HMB+PSRC', labelEn: 'HMB+PSRC Insert', order: 4, color: '#238636' },
                 { code: 'form', label: 'FORM', labelEn: 'Formwork', order: 5, color: '#da3633' },
@@ -3322,10 +3323,10 @@ function dashboard() {
         // Grid Config - MGT 규격 (327 cols × 55 rows) or fallback to legacy
         gridConfig: MGT_CONFIG
             ? { cols: MGT_CONFIG.columnRange.end - MGT_CONFIG.columnRange.start + 1, rows: MGT_CONFIG.rowLabels.length }
-            : { cols: 69, rows: 12 },
+            : { cols: 69, rows: 11 },
         rowLabels: MGT_CONFIG
             ? MGT_CONFIG.rowLabels
-            : ['A','B','C','D','E','F','G','H','I','J','K','L'],
+            : ['A','B','C','D','E','F','G','H','I','J','K'],
 
         // Virtual Scrolling State
         virtualScroll: {
@@ -3605,8 +3606,9 @@ function dashboard() {
 
         // Phase 6: Stage Configuration (H-4 Fix: 기본값, init()에서 P5Store 데이터로 덮어씀)
         stageConfigs: [
+            { code: 'design_shop', label: 'SHOP도면', color: '#8957e5', order: 0 },
             { code: 'hmb_fab', label: 'HMB제작', color: '#1f6feb', order: 1 },
-            { code: 'pre_assem', label: '면조립', color: '#8957e5', order: 2 },
+            { code: 'pre_assem', label: '면조립', color: '#ab7df8', order: 2 },
             { code: 'main_assem', label: '대조립', color: '#d29922', order: 3 },
             { code: 'hmb_psrc', label: 'HMB+PSRC', color: '#238636', order: 4 },
             { code: 'form', label: 'FORM', color: '#da3633', order: 5 },
@@ -4802,30 +4804,19 @@ function dashboard() {
         initFloorJeoljuData() {
             // 기본 층 데이터 (11개 층) - 레거시 ID 형식 (F1, F2, ...)
             this.floors = [
-                { floorId: 'F1', label: '1층', order: 1, hasVariation: false },
-                { floorId: 'F2', label: '2층', order: 2, hasVariation: false },
-                { floorId: 'F3', label: '3층', order: 3, hasVariation: false },
-                { floorId: 'F4', label: '4층', order: 4, hasVariation: false },
-                { floorId: 'F5', label: '5층', order: 5, hasVariation: true, variationNote: '부분 차이' },
-                { floorId: 'F6', label: '6층', order: 6, hasVariation: false },
-                { floorId: 'F7', label: '7층', order: 7, hasVariation: false },
-                { floorId: 'F8', label: '8층', order: 8, hasVariation: true, variationNote: '부분 차이' },
-                { floorId: 'F9', label: '9층', order: 9, hasVariation: false },
-                { floorId: 'F10', label: '10층', order: 10, hasVariation: false },
-                { floorId: 'RF', label: 'RF층', order: 11, hasVariation: true, variationNote: '지붕층' }
+                { floorId: 'base', label: '1층(기초)', order: 1, level: 0.3, hasVariation: false },
+                { floorId: '2F', label: '2층', order: 2, level: 7.8, hasVariation: false },
+                { floorId: '3F', label: '3층', order: 3, level: 14.3, hasVariation: false },
+                { floorId: '4F', label: '4층', order: 4, level: 21.3, hasVariation: false },
+                { floorId: '5F', label: '5층', order: 5, level: 28.3, hasVariation: true, variationNote: '부분 차이' },
+                { floorId: 'RF', label: 'Roof', order: 6, level: 99.4, hasVariation: true, variationNote: '지붕층' }
             ];
 
             // ★ 절주 (수직 분절 - 층 그룹) - floor_jeolju_implementation_plan.md 기준
             // 절주 = 기둥 수직분절 계획에 따른 층 그룹 (8개 절주)
             this.jeoljuConfig = [
-                { jeoljuId: '1절주', label: '1절주', floors: ['F1', 'F2'], heightRange: '1F~2F', length: 15.2, columnSize: '1600x1600', description: '1절주 제작 현황' },
-                { jeoljuId: '2절주', label: '2절주', floors: ['F3'], heightRange: '3F', length: 10.5, columnSize: '1600x1600', description: '2절주 제작 현황' },
-                { jeoljuId: '3절주', label: '3절주', floors: ['F4'], heightRange: '4F', length: 7.75, columnSize: '1500x1500', description: '3절주 제작 현황' },
-                { jeoljuId: '4절주', label: '4절주', floors: ['F5'], heightRange: '5F', length: 15.4, columnSize: '1500x1500', description: '4절주 제작 현황' },
-                { jeoljuId: '5절주', label: '5절주', floors: ['F6', 'F7'], heightRange: '6F~7F', length: 16.2, columnSize: '1300x1300', description: '5절주 제작 현황' },
-                { jeoljuId: '6절주', label: '6절주', floors: ['F8'], heightRange: '8F', length: 11.75, columnSize: '1300x1300', description: '6절주 제작 현황' },
-                { jeoljuId: '7절주', label: '7절주', floors: ['F9'], heightRange: '9F', length: 7.95, columnSize: '1300x1300', description: '7절주 제작 현황' },
-                { jeoljuId: '8절주', label: '8절주', floors: ['F10', 'RF'], heightRange: '10F~RF', length: 14.45, columnSize: '1200x1200', description: '8절주 제작 현황' }
+                { jeoljuId: '1절주', label: '1절주', floors: ['2F', '3F'], heightRange: '7.8m ~ 14.3m', length: 6.5, columnSize: 'PSRC/HMB', description: '1절주 (2~3F) 제작 현황' },
+                { jeoljuId: '2절주', label: '2절주', floors: ['4F', '5F'], heightRange: '21.3m~', length: 7.0, columnSize: '1600x1600', description: '2절주 제작 현황' }
             ];
 
             // ★ 열 구간 (수평 분절 - 컬럼 범위) - 기존 jeoljuList를 명칭 변경
@@ -8510,40 +8501,205 @@ function dashboard() {
          */
         initSampleIssues() {
             this.issues = [
+                // === MAGENTA: HOLD ISSUES ===
                 {
-                    id: 'ISS-2025-0042',
-                    type: 'tc',
-                    title: 'T/C #5 간섭',
-                    affectedColumns: ['C-X30', 'C-X31', 'C-X32', 'D-X30', 'D-X31', 'D-X32'],
-                    zoneId: 'zone_b',
+                    id: 'HOLD-1-04',
+                    type: 'hold_design', // HOLD
+                    title: '1절_HOLD-4 (3~12열 HOLD)',
+                    affectedColumns: [], // Range 3-12 handled by overlay
+                    zoneId: 'zone_c',
                     severity: 'critical',
-                    description: '타워크레인 #5 해체 전까지 작업 불가',
-                    expectedResolution: '2025-11-15',
+                    description: '3~12열 전체 본안 HOLD (1절_HOLD-4)',
+                    expectedResolution: 'TBD',
                     status: 'open',
-                    reportedBy: 'site_manager',
-                    reportedAt: '2025-12-20T09:00:00',
+                    reportedBy: 'shop_drawing',
+                    reportedAt: '2026-01-08T09:00:00',
                     overlay: {
                         show: true,
-                        label: '⛔ T/C #5\nInterference',
-                        range: { startColumn: 30, endColumn: 35, startRow: 2, endRow: 7 }
+                        label: '⛔ 1절_HOLD-4\n3~12열 HOLD',
+                        range: { startColumn: 3, endColumn: 12, startRow: 0, endRow: 10 }
                     }
                 },
                 {
-                    id: 'ISS-2025-0045',
-                    type: 'design',
-                    title: 'Rev.D 설계 변경 (Mega Truss)',
-                    affectedColumns: ['E-X55', 'E-X56', 'F-X55', 'F-X56'],
-                    zoneId: 'zone_c',
-                    severity: 'high',
-                    description: 'Mega Truss 하중 변경으로 인한 기둥 단면 변경',
-                    expectedResolution: '2025-12-30',
+                    id: 'HOLD-1-02',
+                    type: 'hold_design',
+                    title: '1절_HOLD-2 (Canopy/AFC)',
+                    affectedColumns: [],
+                    zoneId: 'zone_a',
+                    severity: 'medium', // Note says 'ignore instruction' but originally HOLD
+                    description: 'AFC 2.0_Ref3 HOLD 구간 / CANOPY 변경 예정 (현장회의: HOLD 무시 지시)',
+                    expectedResolution: '2026-01-06',
                     status: 'in_progress',
-                    reportedBy: 'structural_eng',
-                    reportedAt: '2025-12-22T11:00:00',
+                    reportedBy: 'shop_drawing',
+                    reportedAt: '2026-01-06T00:00:00',
                     overlay: {
                         show: true,
-                        label: '⚠️ Design\nMega Truss',
-                        range: { startColumn: 55, endColumn: 60, startRow: 4, endRow: 7 }
+                        label: '⚠️ 1절_HOLD-2\nCanopy Change',
+                        range: { startColumn: 64, endColumn: 69, startRow: 0, endRow: 10 }
+                    }
+                },
+                {
+                    id: 'HOLD-1-01',
+                    type: 'hold_tc',
+                    title: '1절_HOLD-1 (T/C 간섭)',
+                    affectedColumns: [],
+                    zoneId: 'zone_a',
+                    severity: 'high',
+                    description: 'AFC 2.0_Ref3 HOLD 구간 / 타워크레인 간섭으로 인한 수조 벽체 이동 건',
+                    expectedResolution: 'TBD',
+                    status: 'open',
+                    reportedBy: 'shop_drawing',
+                    reportedAt: '2026-01-08T09:00:00',
+                    overlay: {
+                        show: true,
+                        label: '⛔ 1절_HOLD-1\nT/C Interference',
+                        range: { startColumn: 50, endColumn: 55, startRow: 8, endRow: 10 }
+                    }
+                },
+
+                // === YELLOW: MODIFICATION PLANNED ===
+                {
+                    id: 'MOD-1-01',
+                    type: 'design',
+                    title: '1절_수정예정-1 (PTW)',
+                    affectedColumns: [],
+                    zoneId: 'zone_c',
+                    severity: 'high',
+                    description: 'PTW 인걸 철근 및 철골 변경 / 수조 영역 변경',
+                    expectedResolution: 'TBD',
+                    status: 'open',
+                    reportedBy: 'shop_drawing',
+                    reportedAt: '2026-01-08T09:00:00',
+                    overlay: {
+                        show: true,
+                        label: '🔧 1절_수정-1\nPTW/Tank',
+                        range: { startColumn: 12, endColumn: 18, startRow: 0, endRow: 4 }
+                    }
+                },
+                {
+                    id: 'MOD-1-02',
+                    type: 'design',
+                    title: '1절_수정예정-2 (PTW/TC)',
+                    affectedColumns: [],
+                    zoneId: 'zone_b',
+                    severity: 'high',
+                    description: 'PTW 수평철근 추가 / 타워크레인 간섭으로 인한 수조 벽체 이동',
+                    expectedResolution: 'TBD',
+                    status: 'open',
+                    reportedBy: 'shop_drawing',
+                    reportedAt: '2026-01-08T09:00:00',
+                    overlay: {
+                        show: true,
+                        label: '🔧 1절_수정-2\nWall Move',
+                        range: { startColumn: 23, endColumn: 30, startRow: 0, endRow: 4 }
+                    }
+                },
+                {
+                    id: 'MOD-1-03',
+                    type: 'design',
+                    title: '1절_수정예정-3 (PTW 철물)',
+                    affectedColumns: [],
+                    zoneId: 'zone_b',
+                    severity: 'medium',
+                    description: 'PTW 연결 철물 변경 / 수조 높이 변경 예정',
+                    expectedResolution: 'TBD',
+                    status: 'open',
+                    reportedBy: 'shop_drawing',
+                    reportedAt: '2026-01-08T09:00:00',
+                    overlay: {
+                        show: true,
+                        label: '🔧 1절_수정-3\nHardware/Height',
+                        range: { startColumn: 35, endColumn: 45, startRow: 0, endRow: 4 }
+                    }
+                },
+                {
+                    id: 'MOD-1-04',
+                    type: 'design',
+                    title: '1절_수정예정-4 (C4 Base)',
+                    affectedColumns: [],
+                    zoneId: 'zone_a',
+                    severity: 'medium',
+                    description: 'C4 기둥 BASE 변경 예정',
+                    expectedResolution: 'TBD',
+                    status: 'open',
+                    reportedBy: 'shop_drawing',
+                    reportedAt: '2026-01-08T09:00:00',
+                    overlay: {
+                        show: true,
+                        label: '🔧 1절_수정-4\nC4 Base',
+                        range: { startColumn: 58, endColumn: 60, startRow: 0, endRow: 3 }
+                    }
+                },
+                {
+                    id: 'MOD-1-05',
+                    type: 'design',
+                    title: '1절_수정예정-5 (HMB Angle)',
+                    affectedColumns: [],
+                    zoneId: 'zone_a',
+                    severity: 'low',
+                    description: 'HMB 하부앵글 SIZE 변경 예정 / EPC 변경',
+                    expectedResolution: 'TBD',
+                    status: 'open',
+                    reportedBy: 'shop_drawing',
+                    reportedAt: '2026-01-08T09:00:00',
+                    overlay: {
+                        show: true,
+                        label: '🔧 1절_수정-5\nHMB Angle',
+                        range: { startColumn: 65, endColumn: 69, startRow: 0, endRow: 5 }
+                    }
+                },
+                {
+                    id: 'MOD-1-06',
+                    type: 'design',
+                    title: '1절_수정예정-6 (Form/Clip)',
+                    affectedColumns: [],
+                    zoneId: 'zone_a',
+                    severity: 'low',
+                    description: '외곽부 수영장 이음부 CLIP ANGLE 배치 변경 / 외곽 이음부 공장 Form 변경',
+                    expectedResolution: 'TBD',
+                    status: 'open',
+                    reportedBy: 'shop_drawing',
+                    reportedAt: '2026-01-08T09:00:00',
+                    overlay: {
+                        show: true,
+                        label: '🔧 1절_수정-6\nForm/Clip',
+                        range: { startColumn: 50, endColumn: 60, startRow: 8, endRow: 10 }
+                    }
+                },
+                {
+                    id: 'MOD-1-07',
+                    type: 'design',
+                    title: '1절_수정예정-7 (PSRC/HMB/Elev)',
+                    affectedColumns: [],
+                    zoneId: 'zone_b',
+                    severity: 'high',
+                    description: 'PSRC, HMB 수정 / ELEV. 신설 예정',
+                    expectedResolution: 'TBD',
+                    status: 'open',
+                    reportedBy: 'shop_drawing',
+                    reportedAt: '2026-01-08T09:00:00',
+                    overlay: {
+                        show: true,
+                        label: '🔧 1절_수정-7\nElevator New',
+                        range: { startColumn: 30, endColumn: 40, startRow: 8, endRow: 10 }
+                    }
+                },
+                {
+                    id: 'MOD-1-08',
+                    type: 'design',
+                    title: '1절_수정예정-8 (Stud/BIM)',
+                    affectedColumns: [],
+                    zoneId: 'zone_c',
+                    severity: 'medium',
+                    description: 'EMBEDDED_STUD 간섭 수정 / BIM 자체 체크',
+                    expectedResolution: 'TBD',
+                    status: 'open',
+                    reportedBy: 'shop_drawing',
+                    reportedAt: '2026-01-08T09:00:00',
+                    overlay: {
+                        show: true,
+                        label: '🔧 1절_수정-8\nStud Check',
+                        range: { startColumn: 5, endColumn: 15, startRow: 8, endRow: 10 }
                     }
                 }
             ];
