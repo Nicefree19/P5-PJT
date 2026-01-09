@@ -1,0 +1,59 @@
+{
+  "projectInfo": {
+    "name": "P5 Complex Construction",
+    "version": "1.0.0",
+    "snapshotAt": "2026-01-02T23:15:00Z",
+    "author": "Antigravity AI"
+  },
+  "configurations": {
+    "floors": [
+      { "floorId": "F1", "label": "1층", "order": 1, "hasVariation": false },
+      { "floorId": "F2", "label": "2층", "order": 2, "hasVariation": false },
+      { "floorId": "F3", "label": "3층", "order": 3, "hasVariation": false },
+      { "floorId": "F4", "label": "4층", "order": 4, "hasVariation": false },
+      { "floorId": "F5", "label": "5층", "order": 5, "hasVariation": true },
+      { "floorId": "F6", "label": "6층", "order": 6, "hasVariation": false },
+      { "floorId": "F7", "label": "7층", "order": 7, "hasVariation": false },
+      { "floorId": "F8", "label": "8층", "order": 8, "hasVariation": true },
+      { "floorId": "F9", "label": "9층", "order": 9, "hasVariation": false },
+      { "floorId": "F10", "label": "10층", "order": 10, "hasVariation": false },
+      { "floorId": "RF", "label": "RF층", "order": 11, "hasVariation": true }
+    ],
+    "jeoljuConfig": [
+      { "jeoljuId": "1절주", "label": "1절주", "floors": ["F1", "F2"], "heightRange": "1F~2F", "length": 15.2, "columnSize": "1600x1600" },
+      { "jeoljuId": "2절주", "label": "2절주", "floors": ["F3"], "heightRange": "3F", "length": 10.5, "columnSize": "1600x1600" },
+      { "jeoljuId": "3절주", "label": "3절주", "floors": ["F4"], "heightRange": "4F", "length": 7.75, "columnSize": "1500x1500" },
+      { "jeoljuId": "4절주", "label": "4절주", "floors": ["F5"], "heightRange": "5F", "length": 15.4, "columnSize": "1500x1500" },
+      { "jeoljuId": "5절주", "label": "5절주", "floors": ["F6", "F7"], "heightRange": "6F~7F", "length": 16.2, "columnSize": "1300x1300" },
+      { "jeoljuId": "6절주", "label": "6절주", "floors": ["F8"], "heightRange": "8F", "length": 11.75, "columnSize": "1300x1300" },
+      { "jeoljuId": "7절주", "label": "7절주", "floors": ["F9"], "heightRange": "9F", "length": 7.95, "columnSize": "1300x1300" },
+      { "jeoljuId": "8절주", "label": "8절주", "floors": ["F10", "RF"], "heightRange": "10F~RF", "length": 14.45, "columnSize": "1200x1200" }
+    ],
+    "columnSegments": [
+      { "segmentId": "S1", "label": "1구간", "startColumn": 1, "endColumn": 9 },
+      { "segmentId": "S2", "label": "2구간", "startColumn": 10, "endColumn": 18 },
+      { "segmentId": "S3", "label": "3구간", "startColumn": 19, "endColumn": 27 },
+      { "segmentId": "S4", "label": "4구간", "startColumn": 28, "endColumn": 36 },
+      { "segmentId": "S5", "label": "5구간", "startColumn": 37, "endColumn": 45 },
+      { "segmentId": "S6", "label": "6구간", "startColumn": 46, "endColumn": 54 },
+      { "segmentId": "S7", "label": "7구간", "startColumn": 55, "endColumn": 62 },
+      { "segmentId": "S8", "label": "8구간", "startColumn": 63, "endColumn": 69 }
+    ]
+  },
+  "mgt_grid": {
+    "zones": [
+      { "id": "zone_a", "name": "ZONE A", "range": { "startColumn": 3, "endColumn": 111 } },
+      { "id": "zone_b", "name": "ZONE B", "range": { "startColumn": 112, "endColumn": 220 } },
+      { "id": "zone_c", "name": "ZONE C", "range": { "startColumn": 221, "endColumn": 329 } }
+    ],
+    "gridConfig": {
+      "cols": 327,
+      "rows": 55,
+      "excludedColumns": [1, 2]
+    }
+  },
+  "referenceFiles": {
+    "mgt": "P5_복합동.mgt",
+    "production_status": "production_status_import.js"
+  }
+}

@@ -1,0 +1,24 @@
+{
+    "A-X1": {
+        "uid": "A-X1",
+        "location": { "row": "A", "rowIndex": 0, "column": 1, "zoneId": "zone_a" },
+        "status": { "code": "installed", "source": "admin", "isLocked": true, "updatedAt": "2025-12-29T10:00:00" },
+        "member": { "type": "SRC Column", "section": "H-500x500", "material": "SM490" },
+        "schedule": { "plannedStart": "2025-11-01", "plannedEnd": "2025-11-10", "actualStart": "2025-11-02", "actualEnd": "2025-11-09" },
+        "assignment": { "contractor": "삼성E&A", "supervisor": "김현장", "contact": "010-1234-5678" }
+    },
+    "A-X30": {
+        "uid": "A-X30",
+        "location": { "row": "A", "rowIndex": 0, "column": 30, "zoneId": "zone_b" },
+        "status": { "code": "hold_tc", "source": "ai", "isLocked": false, "updatedAt": "2025-12-28T14:30:00" },
+        "member": { "type": "SRC Column", "section": "H-600x600", "material": "SM490Y" },
+        "issue": { "type": "tc", "title": "T/C #5 간섭", "severity": "critical", "issueId": "ISS-2025-0042" }
+    },
+    "C-X55": {
+        "uid": "C-X55",
+        "location": { "row": "C", "rowIndex": 2, "column": 55, "zoneId": "zone_c" },
+        "status": { "code": "hold_design", "source": "ai", "isLocked": false, "updatedAt": "2025-12-27T09:00:00" },
+        "member": { "type": "SRC Column", "section": "H-500x500", "material": "SN490B" },
+        "issue": { "type": "design", "title": "Rev.D Mismatch", "severity": "high", "issueId": "ISS-2025-0045" }
+    }
+}

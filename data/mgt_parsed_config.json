@@ -1,0 +1,66 @@
+{
+  "zones": [
+    {
+      "id": "zone_a",
+      "name": "ZONE A",
+      "displayName": "FAB",
+      "description": "Utility Support",
+      "range": {
+        "startColumn": 3,
+        "endColumn": 111,
+        "startRow": 0,
+        "endRow": 54
+      },
+      "style": {
+        "primaryColor": "#238636",
+        "backgroundColor": "rgba(35, 134, 54, 0.1)"
+      }
+    },
+    {
+      "id": "zone_b",
+      "name": "ZONE B",
+      "displayName": "CUB",
+      "description": "Main Link",
+      "range": {
+        "startColumn": 112,
+        "endColumn": 220,
+        "startRow": 0,
+        "endRow": 54
+      },
+      "style": {
+        "primaryColor": "#1f6feb",
+        "backgroundColor": "rgba(31, 111, 235, 0.1)"
+      }
+    },
+    {
+      "id": "zone_c",
+      "name": "ZONE C",
+      "displayName": "COMPLEX",
+      "description": "Office/Amenity - 복합동",
+      "range": {
+        "startColumn": 221,
+        "endColumn": 329,
+        "startRow": 0,
+        "endRow": 54
+      },
+      "style": {
+        "primaryColor": "#d29922",
+        "backgroundColor": "rgba(210, 153, 34, 0.1)"
+      }
+    }
+  ],
+  "gridConfig": {
+    "cols": 327,
+    "rows": 55,
+    "excludedColumns": [
+      1,
+      2
+    ]
+  },
+  "meta": {
+    "totalNodes": 28771,
+    "totalElements": 43361,
+    "parsedAt": "2026-01-02T07:43:29.296Z",
+    "source": "mgt_import"
+  }
+}

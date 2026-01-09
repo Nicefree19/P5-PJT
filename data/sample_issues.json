@@ -1,0 +1,65 @@
+[
+    {
+        "id": "ISS-2025-0042",
+        "type": "tc",
+        "title": "T/C #5 간섭",
+        "affectedArea": {
+            "columns": ["C-X30", "C-X31", "C-X32", "C-X33", "C-X34", "C-X35", "D-X30", "D-X31", "D-X32", "D-X33", "D-X34", "D-X35"],
+            "zoneId": "zone_b",
+            "range": { "startColumn": 30, "endColumn": 35, "startRow": 2, "endRow": 7 }
+        },
+        "overlay": {
+            "show": true,
+            "label": "⛔ T/C #5\nInterference",
+            "borderColor": "#da3633",
+            "backgroundColor": "rgba(218,54,51,0.1)"
+        },
+        "detail": {
+            "description": "타워크레인 #5 해체 전까지 작업 불가. X40 라인 우선 시공 후 복귀 예정.",
+            "severity": "critical",
+            "expectedResolution": "2025-11-15",
+            "actualResolution": null,
+            "rootCause": "T/C 작업반경 내 기둥 위치",
+            "mitigationPlan": "X40 라인 우선 시공 후 복귀"
+        },
+        "status": "open",
+        "reportedBy": "site_manager",
+        "reportedAt": "2025-12-20T09:00:00",
+        "assignedTo": "structural_eng",
+        "comments": [
+            { "user": "System", "message": "Auto-detected T/C conflict.", "timestamp": "2025-12-20T09:00:00", "isSystem": true },
+            { "user": "Site Manager", "message": "X40 라인 우선 진행 요청", "timestamp": "2025-12-20T10:30:00", "isSystem": false }
+        ]
+    },
+    {
+        "id": "ISS-2025-0045",
+        "type": "design",
+        "title": "Rev.D 설계 변경 (Mega Truss)",
+        "affectedArea": {
+            "zoneId": "zone_c",
+            "range": { "startColumn": 55, "endColumn": 60, "startRow": 4, "endRow": 7 }
+        },
+        "overlay": {
+            "show": true,
+            "label": "⚠️ Design Change\n(Mega Truss)",
+            "borderColor": "#d29922",
+            "backgroundColor": "rgba(210,153,34,0.05)"
+        },
+        "detail": {
+            "description": "Column size changed from H-400 to H-500 series due to Mega Truss loading. Shop drawing revision required.",
+            "severity": "high",
+            "expectedResolution": "2025-12-30",
+            "actualResolution": null,
+            "rootCause": "Complex Building 3F 서버룸 하중 변경",
+            "mitigationPlan": "Shop Drawing Rev.D 업데이트 후 재제작"
+        },
+        "status": "in_progress",
+        "reportedBy": "structural_eng",
+        "reportedAt": "2025-12-22T11:00:00",
+        "assignedTo": "design_team",
+        "comments": [
+            { "user": "System", "message": "BIM Check: Model vs Drawing mismatch detected.", "timestamp": "2025-12-22T11:00:00", "isSystem": true },
+            { "user": "Structural Eng", "message": "Design change for Complex Bldg Mega Truss loading issued. Please check Rev.D.", "timestamp": "2025-12-22T14:00:00", "isSystem": false }
+        ]
+    }
+]
