@@ -1152,6 +1152,15 @@
                     </div>
                 </template>
             </div>
+
+            <!-- Phase 16: Issue Overlays (contained within grid-scroll-view) -->
+            <template x-for="issue in activeIssueOverlays" :key="'overlay-' + issue.id">
+                <div class="issue-overlay" 
+                     :class="issue.type"
+                     :style="getOverlayStyle(issue)"
+                     x-text="issue.overlay?.label || issue.title">
+                </div>
+            </template>
         </div>
 
         <!-- Virtual Scroll Position Indicator -->
@@ -1410,14 +1419,7 @@
     </div>
 </div>
 
-<!-- Issue Overlays (rendered on grid) -->
-<template x-for="issue in activeIssueOverlays" :key="'overlay-' + issue.id">
-    <div class="issue-overlay" 
-         :class="issue.type"
-         :style="getOverlayStyle(issue)"
-         x-text="issue.overlay?.label || issue.title">
-    </div>
-</template>
+<!-- Issue Overlays moved inside grid-scroll-view for proper containment -->
 
 <!-- New Issue Modal -->
 <div class="issue-modal" x-show="newIssueModalOpen" x-cloak @click.self="newIssueModalOpen = false"

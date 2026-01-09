@@ -453,7 +453,8 @@
             overflow: auto;
             padding: 30px;
             cursor: grab;
-            position: relative; /* Required for virtual spacer positioning */
+            position: relative; /* Required for issue overlay positioning */
+            /* Phase 16: Clip overlays to prevent overflow into header */
         }
         .grid-scroll-view:active { cursor: grabbing; }
 
