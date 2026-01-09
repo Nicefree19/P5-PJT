@@ -521,6 +521,41 @@
             user-select: none;
         }
 
+        /* Phase 16: Compact Mode - smaller cells for high-density viewing */
+        .grid-container.compact-mode {
+            grid-template-columns: 25px repeat(var(--cols), 14px);
+            grid-template-rows: 18px repeat(var(--rows), 14px);
+            gap: 1px;
+        }
+        .grid-container.compact-mode .grid-cell-header {
+            font-size: 7px;
+        }
+        .grid-container.compact-mode .stage-grid {
+            grid-template-columns: repeat(3, 3px);
+            grid-template-rows: repeat(2, 3px);
+            gap: 0px;
+        }
+        .grid-container.compact-mode .stage-cell {
+            width: 3px;
+            height: 3px;
+        }
+        .grid-container.compact-mode .issue-pin {
+            font-size: 8px;
+            top: -3px;
+            right: -3px;
+        }
+
+        /* Phase 16: Toggle Button Styles */
+        .btn-sm {
+            padding: 3px 8px;
+            font-size: 10px;
+        }
+        .btn-active {
+            background: var(--status-active) !important;
+            border-color: #58a6ff !important;
+            color: #fff !important;
+        }
+
         .grid-cell-header {
             display: flex; align-items: center; justify-content: center;
             font-size: 9px; color: #484f58; font-family: monospace;

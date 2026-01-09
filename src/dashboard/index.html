@@ -1028,13 +1028,23 @@
 
     <!-- Canvas Area -->
     <div class="canvas-area" id="main-content" role="main" aria-label="이슈 그리드">
-        <!-- Zone Indicator Bar -->
-        <div class="zone-indicator-bar">
-            <template x-for="zone in zones" :key="zone.id">
-                <div class="zone-segment" :style="`background: ${zone.style?.backgroundColor || (zone.color + '1a') || 'rgba(35,134,54,0.1)'}; color: ${zone.style?.primaryColor || zone.color || '#238636'}`">
-                    <span x-text="zone.name + ' (' + zone.displayName + ')'"></span>
-                </div>
-            </template>
+        <!-- Phase 16: View Options Bar -->
+        <div class="view-options-bar" style="display:flex; justify-content:space-between; align-items:center; padding:4px 8px; background:#161b22; border-bottom:1px solid #30363d;">
+            <div>
+                <template x-for="zone in zones" :key="zone.id">
+                    <span class="zone-tag" :style="`color: ${zone.style?.primaryColor || zone.color || '#238636'}; margin-right:12px;`" x-text="zone.name + ' (' + zone.displayName + ')'"></span>
+                </template>
+            </div>
+            <div style="display:flex; gap:8px; align-items:center;">
+                <button class="btn btn-sm" :class="{ 'btn-active': compactMode }" @click="compactMode = !compactMode" title="컴팩트 모드 토글">
+                    <span x-show="!compactMode">📐 컴팩트</span>
+                    <span x-show="compactMode">🔳 기본</span>
+                </button>
+                <button class="btn btn-sm" :class="{ 'btn-active': invertRows }" @click="invertRows = !invertRows" title="행 순서 반전 (K→A / A→K)">
+                    <span x-show="invertRows">⬇️ K→A</span>
+                    <span x-show="!invertRows">⬆️ A→K</span>
+                </button>
+            </div>
         </div>
 
         <!-- Selection Banner (shown when items selected) -->
@@ -1071,7 +1081,7 @@
                  :style="`width: ${totalGridWidth}px; height: ${totalGridHeight}px;`"></div>
 
             <div class="grid-container"
-                 :class="{ 'is-scrolling': virtualScroll.isScrolling }"
+                 :class="{ 'is-scrolling': virtualScroll.isScrolling, 'compact-mode': compactMode }"
                  :style="virtualScroll.enabled
                      ? `--cols: ${visibleColCount}; --rows: ${visibleRowCount}; transform: translate(${virtualScroll.visibleColStart * virtualScroll.cellWidth}px, ${virtualScroll.visibleRowStart * virtualScroll.cellHeight}px);`
                      : `--cols: ${gridConfig.cols}; --rows: ${gridConfig.rows}`"
@@ -3396,6 +3406,10 @@ function dashboard() {
 
         // Phase 13: Summary Panel (실무자용 요약 뷰)
         showSummaryPanel: false,
+
+        // Phase 16: Layout Optimization
+        compactMode: false,    // 컴팩트 그리드 모드 (셀 너비 축소)
+        invertRows: true,      // Y축 반전 (K→A, CAD 일치)
 
         // Shop Issue Module State
         shopIssues: [],
