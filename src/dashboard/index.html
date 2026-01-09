@@ -9134,22 +9134,26 @@ function dashboard() {
         },
         
         /**
-         * Calculate overlay position and size
+         * Calculate overlay position and size (relative to grid-scroll-view)
+         * Phase 16 Fix: Changed from absolute viewport positioning to relative positioning
          */
         getOverlayStyle(issue) {
             if (!issue.overlay?.range) return 'display: none;';
             
             const range = issue.overlay.range;
-            const cellSize = 28;  // Grid cell size (26px + 2px gap)
-            const headerOffset = 65;  // Header row offset
-            const rowHeaderWidth = 37;  // Row label width
-            const gridPadding = 30;  // Grid container padding
-            const sidebarWidth = 260;  // Sidebar width
             
-            const left = sidebarWidth + gridPadding + rowHeaderWidth + (range.startColumn - 1) * cellSize;
-            const top = 55 + 30 + headerOffset + gridPadding + range.startRow * cellSize;  // header + zone bar + grid header
-            const width = (range.endColumn - range.startColumn + 1) * cellSize;
-            const height = (range.endRow - range.startRow + 1) * cellSize;
+            // Dynamic sizing based on compact mode
+            const cellSize = this.compactMode ? 15 : 28;  // Cell size (14px + 1px gap or 26px + 2px gap)
+            const headerRowHeight = this.compactMode ? 19 : 27;  // Grid header row height
+            const rowHeaderWidth = this.compactMode ? 26 : 37;  // Row label column width
+            const gridPadding = 30;  // Grid container padding
+            const cellGap = this.compactMode ? 1 : 2;  // Gap between cells
+            
+            // Relative positioning within grid-scroll-view (removed sidebar/header offsets)
+            const left = gridPadding + rowHeaderWidth + (range.startColumn - 1) * cellSize;
+            const top = gridPadding + headerRowHeight + range.startRow * cellSize;
+            const width = (range.endColumn - range.startColumn + 1) * cellSize - cellGap;
+            const height = (range.endRow - range.startRow + 1) * cellSize - cellGap;
             
             return `left: ${left}px; top: ${top}px; width: ${width}px; height: ${height}px;`;
         },
