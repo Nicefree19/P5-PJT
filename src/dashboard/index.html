@@ -11,7 +11,7 @@
                    script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://accounts.google.com https://cdn.sheetjs.com https://cdnjs.cloudflare.com;
                    style-src 'self' 'unsafe-inline';
                    img-src 'self' data: blob: https://*.googleusercontent.com;
-                   connect-src 'self' https://script.google.com https://*.googleusercontent.com https://oauth2.googleapis.com;
+                   connect-src 'self' https://script.google.com https://*.googleusercontent.com https://oauth2.googleapis.com https://generativelanguage.googleapis.com;
                    font-src 'self' https://fonts.gstatic.com;
                    frame-src https://accounts.google.com;">
     
@@ -63,6 +63,13 @@
     <!-- WP-1-A: Utility Modules (exposes window.PdfGenerator) -->
     <script src="./js/utils/pdf-generator.js"></script>
 
+    <!-- Issue Data Mapper Modules (Phase 16) -->
+    <script src="./js/utils/unified-parser.js"></script>
+    <script src="./js/utils/vision-ocr.js"></script>
+    <script src="./js/utils/issue-matcher.js"></script>
+    <script src="./js/stores/unified-store.js"></script>
+    <script src="./js/components/data-map-view.js"></script>
+
     <!-- Production Status Data (PSRC 제작현황) -->
     <script src="./data/production_status_import.js"></script>
     
@@ -74,6 +81,8 @@
     <link rel="stylesheet" href="./css/reports.css">
     <!-- WP-1-B: Component Styles -->
     <link rel="stylesheet" href="./css/components.css">
+    <!-- Issue Data Mapper Styles -->
+    <link rel="stylesheet" href="./css/data-map.css">
 
     <style>
         /* Moved to components.css (Phase 8 WP-1-B) */
@@ -364,6 +373,7 @@
         <div class="admin-tabs" role="tablist" aria-label="관리자 설정 탭">
             <button class="admin-tab" :class="adminTab === 'zones' && 'active'" @click="adminTab = 'zones'" role="tab" :aria-selected="adminTab === 'zones'" aria-controls="tab-zones">🗂️ Zone</button>
             <button class="admin-tab" :class="adminTab === 'issues' && 'active'" @click="adminTab = 'issues'" role="tab" :aria-selected="adminTab === 'issues'" aria-controls="tab-issues">🚨 이슈</button>
+            <button class="admin-tab" :class="adminTab === 'personalization' && 'active'" @click="adminTab = 'personalization'" role="tab" :aria-selected="adminTab === 'personalization'" aria-controls="tab-personalization">👤 개인화</button>
             <button class="admin-tab" :class="adminTab === 'project' && 'active'" @click="adminTab = 'project'" role="tab" :aria-selected="adminTab === 'project'" aria-controls="tab-project">📁 프로젝트</button>
             <button class="admin-tab" :class="adminTab === 'settings' && 'active'" @click="adminTab = 'settings'" role="tab" :aria-selected="adminTab === 'settings'" aria-controls="tab-settings">🔧 설정</button>
         </div>
@@ -418,6 +428,157 @@
                             </template>
                         </div>
                     </template>
+                </div>
+            </template>
+            
+            <!-- Personalization Tab -->
+            <template x-if="adminTab === 'personalization'">
+                <div>
+                    <h3 style="margin:0 0 16px 0; color:#fff;">👤 개인화 설정</h3>
+                    
+                    <!-- User Profile Section -->
+                    <div class="personalization-section">
+                        <h4 class="section-title">사용자 프로필</h4>
+                        <div class="form-group">
+                            <label>사용자 이름</label>
+                            <input type="text" x-model="userSettings.name" placeholder="홍길동">
+                        </div>
+                        <div class="form-group">
+                            <label>담당 구역</label>
+                            <select x-model="userSettings.defaultZone">
+                                <option value="">전체</option>
+                                <template x-for="zone in zones" :key="zone.id">
+                                    <option :value="zone.id" x-text="zone.name"></option>
+                                </template>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>역할</label>
+                            <select x-model="userSettings.role">
+                                <option value="viewer">조회자</option>
+                                <option value="editor">편집자</option>
+                                <option value="manager">관리자</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Dashboard Preferences -->
+                    <div class="personalization-section">
+                        <h4 class="section-title">대시보드 설정</h4>
+                        <div class="form-group">
+                            <label>기본 뷰 모드</label>
+                            <div class="radio-group">
+                                <label class="radio-option">
+                                    <input type="radio" x-model="userSettings.defaultView" value="overview">
+                                    <span>개요 보기</span>
+                                </label>
+                                <label class="radio-option">
+                                    <input type="radio" x-model="userSettings.defaultView" value="detailed">
+                                    <span>상세 보기</span>
+                                </label>
+                                <label class="radio-option">
+                                    <input type="radio" x-model="userSettings.defaultView" value="compact">
+                                    <span>컴팩트 보기</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>자동 새로고침</label>
+                            <div class="checkbox-group">
+                                <label class="checkbox-option">
+                                    <input type="checkbox" x-model="userSettings.autoRefresh">
+                                    <span>자동 새로고침 활성화</span>
+                                </label>
+                            </div>
+                            <select x-model="userSettings.refreshInterval" x-show="userSettings.autoRefresh">
+                                <option value="30">30초</option>
+                                <option value="60">1분</option>
+                                <option value="300">5분</option>
+                                <option value="600">10분</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>테마 설정</label>
+                            <select x-model="userSettings.theme">
+                                <option value="dark">다크 테마</option>
+                                <option value="light">라이트 테마</option>
+                                <option value="auto">시스템 설정 따름</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Notification Preferences -->
+                    <div class="personalization-section">
+                        <h4 class="section-title">알림 설정</h4>
+                        <div class="form-group">
+                            <label>알림 유형</label>
+                            <div class="checkbox-group">
+                                <label class="checkbox-option">
+                                    <input type="checkbox" x-model="userSettings.notifications.critical">
+                                    <span>🚨 Critical 이슈 즉시 알림</span>
+                                </label>
+                                <label class="checkbox-option">
+                                    <input type="checkbox" x-model="userSettings.notifications.high">
+                                    <span>⏰ High 이슈 알림</span>
+                                </label>
+                                <label class="checkbox-option">
+                                    <input type="checkbox" x-model="userSettings.notifications.myZone">
+                                    <span>🏗️ 내 담당 구역 이슈만</span>
+                                </label>
+                                <label class="checkbox-option">
+                                    <input type="checkbox" x-model="userSettings.notifications.dailySummary">
+                                    <span>📊 일일 요약 리포트 (오전 9시)</span>
+                                </label>
+                                <label class="checkbox-option">
+                                    <input type="checkbox" x-model="userSettings.notifications.weeklySummary">
+                                    <span>📈 주간 진행 리포트 (금요일)</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>알림 방식</label>
+                            <div class="checkbox-group">
+                                <label class="checkbox-option">
+                                    <input type="checkbox" x-model="userSettings.notifications.browser">
+                                    <span>브라우저 알림</span>
+                                </label>
+                                <label class="checkbox-option">
+                                    <input type="checkbox" x-model="userSettings.notifications.sound">
+                                    <span>소리 알림</span>
+                                </label>
+                                <label class="checkbox-option">
+                                    <input type="checkbox" x-model="userSettings.notifications.email">
+                                    <span>이메일 알림</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Filters -->
+                    <div class="personalization-section">
+                        <h4 class="section-title">즐겨찾는 필터</h4>
+                        <div class="favorite-filters">
+                            <template x-for="(filter, index) in userSettings.favoriteFilters" :key="index">
+                                <div class="favorite-filter-item">
+                                    <span class="filter-name" x-text="filter.name"></span>
+                                    <button class="btn-small" @click="applyFavoriteFilter(filter)">적용</button>
+                                    <button class="btn-small btn-danger" @click="removeFavoriteFilter(index)">삭제</button>
+                                </div>
+                            </template>
+                            <button class="btn btn-primary" @click="showAddFilterModal = true">+ 현재 필터 저장</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="personalization-actions">
+                        <button class="btn btn-primary" @click="savePersonalizationSettings()">💾 설정 저장</button>
+                        <button class="btn" @click="resetPersonalizationSettings()">🔄 기본값 복원</button>
+                        <button class="btn" @click="exportPersonalizationSettings()">📤 설정 내보내기</button>
+                        <label class="btn btn-success">
+                            📥 설정 가져오기
+                            <input type="file" style="display:none;" @change="importPersonalizationSettings($event)" accept=".json">
+                        </label>
+                    </div>
                 </div>
             </template>
             
@@ -1028,6 +1189,213 @@
 
     <!-- Canvas Area -->
     <div class="canvas-area" id="main-content" role="main" aria-label="이슈 그리드">
+        
+        <!-- Compact Top Dashboard -->
+        <div class="compact-dashboard" x-show="!isLoading">
+            <!-- Row 1: KPI Cards + Quick Filters -->
+            <div class="dashboard-row-1">
+                <!-- KPI Cards (Horizontal) -->
+                <div class="kpi-cards-horizontal">
+                    <div class="kpi-card-mini critical touchable" @click="filterBySeverity('critical')">
+                        <div class="kpi-mini-icon">🚨</div>
+                        <div class="kpi-mini-content">
+                            <div class="kpi-mini-number" x-text="getIssueCount('critical')">0</div>
+                            <div class="kpi-mini-label">긴급</div>
+                        </div>
+                    </div>
+                    
+                    <div class="kpi-card-mini high touchable" @click="filterBySeverity('high')">
+                        <div class="kpi-mini-icon">⏰</div>
+                        <div class="kpi-mini-content">
+                            <div class="kpi-mini-number" x-text="getIssueCount('high')">0</div>
+                            <div class="kpi-mini-label">중요</div>
+                        </div>
+                    </div>
+                    
+                    <div class="kpi-card-mini progress touchable" @click="showProgressDetail()">
+                        <div class="kpi-mini-icon">📊</div>
+                        <div class="kpi-mini-content">
+                            <div class="kpi-mini-number" x-text="Math.round(getCompletionRate()) + '%'">0%</div>
+                            <div class="kpi-mini-label">완료율</div>
+                        </div>
+                    </div>
+                    
+                    <div class="kpi-card-mini delayed touchable" @click="filterDelayedIssues()">
+                        <div class="kpi-mini-icon">⚠️</div>
+                        <div class="kpi-mini-content">
+                            <div class="kpi-mini-number" x-text="getDelayedCount()">0</div>
+                            <div class="kpi-mini-label">지연</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Filters (Horizontal) -->
+                <div class="quick-filters-horizontal">
+                    <button class="quick-filter-mini" 
+                            :class="{ 'active': quickFilter === 'today' }"
+                            @click="applyQuickFilter('today')">
+                        📅 오늘
+                    </button>
+                    <button class="quick-filter-mini" 
+                            :class="{ 'active': quickFilter === 'urgent' }"
+                            @click="applyQuickFilter('urgent')">
+                        🚨 긴급
+                    </button>
+                    <button class="quick-filter-mini" 
+                            :class="{ 'active': quickFilter === 'zone-a' }"
+                            @click="applyQuickFilter('zone-a')">
+                        🏗️ Zone A
+                    </button>
+                    <button class="quick-filter-mini clear" 
+                            x-show="quickFilter"
+                            @click="clearQuickFilter()">
+                        ✕ 해제
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Row 2: Zone Overview (Horizontal) -->
+            <div class="dashboard-row-2" x-show="zones.length > 0">
+                <div class="zones-horizontal">
+                    <template x-for="zone in zones" :key="zone.id">
+                        <div class="zone-card-mini touchable" 
+                             :style="'border-left: 3px solid ' + (zone.style?.primaryColor || zone.color || '#238636')"
+                             @click="selectZone(zone.id)">
+                            <div class="zone-mini-header">
+                                <span class="zone-mini-name" x-text="zone.name"></span>
+                                <span class="zone-mini-progress" x-text="getZoneProgress(zone.id) + '%'"></span>
+                            </div>
+                            <div class="zone-mini-bar">
+                                <div class="zone-mini-fill" 
+                                     :style="'width:' + getZoneProgress(zone.id) + '%; background:' + (zone.style?.primaryColor || zone.color || '#238636')"></div>
+                            </div>
+                            <div class="zone-mini-stats">
+                                <span>✅<span x-text="getZoneCompletedCount(zone.id)">0</span></span>
+                                <span>⏳<span x-text="getZoneInProgressCount(zone.id)">0</span></span>
+                                <span>🚨<span x-text="getZoneIssueCount(zone.id)">0</span></span>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+            
+            <!-- Priority Actions (Collapsible) -->
+            <div class="priority-actions-compact" x-show="getPriorityIssues().length > 0">
+                <div class="priority-header-compact" @click="priorityExpanded = !priorityExpanded">
+                    <span>🚨 우선 대응 필요 (<span x-text="getPriorityIssues().length"></span>건)</span>
+                    <span class="priority-toggle" :class="{ 'expanded': priorityExpanded }">▼</span>
+                </div>
+                
+                <div class="priority-list-compact" x-show="priorityExpanded" x-transition>
+                    <template x-for="(issue, index) in getPriorityIssues().slice(0, 3)" :key="issue.id">
+                        <div class="priority-item-compact touchable" 
+                             :class="'severity-' + (issue.severity?.toLowerCase() || 'medium')"
+                             @click="selectIssue(issue)">
+                            <span class="priority-badge-mini" x-text="issue.severity || 'Medium'">Critical</span>
+                            <span class="priority-title-compact" x-text="issue.title || '제목 없음'">이슈 제목</span>
+                            <span class="priority-location-compact" x-text="issue.location || '위치 미지정'">위치</span>
+                        </div>
+                    </template>
+                    <div class="priority-more-compact" x-show="getPriorityIssues().length > 3">
+                        <button class="btn-link-mini" @click="showAllPriorityIssues()">
+                            +<span x-text="getPriorityIssues().length - 3"></span>개 더 보기
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Progress Trend Chart -->
+        <div class="progress-trend-section" x-show="!isLoading">
+            <div class="trend-header">
+                <h3>📈 진행률 트렌드</h3>
+                <div class="trend-controls">
+                    <button class="trend-btn" 
+                            :class="{ 'active': trendPeriod === '7d' }"
+                            @click="trendPeriod = '7d'; updateTrendChart()">7일</button>
+                    <button class="trend-btn" 
+                            :class="{ 'active': trendPeriod === '30d' }"
+                            @click="trendPeriod = '30d'; updateTrendChart()">30일</button>
+                    <button class="trend-btn" 
+                            :class="{ 'active': trendPeriod === '90d' }"
+                            @click="trendPeriod = '90d'; updateTrendChart()">90일</button>
+                </div>
+            </div>
+            
+            <div class="trend-charts">
+                <!-- Overall Progress Chart -->
+                <div class="trend-chart-container">
+                    <div class="chart-title">전체 진행률</div>
+                    <div class="progress-chart" id="overall-progress-chart">
+                        <div class="chart-placeholder">
+                            <div class="chart-icon">📊</div>
+                            <div class="chart-text">차트 데이터 로딩 중...</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Zone Comparison Chart -->
+                <div class="trend-chart-container">
+                    <div class="chart-title">Zone별 비교</div>
+                    <div class="zone-comparison-chart">
+                        <template x-for="zone in zones" :key="zone.id">
+                            <div class="zone-progress-item">
+                                <div class="zone-progress-label">
+                                    <span class="zone-color-dot" :style="'background:' + (zone.style?.primaryColor || zone.color || '#238636')"></span>
+                                    <span x-text="zone.name"></span>
+                                </div>
+                                <div class="zone-progress-visual">
+                                    <div class="zone-progress-bar-bg">
+                                        <div class="zone-progress-bar-fill" 
+                                             :style="'width:' + getZoneProgress(zone.id) + '%; background:' + (zone.style?.primaryColor || zone.color || '#238636')"></div>
+                                    </div>
+                                    <span class="zone-progress-percent" x-text="getZoneProgress(zone.id) + '%'"></span>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+                
+                <!-- Issue Trend Chart -->
+                <div class="trend-chart-container">
+                    <div class="chart-title">이슈 발생 추이</div>
+                    <div class="issue-trend-chart">
+                        <div class="issue-trend-legend">
+                            <div class="legend-item critical">
+                                <span class="legend-color"></span>
+                                <span>Critical</span>
+                            </div>
+                            <div class="legend-item high">
+                                <span class="legend-color"></span>
+                                <span>High</span>
+                            </div>
+                            <div class="legend-item medium">
+                                <span class="legend-color"></span>
+                                <span>Medium</span>
+                            </div>
+                        </div>
+                        <div class="issue-trend-bars">
+                            <template x-for="(week, index) in getIssueTrendData()" :key="index">
+                                <div class="issue-week-bar">
+                                    <div class="issue-bar-stack">
+                                        <div class="issue-bar critical" 
+                                             :style="'height:' + (week.critical * 20) + 'px'"
+                                             :title="'Critical: ' + week.critical + '건'"></div>
+                                        <div class="issue-bar high" 
+                                             :style="'height:' + (week.high * 15) + 'px'"
+                                             :title="'High: ' + week.high + '건'"></div>
+                                        <div class="issue-bar medium" 
+                                             :style="'height:' + (week.medium * 10) + 'px'"
+                                             :title="'Medium: ' + week.medium + '건'"></div>
+                                    </div>
+                                    <div class="issue-week-label" x-text="week.label"></div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Phase 16: View Options Bar -->
         <div class="view-options-bar" style="display:flex; justify-content:space-between; align-items:center; padding:4px 8px; background:#161b22; border-bottom:1px solid #30363d;">
             <div>
@@ -2509,6 +2877,16 @@
                 <span class="fab-badge" x-show="shopIssueStats.unresolved > 0" x-text="shopIssueStats.unresolved"></span>
             </button>
         </div>
+        <div class="fab-action">
+            <span class="fab-action-label">Data Map</span>
+            <button class="fab-action-btn"
+                    :class="{ 'has-badge': $store.unifiedData?.issues?.length > 0 }"
+                    @click="fabOpen = false; showDataMapPanel = true"
+                    aria-label="이슈 데이터 맵 열기">
+                🗺️
+                <span class="fab-badge" x-show="$store.unifiedData?.issues?.length > 0" x-text="$store.unifiedData?.issues?.length"></span>
+            </button>
+        </div>
     </div>
 
     <!-- Main FAB Button -->
@@ -2906,6 +3284,329 @@
         <div class="shop-issue-panel-footer">
             <span class="shop-issue-count-info" x-text="'총 ' + getFilteredShopIssues().length + '건'"></span>
             <button class="btn btn-primary" @click="showShopIssuePanel = false">닫기</button>
+        </div>
+    </div>
+</div>
+
+<!-- Issue Data Mapper Panel (Phase 16) -->
+<div class="shop-issue-panel-overlay"
+     x-show="showDataMapPanel"
+     x-cloak
+     @click.self="showDataMapPanel = false"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="data-map-panel-title">
+
+    <div class="data-map-container" x-data="dataMapView()" style="width: 95vw; max-width: 1400px; height: 90vh; margin: 5vh auto;">
+        <!-- Header -->
+        <div class="data-map-header">
+            <div class="data-map-title">
+                <span class="data-map-title-icon">🗺️</span>
+                <span id="data-map-panel-title">Issue Data Mapper</span>
+            </div>
+
+            <div class="data-map-toolbar">
+                <!-- View Mode Toggle -->
+                <div class="view-mode-toggle">
+                    <button class="view-mode-btn" :class="{ 'active': viewMode === 'grid' }" @click="viewMode = 'grid'">그리드</button>
+                    <button class="view-mode-btn" :class="{ 'active': viewMode === 'cluster' }" @click="viewMode = 'cluster'">클러스터</button>
+                    <button class="view-mode-btn" :class="{ 'active': viewMode === 'list' }" @click="viewMode = 'list'">리스트</button>
+                </div>
+
+                <button class="data-map-btn" @click="recalculateClusters()" title="클러스터 재계산">
+                    <span class="data-map-btn-icon">🔄</span> 재분석
+                </button>
+                <button class="data-map-btn" @click="exportJSON()" title="JSON 내보내기">
+                    <span class="data-map-btn-icon">💾</span> 내보내기
+                </button>
+                <button class="data-map-btn" @click="syncToMainGrid()" title="메인 그리드와 동기화">
+                    <span class="data-map-btn-icon">🔗</span> 동기화
+                </button>
+                <button class="data-map-btn" @click="clearAllData()" title="데이터 초기화" style="color: #ef4444;">
+                    <span class="data-map-btn-icon">🗑️</span> 초기화
+                </button>
+                <button class="shop-issue-close-btn" @click="showDataMapPanel = false" aria-label="닫기">×</button>
+            </div>
+        </div>
+
+        <!-- Stats Bar -->
+        <div class="stats-bar">
+            <div class="stat-item">
+                <span class="stat-value" x-text="formatNumber(stats.total)">0</span>
+                <span class="stat-label">전체 이슈</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" x-text="formatNumber(stats.clusterCount)">0</span>
+                <span class="stat-label">클러스터</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" x-text="Object.keys(stats.byType || {}).length">0</span>
+                <span class="stat-label">유형</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" x-text="Object.keys(stats.byFloor || {}).length">0</span>
+                <span class="stat-label">층</span>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="data-map-filters">
+            <div class="filter-group">
+                <span class="filter-label">층</span>
+                <select class="filter-select" x-model="filters.floor">
+                    <option value="">전체</option>
+                    <template x-for="floor in floors" :key="floor">
+                        <option :value="floor" x-text="floor"></option>
+                    </template>
+                </select>
+            </div>
+            <div class="filter-group">
+                <span class="filter-label">구역</span>
+                <select class="filter-select" x-model="filters.zone">
+                    <option value="">전체</option>
+                    <template x-for="zone in zones" :key="zone">
+                        <option :value="zone" x-text="zone"></option>
+                    </template>
+                </select>
+            </div>
+            <div class="filter-group">
+                <span class="filter-label">유형</span>
+                <select class="filter-select" x-model="filters.type">
+                    <option value="">전체</option>
+                    <template x-for="type in issueTypes" :key="type">
+                        <option :value="type" x-text="type"></option>
+                    </template>
+                </select>
+            </div>
+            <div class="filter-group">
+                <span class="filter-label">심각도</span>
+                <select class="filter-select" x-model="filters.severity">
+                    <option value="">전체</option>
+                    <option value="Critical">Critical</option>
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                </select>
+            </div>
+            <input type="text" class="search-input" x-model="searchQuery" placeholder="검색...">
+            <button class="data-map-btn" x-show="activeFilterCount > 0" @click="clearFilters()">
+                필터 초기화 <span class="filter-badge" x-text="activeFilterCount"></span>
+            </button>
+        </div>
+
+        <!-- Content Area -->
+        <div class="data-map-content">
+            <!-- Error Message -->
+            <div class="error-message" x-show="error" x-text="error"></div>
+
+            <!-- Loading -->
+            <div class="loading-overlay" x-show="isLoading">
+                <div class="loading-spinner"></div>
+            </div>
+
+            <!-- Empty State / File Drop -->
+            <template x-if="filteredIssues.length === 0 && !isLoading">
+                <div class="file-drop-zone"
+                     :class="{ 'drag-active': dragActive }"
+                     @dragover.prevent="dragActive = true"
+                     @dragleave.prevent="dragActive = false"
+                     @drop.prevent="handleDrop($event)">
+                    <div class="file-drop-zone-icon">📁</div>
+                    <div class="file-drop-zone-text">파일을 드래그하거나 클릭하여 업로드</div>
+                    <div class="file-drop-zone-hint">지원 형식: Excel (.xlsx, .xls), CSV, 이미지 (PNG, JPG)</div>
+                    <input type="file" class="file-input-hidden" multiple
+                           accept=".xlsx,.xls,.csv,.png,.jpg,.jpeg,.gif,.webp"
+                           @change="handleFileInput($event)"
+                           x-ref="fileInput">
+                    <button class="data-map-btn" style="margin-top: 16px" @click="$refs.fileInput.click()">
+                        파일 선택
+                    </button>
+                </div>
+            </template>
+
+            <!-- Grid View -->
+            <template x-if="viewMode === 'grid' && filteredIssues.length > 0">
+                <div>
+                    <!-- Mini file upload -->
+                    <div style="margin-bottom: 16px; display: flex; gap: 12px; align-items: center;">
+                        <button class="data-map-btn" @click="$refs.fileInputMini.click()">
+                            <span class="data-map-btn-icon">📂</span> 파일 추가
+                        </button>
+                        <input type="file" class="file-input-hidden" multiple
+                               accept=".xlsx,.xls,.csv,.png,.jpg,.jpeg"
+                               @change="handleFileInput($event)"
+                               x-ref="fileInputMini">
+                        <span style="font-size: 12px; color: var(--text-tertiary);" x-text="filteredIssues.length + '개 이슈 표시 중'"></span>
+                    </div>
+
+                    <div class="data-map-grid">
+                        <div class="grid-header">
+                            <template x-for="col in 69" :key="col">
+                                <div class="grid-header-cell" x-text="col" x-show="col % 5 === 0 || col === 1"></div>
+                            </template>
+                        </div>
+                        <template x-for="row in gridConfig.rows" :key="row">
+                            <div class="grid-row">
+                                <div class="grid-row-label" x-text="row"></div>
+                                <template x-for="col in gridConfig.columns" :key="col">
+                                    <div class="grid-cell"
+                                         :class="getCellClass(row, col)"
+                                         :title="getIssuesForCell(row, col).length > 0 ? row + '-X' + col + ': ' + getIssuesForCell(row, col).length + '건' : ''"
+                                         @click="handleCellClick(row, col)">
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Cluster View -->
+            <template x-if="viewMode === 'cluster' && filteredIssues.length > 0">
+                <div class="cluster-view">
+                    <template x-for="(cluster, idx) in filteredClusters" :key="cluster.id">
+                        <div class="cluster-card"
+                             :class="{ 'selected': selectedCluster?.id === cluster.id }"
+                             @click="selectCluster(cluster)">
+                            <div class="cluster-header">
+                                <span class="cluster-id" x-text="cluster.id"></span>
+                                <span class="cluster-count" x-text="cluster.issues.length"></span>
+                            </div>
+                            <div class="cluster-location" x-text="(cluster.centerLocation?.floor || '-') + ' ' + (cluster.centerLocation?.zone || '')"></div>
+                            <div class="cluster-type" x-text="cluster.primaryType || 'Mixed'"></div>
+                            <div class="cluster-columns" x-text="(cluster.centerLocation?.columns || []).slice(0, 5).join(', ') + (cluster.centerLocation?.columns?.length > 5 ? '...' : '')"></div>
+                            <div class="cluster-score">
+                                <span>매칭 점수: </span><span x-text="(cluster.matchScore * 100).toFixed(0) + '%'"></span>
+                                <div class="cluster-score-bar">
+                                    <div class="cluster-score-fill" :style="'width: ' + (cluster.matchScore * 100) + '%'"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </template>
+
+            <!-- List View -->
+            <template x-if="viewMode === 'list' && filteredIssues.length > 0">
+                <div class="list-view">
+                    <div class="list-header">
+                        <span>ID</span>
+                        <span>설명</span>
+                        <span>유형</span>
+                        <span>심각도</span>
+                        <span>상태</span>
+                        <span>위치</span>
+                    </div>
+                    <template x-for="issue in filteredIssues.slice(0, 100)" :key="issue.id">
+                        <div class="list-item"
+                             :class="{ 'selected': selectedIssue?.id === issue.id, 'highlighted': isHighlighted(issue.id) }"
+                             @click="selectIssue(issue)">
+                            <span class="list-item-id" x-text="issue.id"></span>
+                            <span class="list-item-description" x-text="issue.description?.substring(0, 80) || '-'"></span>
+                            <span class="list-item-type" x-text="issue.issueType || '-'"></span>
+                            <span class="list-item-severity" :class="issue.severity?.toLowerCase()" x-text="issue.severity || '-'"></span>
+                            <span class="list-item-status" x-text="getStatusIcon(issue.status) + ' ' + (issue.status || '-')"></span>
+                            <span class="list-item-location" x-text="(issue.location?.floor || '') + ' ' + (issue.location?.zone || '')"></span>
+                        </div>
+                    </template>
+                    <div x-show="filteredIssues.length > 100" style="padding: 16px; text-align: center; color: var(--text-tertiary); font-size: 12px;">
+                        ... 외 <span x-text="filteredIssues.length - 100"></span>개
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <!-- Detail Panel (Side) -->
+        <div class="detail-panel" :class="{ 'open': selectedIssue || selectedCluster }">
+            <div class="detail-header">
+                <span class="detail-title" x-text="selectedIssue ? '이슈 상세' : (selectedCluster ? '클러스터 상세' : '')"></span>
+                <button class="detail-close" @click="clearSelection()">×</button>
+            </div>
+            <div class="detail-content" x-show="selectedIssue">
+                <div class="detail-section">
+                    <div class="detail-section-title">기본 정보</div>
+                    <div class="detail-field">
+                        <div class="detail-field-label">ID</div>
+                        <div class="detail-field-value" x-text="selectedIssue?.id"></div>
+                    </div>
+                    <div class="detail-field">
+                        <div class="detail-field-label">유형</div>
+                        <div class="detail-field-value" x-text="selectedIssue?.issueType || '-'"></div>
+                    </div>
+                    <div class="detail-field">
+                        <div class="detail-field-label">심각도</div>
+                        <div class="detail-field-value" :style="'color: ' + getSeverityColor(selectedIssue?.severity)" x-text="selectedIssue?.severity || '-'"></div>
+                    </div>
+                    <div class="detail-field">
+                        <div class="detail-field-label">상태</div>
+                        <div class="detail-field-value" x-text="selectedIssue?.status || '-'"></div>
+                    </div>
+                </div>
+                <div class="detail-section">
+                    <div class="detail-section-title">설명</div>
+                    <div class="detail-field-value" style="font-size: 12px; line-height: 1.5;" x-text="selectedIssue?.description || '-'"></div>
+                </div>
+                <div class="detail-section">
+                    <div class="detail-section-title">위치</div>
+                    <div class="detail-field">
+                        <div class="detail-field-label">층 / 구역</div>
+                        <div class="detail-field-value" x-text="(selectedIssue?.location?.floor || '-') + ' / ' + (selectedIssue?.location?.zone || '-')"></div>
+                    </div>
+                    <div class="detail-field">
+                        <div class="detail-field-label">기둥</div>
+                        <div class="detail-columns">
+                            <template x-for="col in (selectedIssue?.location?.columns || []).slice(0, 10)" :key="col">
+                                <span class="detail-column-tag" x-text="col"></span>
+                            </template>
+                            <span x-show="(selectedIssue?.location?.columns || []).length > 10" class="detail-column-tag">+<span x-text="(selectedIssue?.location?.columns || []).length - 10"></span></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="detail-section">
+                    <div class="detail-section-title">소스</div>
+                    <div class="detail-field">
+                        <div class="detail-field-label">파일</div>
+                        <div class="detail-field-value" style="font-size: 11px; word-break: break-all;" x-text="selectedIssue?.sourceFile || '-'"></div>
+                    </div>
+                    <div class="detail-field">
+                        <div class="detail-field-label">날짜</div>
+                        <div class="detail-field-value" x-text="formatDate(selectedIssue?.date)"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="detail-content" x-show="selectedCluster && !selectedIssue">
+                <div class="detail-section">
+                    <div class="detail-section-title">클러스터 정보</div>
+                    <div class="detail-field">
+                        <div class="detail-field-label">ID</div>
+                        <div class="detail-field-value" x-text="selectedCluster?.id"></div>
+                    </div>
+                    <div class="detail-field">
+                        <div class="detail-field-label">이슈 수</div>
+                        <div class="detail-field-value" x-text="selectedCluster?.issues?.length + '건'"></div>
+                    </div>
+                    <div class="detail-field">
+                        <div class="detail-field-label">주요 유형</div>
+                        <div class="detail-field-value" x-text="selectedCluster?.primaryType || '-'"></div>
+                    </div>
+                    <div class="detail-field">
+                        <div class="detail-field-label">매칭 점수</div>
+                        <div class="detail-field-value" x-text="((selectedCluster?.matchScore || 0) * 100).toFixed(0) + '%'"></div>
+                    </div>
+                </div>
+                <div class="detail-section">
+                    <div class="detail-section-title">포함 이슈</div>
+                    <template x-for="issue in (selectedCluster?.issues || []).slice(0, 5)" :key="issue.id">
+                        <div style="padding: 8px; background: var(--bg-tertiary); border-radius: 4px; margin-bottom: 6px; cursor: pointer;" @click="selectIssue(issue)">
+                            <div style="font-size: 11px; color: var(--text-secondary);" x-text="issue.id"></div>
+                            <div style="font-size: 12px; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" x-text="issue.description?.substring(0, 50) || '-'"></div>
+                        </div>
+                    </template>
+                    <div x-show="(selectedCluster?.issues || []).length > 5" style="font-size: 11px; color: var(--text-tertiary); text-align: center;">
+                        ... 외 <span x-text="(selectedCluster?.issues || []).length - 5"></span>건
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -3415,6 +4116,9 @@ function dashboard() {
 
         // Shop Issue Module State
         shopIssues: [],
+        
+        // Compact Dashboard State
+        priorityExpanded: false,  // 우선 액션 리스트 확장 상태
         shopIssueStats: {
             total: 0,
             resolved: 0,
@@ -3423,6 +4127,7 @@ function dashboard() {
             byLocation: {}
         },
         showShopIssuePanel: false,
+        showDataMapPanel: false,
         shopIssueFilter: 'all',   // all|resolved|unresolved
         shopIssueSortBy: 'type',  // type|location|date
 

@@ -1,0 +1,6 @@
+일자,층,Zone,Column,유형,제목,내용,심각도,상태,담당자
+"2025-01-15","3F","A","A-X15~20","PSRC","PSRC 부재 형상 간섭","X15~X20 라인 PSRC 부재와 HMB 간섭 발생. Shop Drawing 확인 필요.","High","Open","구조팀"
+"2025-01-14","4F","B","B-X30,B-X31,B-X32","HMB","HMB Embed 위치 오류","Embed plate 위치가 도면과 50mm 차이 발생. 현장 조정 완료.","Medium","Completed","현장팀"
+"2025-01-13","5F","C","C-X55~60","Design Change","Mega Truss 설계 변경","Complex Building Mega Truss 하중 변경으로 컬럼 사이즈 H-400에서 H-500으로 변경.","Critical","In Progress","설계팀"
+"2025-01-12","3F","A","A-X5~10","PSRC","PSRC 제작 완료","X5~X10 라인 PSRC 제작 완료. 운송 대기 중.","Low","Completed","공장팀"
+"2025-01-11","6F","B","B-X40~45","T/C Interference","T/C #3 간섭","타워크레인 #3 작업반경 내 작업 불가. X40 라인 우선 시공 후 복귀 예정.","High","On Hold","안전팀"
