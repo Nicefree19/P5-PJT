@@ -110,19 +110,28 @@
             },
 
             get issueTypes() {
-                return Object.keys(this.stats.byType || {}).sort();
+                const byType = this.stats?.byType;
+                if (!byType || typeof byType !== 'object') return [];
+                return Object.keys(byType).filter(k => typeof k === 'string' && k !== '').sort();
             },
 
             get floors() {
-                return Object.keys(this.stats.byFloor || {}).sort();
+                const byFloor = this.stats?.byFloor;
+                if (!byFloor || typeof byFloor !== 'object') return [];
+                return Object.keys(byFloor).filter(k => typeof k === 'string' && k !== '' && k !== 'Unknown').sort();
             },
 
             get zones() {
-                return ['A', 'B', 'C'];
+                const byZone = this.stats?.byZone;
+                if (!byZone || typeof byZone !== 'object') return ['A', 'B', 'C'];
+                const zoneKeys = Object.keys(byZone).filter(k => typeof k === 'string' && k !== '' && k !== 'Unknown');
+                return zoneKeys.length > 0 ? zoneKeys.sort() : ['A', 'B', 'C'];
             },
 
             get sources() {
-                return Object.keys(this.stats.bySource || {}).sort();
+                const bySource = this.stats?.bySource;
+                if (!bySource || typeof bySource !== 'object') return [];
+                return Object.keys(bySource).filter(k => typeof k === 'string' && k !== '').sort();
             },
 
             // === 초기화 ===

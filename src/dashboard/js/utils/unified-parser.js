@@ -156,6 +156,8 @@ window.UnifiedParser = (function() {
             'Steel': /철골|[Ss]teel|강재/i,
             'Safety': /안전|[Ss]afety/i,
             'QC': /품질|QC|[Qq]uality/i,
+            'Design Change': /설계\s*변경|Design\s*Change|Rev\./i,
+            'T/C Interference': /T\/C|타워크레인|Tower\s*Crane|간섭/i,
             'Design': /설계|[Dd]esign|도면/i
         };
 
@@ -176,15 +178,22 @@ window.UnifiedParser = (function() {
     function extractSeverity(text) {
         if (!text) return 'Medium';
 
-        const lower = text.toLowerCase();
+        const lower = text.toString().toLowerCase().trim();
 
-        if (/긴급|critical|심각|위험|즉시|emergency/i.test(lower)) {
+        // 정확한 매칭 우선
+        if (lower === 'critical') return 'Critical';
+        if (lower === 'high') return 'High';
+        if (lower === 'medium') return 'Medium';
+        if (lower === 'low') return 'Low';
+
+        // 패턴 매칭
+        if (/긴급|심각|위험|즉시|emergency/i.test(lower)) {
             return 'Critical';
         }
-        if (/중요|high|높음|우선/i.test(lower)) {
+        if (/중요|높음|우선/i.test(lower)) {
             return 'High';
         }
-        if (/경미|low|낮음|미미/i.test(lower)) {
+        if (/경미|낮음|미미/i.test(lower)) {
             return 'Low';
         }
 
@@ -199,8 +208,16 @@ window.UnifiedParser = (function() {
     function extractStatus(text) {
         if (!text) return '';
 
-        const lower = text.toLowerCase().trim();
+        const lower = text.toString().toLowerCase().trim();
 
+        // 정확한 매칭 우선
+        if (lower === 'open') return 'Open';
+        if (lower === 'completed') return 'Completed';
+        if (lower === 'in progress') return 'In Progress';
+        if (lower === 'on hold') return 'On Hold';
+        if (lower === 'delayed') return 'Delayed';
+
+        // 패턴 매칭
         // 완료 상태
         if (/^o$|완료|done|complete|closed|해결/i.test(lower)) {
             return 'Completed';
@@ -218,7 +235,7 @@ window.UnifiedParser = (function() {
             return 'Delayed';
         }
         // 미해결
-        if (/^x$|미해결|open|unresolved/i.test(lower)) {
+        if (/^x$|미해결|unresolved/i.test(lower)) {
             return 'Open';
         }
 
@@ -358,7 +375,10 @@ window.UnifiedParser = (function() {
                 id: headers.findIndex(h => h.includes('no') || h.includes('id') || h === '#'),
                 type: headers.findIndex(h => h.includes('type') || h.includes('유형') || h.includes('분류')),
                 title: headers.findIndex(h => h.includes('title') || h.includes('제목') || h.includes('내용') || h.includes('description')),
-                location: headers.findIndex(h => h.includes('location') || h.includes('위치') || h.includes('zone') || h.includes('구역')),
+                location: headers.findIndex(h => h.includes('location') || h.includes('위치')),
+                column: headers.findIndex(h => h === 'column' || h.includes('컬럼') || h.includes('열')),
+                floor: headers.findIndex(h => h === '층' || h === 'floor' || h.includes('층수')),
+                zone: headers.findIndex(h => h === 'zone' || h === '구역' || h.includes('존')),
                 status: headers.findIndex(h => h.includes('status') || h.includes('상태') || h.includes('반영')),
                 date: headers.findIndex(h => h.includes('date') || h.includes('일자') || h.includes('날짜')),
                 severity: headers.findIndex(h => h.includes('severity') || h.includes('심각') || h.includes('우선'))
@@ -378,12 +398,24 @@ window.UnifiedParser = (function() {
                 const values = parseCSVLine(lines[i]);
                 if (values.length < 2 || !values.some(v => v)) continue;
 
+                // 층/구역/컬럼 명시적 추출
+                const explicitFloor = idxMap.floor >= 0 ? (values[idxMap.floor] || '').trim() : '';
+                const explicitZone = idxMap.zone >= 0 ? (values[idxMap.zone] || '').trim() : '';
+                const columnField = idxMap.column >= 0 ? (values[idxMap.column] || '').trim() : '';
+                const locationField = idxMap.location >= 0 ? (values[idxMap.location] || '').trim() : '';
+
+                // Column 필드에서 위치 정보 추출
+                const columnLocation = extractLocation(columnField || locationField);
+
                 const issue = createUnifiedIssue({
                     id: idxMap.id >= 0 ? values[idxMap.id] : `CSV-${i}`,
                     issueType: idxMap.type >= 0 ? values[idxMap.type] : '',
                     title: idxMap.title >= 0 ? values[idxMap.title] : values[1] || '',
                     description: idxMap.title >= 0 ? values[idxMap.title] : '',
-                    location: idxMap.location >= 0 ? values[idxMap.location] : '',
+                    location: columnField || locationField,
+                    floor: explicitFloor || columnLocation.floor,
+                    zone: explicitZone || columnLocation.zone,
+                    columns: columnLocation.columns,
                     status: idxMap.status >= 0 ? values[idxMap.status] : '',
                     date: idxMap.date >= 0 ? values[idxMap.date] : '',
                     severity: idxMap.severity >= 0 ? values[idxMap.severity] : ''
@@ -441,7 +473,10 @@ window.UnifiedParser = (function() {
             id: h.findIndex(x => x.includes('번호') || x.includes('no') || x.includes('id')),
             type: h.findIndex(x => x.includes('분류') || x.includes('유형') || x.includes('구분') || x.includes('type')),
             title: h.findIndex(x => x.includes('내용') || x.includes('제목') || x.includes('이슈') || x.includes('description')),
-            location: h.findIndex(x => x.includes('위치') || x.includes('절주') || x.includes('zone') || x.includes('location')),
+            location: h.findIndex(x => x.includes('위치') || x.includes('절주') || x.includes('location')),
+            column: h.findIndex(x => x === 'column' || x.includes('컬럼') || x.includes('열')),
+            floor: h.findIndex(x => x === '층' || x === 'floor' || x.includes('층수')),
+            zone: h.findIndex(x => x === 'zone' || x === '구역' || x.includes('존')),
             status: h.findIndex(x => x.includes('반영') || x.includes('상태') || x.includes('완료') || x.includes('status')),
             date: h.findIndex(x => x.includes('일자') || x.includes('날짜') || x.includes('발송') || x.includes('date')),
             assignee: h.findIndex(x => x.includes('담당') || x.includes('처리') || x.includes('발송처')),
@@ -512,12 +547,24 @@ window.UnifiedParser = (function() {
                     const title = (row[titleIdx] || '').toString().trim();
                     if (!title || title.length < 3) continue;
 
+                    // 층/구역/컬럼 명시적 추출
+                    const explicitFloor = idxMap.floor >= 0 ? (row[idxMap.floor] || '').toString().trim() : '';
+                    const explicitZone = idxMap.zone >= 0 ? (row[idxMap.zone] || '').toString().trim() : '';
+                    const columnField = idxMap.column >= 0 ? (row[idxMap.column] || '').toString().trim() : '';
+                    const locationField = idxMap.location >= 0 ? (row[idxMap.location] || '').toString().trim() : '';
+
+                    // Column 필드에서 위치 정보 추출
+                    const columnLocation = extractLocation(columnField || locationField);
+
                     const issue = createUnifiedIssue({
                         id: idxMap.id >= 0 && row[idxMap.id] ? `${sheetName}-${row[idxMap.id]}` : `XL-${issueCounter}`,
                         issueType: idxMap.type >= 0 ? (row[idxMap.type] || '').toString().trim() : '',
                         title: title.substring(0, 200),
                         description: title,
-                        location: idxMap.location >= 0 ? (row[idxMap.location] || '').toString().trim() : '',
+                        location: columnField || locationField,
+                        floor: explicitFloor || columnLocation.floor,
+                        zone: explicitZone || columnLocation.zone,
+                        columns: columnLocation.columns,
                         status: idxMap.status >= 0 ? (row[idxMap.status] || '').toString().trim() : '',
                         date: idxMap.date >= 0 ? (row[idxMap.date] || '').toString().trim() : '',
                         assignee: idxMap.assignee >= 0 ? (row[idxMap.assignee] || '').toString().trim() : '',
