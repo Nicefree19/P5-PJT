@@ -86,12 +86,27 @@ function main() {
     stats.failedWrites = writeResult.failed.length;
     Logger.log(`쓰기 성공: ${writeResult.success}건, 실패: ${writeResult.failed.length}건`);
 
+    // 5.5. Dashboard 동기화 (선택적)
+    if (CONFIG.DASHBOARD_SYNC_ENABLED && writeResult.success > 0) {
+      Logger.log('\n[Step 5.5] Dashboard 동기화 중...');
+      try {
+        const syncResult = syncAnalysisToDashboard_(analysisResults);
+        stats.dashboardCreated = syncResult.created || 0;
+        stats.dashboardSkipped = syncResult.skipped || 0;
+        Logger.log(`Dashboard 이슈 생성: ${syncResult.created}건, 스킵: ${syncResult.skipped}건`);
+      } catch (syncError) {
+        Logger.log(`⚠️ Dashboard 동기화 실패 (메인 처리는 성공): ${syncError.message}`);
+        stats.dashboardError = syncError.message;
+      }
+    }
+
     // 6. 실행 완료
     stats.executionTimeMs = Date.now() - startTime;
     logExecution_(stats);
 
     Logger.log(`\n=== 완료 (${stats.executionTimeMs}ms) ===`);
-    Logger.log(`요약: 검색 ${stats.totalSearched} → 신규 ${stats.newEmails} → 저장 ${stats.successfulWrites}`);
+    Logger.log(`요약: 검색 ${stats.totalSearched} → 신규 ${stats.newEmails} → 저장 ${stats.successfulWrites}` +
+               (stats.dashboardCreated ? ` → Dashboard ${stats.dashboardCreated}` : ''));
 
   } catch (e) {
     Logger.log(`\n❌ 실행 오류: ${e.message}`);

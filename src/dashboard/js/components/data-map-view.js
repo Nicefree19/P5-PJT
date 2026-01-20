@@ -51,14 +51,27 @@
                 cellHeight: 28
             },
 
-            // === 계산된 속성 ===
+            // === 스토어 접근 메서드 ===
 
-            get store() {
-                return Alpine.store('unifiedData') || { issues: [], clusters: [], stats: {} };
+            /**
+             * 통합 스토어 가져오기
+             * Alpine.js는 get 문법을 지원하지 않으므로 메서드로 구현
+             */
+            getStore() {
+                // Alpine의 $store 매직 프로퍼티 사용 (반응형)
+                if (this.$store && this.$store.unifiedData) {
+                    return this.$store.unifiedData;
+                }
+                // 폴백: 직접 Alpine.store 호출
+                if (typeof Alpine !== 'undefined') {
+                    return Alpine.store('unifiedData') || { issues: [], clusters: [], stats: {} };
+                }
+                // 기본값
+                return { issues: [], clusters: [], stats: {} };
             },
 
             get filteredIssues() {
-                let issues = this.store.issues || [];
+                let issues = this.getStore().issues || [];
 
                 if (this.searchQuery) {
                     const query = this.searchQuery.toLowerCase();
@@ -92,7 +105,7 @@
             },
 
             get filteredClusters() {
-                const clusters = this.store.clusters || [];
+                const clusters = this.getStore().clusters || [];
                 if (!this.filters.floor && !this.filters.zone && !this.filters.type) {
                     return clusters;
                 }
@@ -106,7 +119,7 @@
             },
 
             get stats() {
-                return this.store.stats || {};
+                return this.getStore().stats || {};
             },
 
             get issueTypes() {
@@ -139,9 +152,18 @@
             init() {
                 console.log('[DataMapView] Initializing...');
 
+                // 스토어 참조 캐시 (반응성 보장)
+                if (this.$store && this.$store.unifiedData) {
+                    this._storeRef = this.$store.unifiedData;
+                    console.log('[DataMapView] Store reference cached via $store');
+                } else if (typeof Alpine !== 'undefined') {
+                    this._storeRef = Alpine.store('unifiedData');
+                    console.log('[DataMapView] Store reference cached via Alpine.store()');
+                }
+
                 // 스토어 초기화 확인
-                if (this.store.init && typeof this.store.init === 'function') {
-                    this.store.init();
+                if (this.getStore().init && typeof this.getStore().init === 'function') {
+                    this.getStore().init();
                 }
 
                 // 키보드 단축키
@@ -151,7 +173,7 @@
                     }
                 });
 
-                console.log('[DataMapView] Initialized');
+                console.log('[DataMapView] Initialized, store issues:', this.getStore().issues?.length || 0);
             },
 
             // === 파일 처리 ===
@@ -196,7 +218,7 @@
                     const result = await window.UnifiedParser.parseMultiple(files);
 
                     if (result.success || result.successCount > 0) {
-                        this.store.addIssues(result.issues, 'file_import');
+                        this.getStore().addIssues(result.issues, 'file_import');
                         this.showToast(`${result.successCount}개 파일에서 ${result.issues.length}건 이슈 가져옴`, 'success');
 
                         if (result.errors.length > 0) {
@@ -221,7 +243,7 @@
              */
             selectIssue(issue) {
                 this.selectedIssue = issue;
-                this.selectedCluster = this.store.getClusterByIssue?.(issue.id) || null;
+                this.selectedCluster = this.getStore().getClusterByIssue?.(issue.id) || null;
 
                 // 관련 이슈 하이라이트
                 this.highlightRelatedIssues(issue.id);
@@ -251,11 +273,11 @@
              * 관련 이슈 하이라이트
              */
             async highlightRelatedIssues(issueId) {
-                if (!this.store.findRelated) {
+                if (!this.getStore().findRelated) {
                     return;
                 }
 
-                const related = await this.store.findRelated(issueId);
+                const related = await this.getStore().findRelated(issueId);
                 this.highlightedIssueIds = [issueId, ...related.map(r => r.issueId)];
             },
 
@@ -377,10 +399,10 @@
              * 클러스터 재계산
              */
             recalculateClusters() {
-                if (this.store.updateClusters) {
+                if (this.getStore().updateClusters) {
                     this.isLoading = true;
                     setTimeout(() => {
-                        this.store.updateClusters();
+                        this.getStore().updateClusters();
                         this.isLoading = false;
                         this.showToast('클러스터 재계산 완료', 'success');
                     }, 100);
@@ -391,8 +413,8 @@
              * 데이터 내보내기 (JSON)
              */
             exportJSON() {
-                if (this.store.toJSON) {
-                    const json = this.store.toJSON();
+                if (this.getStore().toJSON) {
+                    const json = this.getStore().toJSON();
                     const blob = new Blob([json], { type: 'application/json' });
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
@@ -409,8 +431,8 @@
              */
             clearAllData() {
                 if (confirm('모든 데이터를 삭제하시겠습니까?')) {
-                    if (this.store.clearAll) {
-                        this.store.clearAll();
+                    if (this.getStore().clearAll) {
+                        this.getStore().clearAll();
                         this.clearSelection();
                         this.showToast('데이터 초기화 완료', 'info');
                     }
@@ -421,8 +443,8 @@
              * 메인 그리드와 동기화
              */
             syncToMainGrid() {
-                if (this.store.syncToMainIssues) {
-                    this.store.syncToMainIssues();
+                if (this.getStore().syncToMainIssues) {
+                    this.getStore().syncToMainIssues();
                     this.showToast('메인 그리드와 동기화 완료', 'success');
                 }
             },

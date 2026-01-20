@@ -92,7 +92,9 @@
       "Bash(dir /O-D \"C:\\\\Users\\\\user\\\\.gemini\\\\antigravity\\\\brain\\\\0dc45563-4676-42a2-a047-af720ef0d516\")",
       "Bash(npm run build:production:*)",
       "Bash(npm run)",
-      "Bash(gh run view:*)"
+      "Bash(gh run view:*)",
+      "mcp__windows-controller__Click-Tool",
+      "mcp__windows-controller__Wait-Tool"
     ],
     "deny": [],
     "ask": []

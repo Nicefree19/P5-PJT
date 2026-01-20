@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P5 Compact Dashboard Test</title>
+    
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="./css/main.css">
+    <link rel="stylesheet" href="./css/components.css">
+</head>
+<body x-data="testDashboard()" style="background: #0d1117; color: #c9d1d9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+
+<div style="padding: 20px;">
+    <h1>P5 Compact Dashboard Test</h1>
+    
+    <!-- Compact Top Dashboard -->
+    <div class="compact-dashboard">
+        <!-- Row 1: KPI Cards + Quick Filters -->
+        <div class="dashboard-row-1">
+            <!-- KPI Cards (Horizontal) -->
+            <div class="kpi-cards-horizontal">
+                <div class="kpi-card-mini critical touchable">
+                    <div class="kpi-mini-icon">🚨</div>
+                    <div class="kpi-mini-content">
+                        <div class="kpi-mini-number">2</div>
+                        <div class="kpi-mini-label">긴급</div>
+                    </div>
+                </div>
+                
+                <div class="kpi-card-mini high touchable">
+                    <div class="kpi-mini-icon">⏰</div>
+                    <div class="kpi-mini-content">
+                        <div class="kpi-mini-number">5</div>
+                        <div class="kpi-mini-label">중요</div>
+                    </div>
+                </div>
+                
+                <div class="kpi-card-mini progress touchable">
+                    <div class="kpi-mini-icon">📊</div>
+                    <div class="kpi-mini-content">
+                        <div class="kpi-mini-number">80%</div>
+                        <div class="kpi-mini-label">완료율</div>
+                    </div>
+                </div>
+                
+                <div class="kpi-card-mini delayed touchable">
+                    <div class="kpi-mini-icon">⚠️</div>
+                    <div class="kpi-mini-content">
+                        <div class="kpi-mini-number">3</div>
+                        <div class="kpi-mini-label">지연</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Filters (Horizontal) -->
+            <div class="quick-filters-horizontal">
+                <button class="quick-filter-mini">📅 오늘</button>
+                <button class="quick-filter-mini active">🚨 긴급</button>
+                <button class="quick-filter-mini">🏗️ Zone A</button>
+                <button class="quick-filter-mini clear">✕ 해제</button>
+            </div>
+        </div>
+        
+        <!-- Row 2: Zone Overview (Horizontal) -->
+        <div class="dashboard-row-2">
+            <div class="zones-horizontal">
+                <div class="zone-card-mini touchable" style="border-left: 3px solid #238636">
+                    <div class="zone-mini-header">
+                        <span class="zone-mini-name">ZONE A</span>
+                        <span class="zone-mini-progress">85%</span>
+                    </div>
+                    <div class="zone-mini-bar">
+                        <div class="zone-mini-fill" style="width: 85%; background: #238636"></div>
+                    </div>
+                    <div class="zone-mini-stats">
+                        <span>✅<span>120</span></span>
+                        <span>⏳<span>15</span></span>
+                        <span>🚨<span>2</span></span>
+                    </div>
+                </div>
+                
+                <div class="zone-card-mini touchable" style="border-left: 3px solid #1f6feb">
+                    <div class="zone-mini-header">
+                        <span class="zone-mini-name">ZONE B</span>
+                        <span class="zone-mini-progress">72%</span>
+                    </div>
+                    <div class="zone-mini-bar">
+                        <div class="zone-mini-fill" style="width: 72%; background: #1f6feb"></div>
+                    </div>
+                    <div class="zone-mini-stats">
+                        <span>✅<span>95</span></span>
+                        <span>⏳<span>25</span></span>
+                        <span>🚨<span>3</span></span>
+                    </div>
+                </div>
+                
+                <div class="zone-card-mini touchable" style="border-left: 3px solid #fd7e14">
+                    <div class="zone-mini-header">
+                        <span class="zone-mini-name">ZONE C</span>
+                        <span class="zone-mini-progress">91%</span>
+                    </div>
+                    <div class="zone-mini-bar">
+                        <div class="zone-mini-fill" style="width: 91%; background: #fd7e14"></div>
+                    </div>
+                    <div class="zone-mini-stats">
+                        <span>✅<span>140</span></span>
+                        <span>⏳<span>8</span></span>
+                        <span>🚨<span>1</span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Priority Actions (Collapsible) -->
+        <div class="priority-actions-compact">
+            <div class="priority-header-compact" @click="priorityExpanded = !priorityExpanded">
+                <span>🚨 우선 대응 필요 (3건)</span>
+                <span class="priority-toggle" :class="{ 'expanded': priorityExpanded }">▼</span>
+            </div>
+            
+            <div class="priority-list-compact" x-show="priorityExpanded" x-transition>
+                <div class="priority-item-compact touchable severity-critical">
+                    <span class="priority-badge-mini">Critical</span>
+                    <span class="priority-title-compact">PSRC 접합부 간섭 발견</span>
+                    <span class="priority-location-compact">A-X23</span>
+                </div>
+                <div class="priority-item-compact touchable severity-high">
+                    <span class="priority-badge-mini">High</span>
+                    <span class="priority-title-compact">HMB 반입 일정 지연</span>
+                    <span class="priority-location-compact">B-X15</span>
+                </div>
+                <div class="priority-item-compact touchable severity-high">
+                    <span class="priority-badge-mini">High</span>
+                    <span class="priority-title-compact">Shop Drawing 변경 요청</span>
+                    <span class="priority-location-compact">C-X45</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div style="margin-top: 20px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+        <h3>테스트 완료!</h3>
+        <p>컴팩트 대시보드가 정상적으로 표시되면 성공입니다.</p>
+    </div>
+</div>
+
+<script>
+function testDashboard() {
+    return {
+        priorityExpanded: false
+    };
+}
+</script>
+
+</body>
+</html>

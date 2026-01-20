@@ -491,3 +491,135 @@ function testTransformToRow() {
     Logger.log('❌ 컬럼 수 불일치');
   }
 }
+
+// ============================================================
+// Dashboard 통합 함수 (Phase 5)
+// ============================================================
+
+/**
+ * AI 분석 결과로 Dashboard Issue 생성
+ * GeminiAnalyzer에서 분석한 결과를 Dashboard ISSUES 시트에 등록
+ *
+ * @param {Object} analysis - AI 분석 결과 객체
+ * @param {Object} emailData - 원본 이메일 데이터
+ * @returns {Object} 생성 결과 { success, issueId, message }
+ */
+function createDashboardIssue_(analysis, emailData) {
+  // 분석 결과가 Issue 생성 조건을 충족하는지 확인
+  if (!shouldCreateIssue_(analysis)) {
+    return {
+      success: false,
+      skipped: true,
+      message: 'Issue creation criteria not met'
+    };
+  }
+
+  // Issue 데이터 구성
+  const issueData = {
+    // 기본 필드
+    type: mapMethodToIssueType_(analysis.공법구분),
+    title: analysis.본문요약 || emailData.subject,
+    affectedColumns: analysis.affectedColumns || [],
+    zoneId: analysis.zoneId || '',
+    severity: convertUrgencyToSeverity_(analysis.긴급도),
+    description: analysis.AI분석 || '',
+    expectedResolution: '',
+    assignedTo: '',
+
+    // AI 메타데이터
+    source: 'ai',
+    emailId: emailData.id || '',
+    aiSummary: analysis.본문요약 || '',
+    aiAnalysis: analysis.AI분석 || '',
+    aiKeywords: analysis.키워드 || []
+  };
+
+  // Dashboard API를 통해 Issue 생성
+  try {
+    const result = createIssue(issueData, 'gemini_ai');
+
+    if (result.success) {
+      debugLog_(`Dashboard Issue 생성 완료: ${result.issueId}`);
+      return {
+        success: true,
+        issueId: result.issueId,
+        columnsUpdated: result.columnsUpdated,
+        message: `Issue ${result.issueId} created from email analysis`
+      };
+    } else {
+      errorLog_('Dashboard Issue 생성 실패', new Error(result.error));
+      return {
+        success: false,
+        error: result.error,
+        message: 'Failed to create dashboard issue'
+      };
+    }
+  } catch (e) {
+    errorLog_('Dashboard Issue 생성 예외', e);
+    return {
+      success: false,
+      error: e.message,
+      message: 'Exception while creating dashboard issue'
+    };
+  }
+}
+
+/**
+ * Issue 생성 조건 확인
+ * 긴급도와 영향받는 기둥이 있는 경우에만 Issue 생성
+ *
+ * @param {Object} analysis - AI 분석 결과
+ * @returns {boolean} Issue 생성 여부
+ * @private
+ */
+function shouldCreateIssue_(analysis) {
+  if (!analysis) return false;
+
+  // 긴급도가 High 이상인 경우
+  const highPriorityUrgencies = ['Showstopper', 'Critical', 'High'];
+  const isHighPriority = highPriorityUrgencies.includes(analysis.긴급도);
+
+  // 영향받는 기둥이 있는 경우
+  const hasAffectedColumns = analysis.affectedColumns &&
+                             analysis.affectedColumns.length > 0;
+
+  // T/C 또는 설계 관련 공법인 경우
+  const criticalMethods = ['T/C 간섭', '접합부 간섭', 'PSRC-PC접합', 'PSRC-Steel접합'];
+  const isCriticalMethod = criticalMethods.includes(analysis.공법구분);
+
+  // 조건: (높은 긴급도 AND 영향 기둥 있음) OR (중요 공법 AND 영향 기둥 있음)
+  return (isHighPriority && hasAffectedColumns) ||
+         (isCriticalMethod && hasAffectedColumns);
+}
+
+/**
+ * 분석 결과 배치를 Dashboard Issues로 변환
+ * main() 함수에서 호출하여 AI 분석 결과를 Dashboard에 통합
+ *
+ * @param {Array<Object>} analysisResults - 분석 결과 배열 [{email, analysis}, ...]
+ * @returns {Object} 처리 결과 { created, skipped, failed }
+ */
+function syncAnalysisToDashboard_(analysisResults) {
+  const results = {
+    created: 0,
+    skipped: 0,
+    failed: 0,
+    issues: []
+  };
+
+  for (const item of analysisResults) {
+    const result = createDashboardIssue_(item.analysis, item.email);
+
+    if (result.success) {
+      results.created++;
+      results.issues.push(result.issueId);
+    } else if (result.skipped) {
+      results.skipped++;
+    } else {
+      results.failed++;
+    }
+  }
+
+  debugLog_(`Dashboard 동기화 완료: 생성 ${results.created}, 스킵 ${results.skipped}, 실패 ${results.failed}`);
+  return results;
+}

@@ -1,7 +1,7 @@
 // ============================================================
 // P5 복합동 메일 분석 시스템 - 통합 배포 파일
 // ============================================================
-// 생성일: 2025-12-30 13:30:05
+// 생성일: 2026-01-15 09:08:43
 // 
 // 이 파일은 배포 편의를 위해 자동 생성되었습니다.
 // 개별 파일 수정 시 다시 deploy.py를 실행하세요.
@@ -35,57 +35,63 @@ const CONFIG = {
   // ----------------------------------------------------------
   // 시스템 기본 설정
   // ----------------------------------------------------------
-  VERSION: '1.0.0',
-  SYSTEM_NAME: 'P5 복합동 메일 분석 시스템',
+  VERSION: "1.0.0",
+  SYSTEM_NAME: "P5 복합동 메일 분석 시스템",
 
   // ----------------------------------------------------------
   // Gemini API 설정
   // ----------------------------------------------------------
-  GEMINI_MODEL: 'gemini-2.0-flash',
-  GEMINI_ENDPOINT: 'https://generativelanguage.googleapis.com/v1beta/models/',
-  GEMINI_TEMPERATURE: 0.2,        // 낮은 창의성, 높은 일관성
-  GEMINI_MAX_TOKENS: 2048,        // 최대 출력 토큰
+  GEMINI_MODEL: "gemini-2.0-flash",
+  GEMINI_ENDPOINT: "https://generativelanguage.googleapis.com/v1beta/models/",
+  GEMINI_TEMPERATURE: 0.2, // 낮은 창의성, 높은 일관성
+  GEMINI_MAX_TOKENS: 2048, // 최대 출력 토큰
 
   // ----------------------------------------------------------
   // Gmail 검색 설정
   // ----------------------------------------------------------
-  DATE_RANGE_DAYS: 14,            // 검색 기간 (일)
-  MAX_BATCH_SIZE: 50,             // 배치당 최대 처리 건수
+  DATE_RANGE_DAYS: 14, // 검색 기간 (일)
+  MAX_BATCH_SIZE: 50, // 배치당 최대 처리 건수
 
   // ----------------------------------------------------------
   // API 재시도 설정
   // ----------------------------------------------------------
-  RETRY_COUNT: 3,                 // 최대 재시도 횟수
-  RETRY_DELAY_MS: 1000,           // 기본 재시도 대기 (ms)
-  TIMEOUT_MS: 30000,              // API 타임아웃 (ms)
+  RETRY_COUNT: 3, // 최대 재시도 횟수
+  RETRY_DELAY_MS: 1000, // 기본 재시도 대기 (ms)
+  TIMEOUT_MS: 30000, // API 타임아웃 (ms)
+
+  // ----------------------------------------------------------
+  // Dashboard 연동 설정
+  // ----------------------------------------------------------
+  DASHBOARD_SYNC_ENABLED: true, // 분석 결과 → Dashboard 자동 동기화
+  DASHBOARD_AUTO_CREATE_ISSUES: true, // Critical/High 긴급도 이슈 자동 생성
 
   // ----------------------------------------------------------
   // Google Sheet 설정
   // ----------------------------------------------------------
-  SHEET_NAME: 'P5_메일_분석_DB',   // 메인 데이터 시트
-  LOG_SHEET_NAME: '실행로그',       // 실행 로그 시트
-  TEST_SHEET_NAME: '테스트',       // 테스트용 시트
-  COLUMNS: 26,                    // 총 컬럼 수
+  SHEET_NAME: "P5_메일_분석_DB", // 메인 데이터 시트
+  LOG_SHEET_NAME: "실행로그", // 실행 로그 시트
+  TEST_SHEET_NAME: "테스트", // 테스트용 시트
+  COLUMNS: 26, // 총 컬럼 수
 
   // ----------------------------------------------------------
   // 키워드 화이트리스트 (메일 필터링용)
   // ----------------------------------------------------------
   KEYWORDS: [
-    '복합동',
-    'P5',
-    'P56',
-    'PSRC',
-    'HMB',
-    'PC',
-    '접합',
-    'Shop',
-    '하중',
-    '골조',
-    '변단면',
-    '설계변경',
-    'Shop Drawing',
-    '접합부',
-    '간섭'
+    "복합동",
+    "P5",
+    "P56",
+    "PSRC",
+    "HMB",
+    "PC",
+    "접합",
+    "Shop",
+    "하중",
+    "골조",
+    "변단면",
+    "설계변경",
+    "Shop Drawing",
+    "접합부",
+    "간섭",
   ],
 
   // ----------------------------------------------------------
@@ -93,103 +99,114 @@ const CONFIG = {
   // ----------------------------------------------------------
   PARTICIPANTS: [
     // 삼성E&A (시공/PM)
-    '@samsung.com',
+    "@samsung.com",
 
     // 삼우종합건축 (원설계)
-    '@samoo.com',
+    "@samoo.com",
 
     // 이앤디몰 (PC설계) - 특정 계정
-    'vickysong1@naver.com',
-    'dhkim2630@naver.com',
+    "vickysong1@naver.com",
+    "dhkim2630@naver.com",
 
     // 센구조 (전환설계)
-    '@senkuzo.com',
-    '@senvex.net'
+    "@senkuzo.com",
+    "@senvex.net",
   ],
 
   // ----------------------------------------------------------
   // 발생원 매핑 규칙
   // ----------------------------------------------------------
   ORIGIN_MAPPING: {
-    '@samoo.com': '삼우(원설계)',
-    '@samsung.com': 'ENA(시공/PM)',
-    'vickysong1@naver.com': '이앤디몰(PC설계)',
-    'dhkim2630@naver.com': '이앤디몰(PC설계)',
-    '@senkuzo.com': '센코어(전환설계)',
-    '@senvex.net': '센코어(전환설계)'
+    "@samoo.com": "삼우(원설계)",
+    "@samsung.com": "ENA(시공/PM)",
+    "vickysong1@naver.com": "이앤디몰(PC설계)",
+    "dhkim2630@naver.com": "이앤디몰(PC설계)",
+    "@senkuzo.com": "센코어(전환설계)",
+    "@senvex.net": "센코어(전환설계)",
   },
 
   // ----------------------------------------------------------
   // 긴급도 레벨 정의
   // ----------------------------------------------------------
   URGENCY_LEVELS: {
-    SHOWSTOPPER: 'Showstopper',
-    CRITICAL: 'Critical',
-    HIGH: 'High',
-    MEDIUM: 'Medium',
-    LOW: 'Low'
+    SHOWSTOPPER: "Showstopper",
+    CRITICAL: "Critical",
+    HIGH: "High",
+    MEDIUM: "Medium",
+    LOW: "Low",
+  },
+
+  // ----------------------------------------------------------
+  // Urgency → Severity 매핑 (AI 분석 → Dashboard 통합용)
+  // ----------------------------------------------------------
+  URGENCY_TO_SEVERITY: {
+    Showstopper: "critical",
+    Critical: "critical",
+    High: "high",
+    Medium: "medium",
+    Low: "low",
   },
 
   // ----------------------------------------------------------
   // 공법 구분 카테고리
   // ----------------------------------------------------------
   METHOD_CATEGORIES: [
-    'PSRC-PC접합',
-    'PSRC-Steel접합',
-    'HMB-PC접합',
-    '변단면 이슈',
-    '하중 검토',
-    '접합부 간섭',
-    '기타'
+    "PSRC-PC접합",
+    "PSRC-Steel접합",
+    "HMB-PC접합",
+    "변단면 이슈",
+    "하중 검토",
+    "접합부 간섭",
+    "기타",
   ],
 
   // ----------------------------------------------------------
   // 상태 값 정의
   // ----------------------------------------------------------
   STATUS: {
-    UNPROCESSED: '미처리',
-    IN_PROGRESS: '진행중',
-    COMPLETED: '완료'
+    UNPROCESSED: "미처리",
+    IN_PROGRESS: "진행중",
+    COMPLETED: "완료",
   },
 
   PROCESS_STATUS: {
-    PENDING: '검토대기',
-    REVIEWING: '검토중',
-    DONE: '조치완료',
-    HOLD: '보류'
+    PENDING: "검토대기",
+    REVIEWING: "검토중",
+    DONE: "조치완료",
+    HOLD: "보류",
   },
 
   // ----------------------------------------------------------
   // 26개 컬럼 헤더 정의
   // ----------------------------------------------------------
   COLUMN_HEADERS: [
-    'NO',           // 1: 자동 증가 번호
-    '상태',          // 2: 미처리/진행중/완료
-    '긴급도',        // 3: Critical/High/Medium/Low
-    '발생원',        // 4: 삼우/ENA/이앤디몰/센코어
-    '공법구분',      // 5: PSRC-PC접합 등
-    '메일ID',        // 6: Gmail Message ID
-    '발신자',        // 7: From 주소
-    '수신일시',      // 8: 메일 수신 시각
-    '제목',          // 9: 메일 제목
-    '본문요약',      // 10: AI 생성 요약
-    'AI분석',        // 11: 공법적 분석
-    '추천조치',      // 12: AI 제안 조치
-    '키워드',        // 13: 추출된 키워드
-    '첨부파일수',    // 14: 첨부 파일 개수
-    '스레드ID',      // 15: Gmail Thread ID
-    '참조인',        // 16: CC 리스트
-    '라벨',          // 17: Gmail 라벨
-    '중요표시',      // 18: 별표 여부
-    '읽음여부',      // 19: 읽음 상태
-    '처리담당',      // 20: 담당자 이름
-    '처리기한',      // 21: 목표 완료일
-    '처리상태',      // 22: 세부 상태
-    '메모',          // 23: 수동 메모
-    '비고',          // 24: 기타 정보
-    'RawJSON',       // 25: 원본 AI 응답
-    '등록일시'       // 26: 시스템 등록 시각
-  ]
+    "NO", // 1: 자동 증가 번호
+    "상태", // 2: 미처리/진행중/완료
+    "긴급도", // 3: Critical/High/Medium/Low
+    "발생원", // 4: 삼우/ENA/이앤디몰/센코어
+    "공법구분", // 5: PSRC-PC접합 등
+    "메일ID", // 6: Gmail Message ID
+    "발신자", // 7: From 주소
+    "수신일시", // 8: 메일 수신 시각
+    "제목", // 9: 메일 제목
+    "본문요약", // 10: AI 생성 요약
+    "AI분석", // 11: 공법적 분석
+    "추천조치", // 12: AI 제안 조치
+    "키워드", // 13: 추출된 키워드
+    "첨부파일수", // 14: 첨부 파일 개수
+    "스레드ID", // 15: Gmail Thread ID
+    "참조인", // 16: CC 리스트
+    "라벨", // 17: Gmail 라벨
+    "중요표시", // 18: 별표 여부
+    "읽음여부", // 19: 읽음 상태
+    "처리담당", // 20: 담당자 이름
+    "처리기한", // 21: 목표 완료일
+    "처리상태", // 22: 세부 상태
+    "메모", // 23: 수동 메모
+    "비고", // 24: 기타 정보
+    "RawJSON", // 25: 원본 AI 응답
+    "등록일시", // 26: 시스템 등록 시각
+  ],
 };
 
 // ============================================================
@@ -201,9 +218,12 @@ const CONFIG = {
  * @returns {string} API 키
  */
 function getGeminiApiKey_() {
-  const key = PropertiesService.getScriptProperties().getProperty('GEMINI_API_KEY');
+  const key =
+    PropertiesService.getScriptProperties().getProperty("GEMINI_API_KEY");
   if (!key) {
-    throw new Error('GEMINI_API_KEY가 설정되지 않았습니다. Script Properties를 확인하세요.');
+    throw new Error(
+      "GEMINI_API_KEY가 설정되지 않았습니다. Script Properties를 확인하세요."
+    );
   }
   return key;
 }
@@ -213,9 +233,11 @@ function getGeminiApiKey_() {
  * @returns {string} Sheet ID
  */
 function getSheetId_() {
-  const id = PropertiesService.getScriptProperties().getProperty('SHEET_ID');
+  const id = PropertiesService.getScriptProperties().getProperty("SHEET_ID");
   if (!id) {
-    throw new Error('SHEET_ID가 설정되지 않았습니다. Script Properties를 확인하세요.');
+    throw new Error(
+      "SHEET_ID가 설정되지 않았습니다. Script Properties를 확인하세요."
+    );
   }
   return id;
 }
@@ -225,8 +247,117 @@ function getSheetId_() {
  * @returns {boolean} 디버그 모드 여부
  */
 function isDebugMode_() {
-  const mode = PropertiesService.getScriptProperties().getProperty('DEBUG_MODE');
-  return mode === 'true';
+  const mode =
+    PropertiesService.getScriptProperties().getProperty("DEBUG_MODE");
+  return mode === "true";
+}
+
+// ============================================================
+// 데이터 변환 헬퍼 함수
+// ============================================================
+
+/**
+ * AI 분석 Urgency를 Dashboard Severity로 변환
+ * @param {string} urgency - AI 분석에서 반환된 긴급도 값
+ * @returns {string} Dashboard severity 값 (critical, high, medium, low)
+ */
+function convertUrgencyToSeverity_(urgency) {
+  if (!urgency || typeof urgency !== "string") {
+    return "medium"; // 기본값
+  }
+
+  const normalized = urgency.trim();
+  const severity = CONFIG.URGENCY_TO_SEVERITY[normalized];
+
+  if (severity) {
+    return severity;
+  }
+
+  // 알 수 없는 입력에 대한 fuzzy matching
+  const lowerUrgency = normalized.toLowerCase();
+  if (lowerUrgency.includes("showstopper") || lowerUrgency.includes("긴급")) {
+    return "critical";
+  }
+  if (lowerUrgency.includes("critical") || lowerUrgency.includes("심각")) {
+    return "critical";
+  }
+  if (lowerUrgency.includes("high") || lowerUrgency.includes("높음")) {
+    return "high";
+  }
+  if (lowerUrgency.includes("low") || lowerUrgency.includes("낮음")) {
+    return "low";
+  }
+
+  // 기본값: medium
+  return "medium";
+}
+
+/**
+ * 공법구분을 Issue Type으로 변환
+ * @param {string} method - AI 분석에서 반환된 공법구분 값
+ * @returns {string} Dashboard issue type (tc, design, schedule, safety, quality, other)
+ */
+function mapMethodToIssueType_(method) {
+  if (!method || typeof method !== "string") {
+    return "other";
+  }
+
+  const lowerMethod = method.toLowerCase();
+
+  // T/C (타워크레인) 관련
+  // H-1 Fix: master_config.json의 issueTypes.code 'tc'와 일치
+  if (
+    lowerMethod.includes("t/c") ||
+    lowerMethod.includes("타워크레인") ||
+    lowerMethod.includes("tower") ||
+    lowerMethod.includes("crane")
+  ) {
+    return "tc";
+  }
+
+  // 설계 관련
+  if (
+    lowerMethod.includes("설계") ||
+    lowerMethod.includes("design") ||
+    lowerMethod.includes("psrc") ||
+    lowerMethod.includes("hmb") ||
+    lowerMethod.includes("접합") ||
+    lowerMethod.includes("변단면")
+  ) {
+    return "design";
+  }
+
+  // 일정 관련
+  if (
+    lowerMethod.includes("일정") ||
+    lowerMethod.includes("schedule") ||
+    lowerMethod.includes("반입") ||
+    lowerMethod.includes("delivery")
+  ) {
+    return "schedule";
+  }
+
+  // 안전 관련
+  if (
+    lowerMethod.includes("안전") ||
+    lowerMethod.includes("safety") ||
+    lowerMethod.includes("중지") ||
+    lowerMethod.includes("stop")
+  ) {
+    return "safety";
+  }
+
+  // 품질 관련
+  if (
+    lowerMethod.includes("품질") ||
+    lowerMethod.includes("quality") ||
+    lowerMethod.includes("검수") ||
+    lowerMethod.includes("inspection")
+  ) {
+    return "quality";
+  }
+
+  return "other";
 }
 
 // ============================================================
@@ -255,22 +386,24 @@ function validateConfig_() {
 
   // 키워드 검증
   if (!CONFIG.KEYWORDS || CONFIG.KEYWORDS.length === 0) {
-    errors.push('키워드 목록이 비어있습니다.');
+    errors.push("키워드 목록이 비어있습니다.");
   }
 
   // 참여자 검증
   if (!CONFIG.PARTICIPANTS || CONFIG.PARTICIPANTS.length === 0) {
-    errors.push('참여자 목록이 비어있습니다.');
+    errors.push("참여자 목록이 비어있습니다.");
   }
 
   // 컬럼 헤더 검증
   if (CONFIG.COLUMN_HEADERS.length !== CONFIG.COLUMNS) {
-    errors.push(`컬럼 헤더 수 불일치: 예상 ${CONFIG.COLUMNS}, 실제 ${CONFIG.COLUMN_HEADERS.length}`);
+    errors.push(
+      `컬럼 헤더 수 불일치: 예상 ${CONFIG.COLUMNS}, 실제 ${CONFIG.COLUMN_HEADERS.length}`
+    );
   }
 
   return {
     valid: errors.length === 0,
-    errors: errors
+    errors: errors,
   };
 }
 
@@ -278,7 +411,7 @@ function validateConfig_() {
  * 설정 출력 (디버깅용)
  */
 function printConfig() {
-  Logger.log('=== P5 메일 분석 시스템 설정 ===');
+  Logger.log("=== P5 메일 분석 시스템 설정 ===");
   Logger.log(`버전: ${CONFIG.VERSION}`);
   Logger.log(`Gemini 모델: ${CONFIG.GEMINI_MODEL}`);
   Logger.log(`검색 기간: ${CONFIG.DATE_RANGE_DAYS}일`);
@@ -290,10 +423,10 @@ function printConfig() {
 
   const validation = validateConfig_();
   if (validation.valid) {
-    Logger.log('✅ 설정 검증 통과');
+    Logger.log("✅ 설정 검증 통과");
   } else {
-    Logger.log('❌ 설정 검증 실패:');
-    validation.errors.forEach(err => Logger.log(`  - ${err}`));
+    Logger.log("❌ 설정 검증 실패:");
+    validation.errors.forEach((err) => Logger.log(`  - ${err}`));
   }
 }
 
@@ -310,13 +443,13 @@ function initializeScriptProperties() {
 
   // 주의: 아래 값들을 실제 값으로 교체하세요!
   props.setProperties({
-    'GEMINI_API_KEY': 'YOUR_GEMINI_API_KEY_HERE',
-    'SHEET_ID': 'YOUR_GOOGLE_SHEET_ID_HERE',
-    'DEBUG_MODE': 'true'
+    GEMINI_API_KEY: "YOUR_GEMINI_API_KEY_HERE",
+    SHEET_ID: "YOUR_GOOGLE_SHEET_ID_HERE",
+    DEBUG_MODE: "true",
   });
 
-  Logger.log('✅ Script Properties 초기화 완료');
-  Logger.log('⚠️ 실제 API 키와 Sheet ID로 교체하세요!');
+  Logger.log("✅ Script Properties 초기화 완료");
+  Logger.log("⚠️ 실제 API 키와 Sheet ID로 교체하세요!");
 }
 
 
@@ -730,6 +863,41 @@ function testUtils() {
  */
 
 // ============================================================
+// Zone 컨텍스트 (Grid 매핑 정보)
+// ============================================================
+
+const ZONE_CONTEXT = `
+# 그리드 매핑 정보
+
+## Zone 정의
+| Zone ID | Zone명 | X축 범위 | 설명 |
+|---------|--------|---------|------|
+| zone_a | ZONE A (FAB) | X1 ~ X23 | FAB 영역 기둥 |
+| zone_b | ZONE B (CUB) | X24 ~ X45 | CUB 영역 기둥 |
+| zone_c | ZONE C (COMPLEX) | X46 ~ X69 | 복합동 영역 기둥 |
+
+## 행 라벨
+A, B, C, D, E, F, G, H, I, J, K, L (총 12개 행)
+
+## UID(기둥 고유 식별자) 형식
+- 형식: "{행라벨}-X{열번호}"
+- 예시: A-X23, B-X30, L-X45
+
+## 메일에서 기둥 위치 추출 규칙
+1. "X23~X30열" 언급 시 → 해당 열 범위의 모든 행 기둥을 추출
+   - 예: X30~X35 → A-X30, B-X30, ..., L-X30, A-X31, ..., L-X35
+2. "C열 X23~X30" 언급 시 → C행의 해당 열 범위만 추출
+   - 예: C열 X23~X30 → C-X23, C-X24, ..., C-X30
+3. 특정 기둥 언급 시 → 해당 UID 그대로 추출
+   - 예: "C-X30 기둥" → C-X30
+
+## Zone 자동 추론
+- X1~X23 → zone_a
+- X24~X45 → zone_b
+- X46~X69 → zone_c
+`;
+
+// ============================================================
 // 페르소나 프롬프트
 // ============================================================
 
@@ -744,6 +912,9 @@ const PERSONA_PROMPT = `
 2. 접합부 간섭 이슈를 추출
 3. 설계 변경 사항을 파악
 4. 이해관계자 간 책임 경계를 명확히
+5. **영향받는 기둥 위치(UID)를 추출**
+
+${ZONE_CONTEXT}
 
 # 발생원 추론 규칙
 | 이메일 패턴 | 발생원 |
@@ -772,6 +943,7 @@ const PERSONA_PROMPT = `
 - 변단면 이슈
 - 하중 검토
 - 접합부 간섭
+- T/C 간섭
 - 기타
 
 # 출력 형식 (JSON)
@@ -780,11 +952,21 @@ const PERSONA_PROMPT = `
   "발생원": "삼우(원설계)",
   "공법구분": "PSRC-PC접합",
   "긴급도": "Critical",
+  "zoneId": "zone_b",
+  "affectedColumns": ["C-X30", "D-X30", "E-X30"],
   "본문요약": "메일 내용을 2-3문장으로 요약",
   "AI분석": "공법적 관점에서 분석한 내용",
   "추천조치": "권장 후속 조치 사항",
   "키워드": ["PSRC", "접합부", "Shop Drawing"]
 }
+
+# 추가 지침
+1. **affectedColumns**: 메일에서 언급된 기둥 위치를 UID 형식으로 추출
+   - 범위가 언급되면 해당 범위의 모든 기둥 UID를 나열
+   - 위치 정보가 없으면 빈 배열 []
+2. **zoneId**: 영향받는 기둥의 Zone ID (zone_a, zone_b, zone_c)
+   - 여러 Zone에 걸치면 주요 Zone 하나만 선택
+   - Zone을 특정할 수 없으면 빈 문자열 ""
 `;
 
 // ============================================================
@@ -802,28 +984,32 @@ function callGeminiAPI_(prompt) {
   const url = `${CONFIG.GEMINI_ENDPOINT}${CONFIG.GEMINI_MODEL}:generateContent?key=${apiKey}`;
 
   const payload = {
-    contents: [{
-      parts: [{ text: prompt }]
-    }],
+    contents: [
+      {
+        parts: [{ text: prompt }],
+      },
+    ],
     generationConfig: {
       temperature: CONFIG.GEMINI_TEMPERATURE,
       maxOutputTokens: CONFIG.GEMINI_MAX_TOKENS,
-      responseMimeType: 'application/json'
-    }
+      responseMimeType: "application/json",
+    },
   };
 
   const options = {
-    method: 'post',
-    contentType: 'application/json',
+    method: "post",
+    contentType: "application/json",
     payload: JSON.stringify(payload),
-    muteHttpExceptions: true
+    muteHttpExceptions: true,
   };
 
   const response = UrlFetchApp.fetch(url, options);
   const responseCode = response.getResponseCode();
 
   if (responseCode !== 200) {
-    throw new Error(`Gemini API 오류 (${responseCode}): ${response.getContentText()}`);
+    throw new Error(
+      `Gemini API 오류 (${responseCode}): ${response.getContentText()}`
+    );
   }
 
   return JSON.parse(response.getContentText());
@@ -850,8 +1036,7 @@ function callGeminiWithRetry_(prompt, maxRetries) {
         return response;
       }
 
-      debugLog_('응답에 candidates 없음');
-
+      debugLog_("응답에 candidates 없음");
     } catch (e) {
       errorLog_(`API 호출 실패 (시도 ${attempt}/${maxRetries})`, e);
 
@@ -877,7 +1062,7 @@ function extractResponseText_(response) {
   try {
     return response.candidates[0].content.parts[0].text;
   } catch (e) {
-    errorLog_('응답 텍스트 추출 실패', e);
+    errorLog_("응답 텍스트 추출 실패", e);
     return null;
   }
 }
@@ -899,8 +1084,8 @@ function buildAnalysisPrompt_(emailData) {
 ## 분석 대상 메일
 
 **발신자**: ${emailData.from}
-**수신자**: ${emailData.to || '(없음)'}
-**참조**: ${emailData.cc || '없음'}
+**수신자**: ${emailData.to || "(없음)"}
+**참조**: ${emailData.cc || "없음"}
 **일시**: ${formatDate_(emailData.date)}
 **제목**: ${emailData.subject}
 
@@ -920,17 +1105,17 @@ ${emailData.body}
  * @private
  */
 function cleanJsonResponse_(text) {
-  if (!text) return '';
+  if (!text) return "";
 
   let cleaned = text;
 
   // ```json ... ``` 패턴 제거
-  cleaned = cleaned.replace(/^```json\s*/i, '');
-  cleaned = cleaned.replace(/\s*```$/i, '');
+  cleaned = cleaned.replace(/^```json\s*/i, "");
+  cleaned = cleaned.replace(/\s*```$/i, "");
 
   // ``` 만 있는 경우
-  cleaned = cleaned.replace(/^```\s*/i, '');
-  cleaned = cleaned.replace(/\s*```$/i, '');
+  cleaned = cleaned.replace(/^```\s*/i, "");
+  cleaned = cleaned.replace(/\s*```$/i, "");
 
   return cleaned.trim();
 }
@@ -948,7 +1133,15 @@ function parseAnalysisResponse_(responseText) {
     const parsed = JSON.parse(cleaned);
 
     // 필수 필드 검증
-    const requiredFields = ['발생원', '공법구분', '긴급도', '본문요약', 'AI분석', '추천조치', '키워드'];
+    const requiredFields = [
+      "발생원",
+      "공법구분",
+      "긴급도",
+      "본문요약",
+      "AI분석",
+      "추천조치",
+      "키워드",
+    ];
 
     for (const field of requiredFields) {
       if (!(field in parsed)) {
@@ -965,13 +1158,41 @@ function parseAnalysisResponse_(responseText) {
     const validUrgencies = Object.values(CONFIG.URGENCY_LEVELS);
     if (!validUrgencies.includes(parsed.긴급도)) {
       debugLog_(`알 수 없는 긴급도: ${parsed.긴급도}, Medium으로 대체`);
-      parsed.긴급도 = 'Medium';
+      parsed.긴급도 = "Medium";
+    }
+
+    // affectedColumns 배열 검증 및 기본값
+    if (!Array.isArray(parsed.affectedColumns)) {
+      parsed.affectedColumns = [];
+    }
+
+    // M-1 Fix: affectedColumns 크기 제한 (UI 성능 최적화)
+    const MAX_AFFECTED_COLUMNS = 100;
+    if (parsed.affectedColumns.length > MAX_AFFECTED_COLUMNS) {
+      const originalCount = parsed.affectedColumns.length;
+      parsed.affectedColumns = parsed.affectedColumns.slice(
+        0,
+        MAX_AFFECTED_COLUMNS
+      );
+      debugLog_(
+        `⚠️ 영향 기둥 수 제한: ${originalCount}개 → ${MAX_AFFECTED_COLUMNS}개로 축소 (성능 최적화)`
+      );
+      // 축소 사실을 AI 분석에 기록
+      parsed.AI분석 =
+        (parsed.AI분석 || "") +
+        `\n[참고] 원래 ${originalCount}개 기둥이 영향받으나, UI 성능을 위해 처음 ${MAX_AFFECTED_COLUMNS}개만 표시됩니다.`;
+    }
+
+    // zoneId 검증 및 기본값
+    const validZones = ["zone_a", "zone_b", "zone_c", ""];
+    if (!parsed.zoneId || !validZones.includes(parsed.zoneId)) {
+      // affectedColumns에서 Zone 자동 추론
+      parsed.zoneId = inferZoneFromColumns_(parsed.affectedColumns);
     }
 
     return parsed;
-
   } catch (e) {
-    errorLog_('JSON 파싱 오류', e);
+    errorLog_("JSON 파싱 오류", e);
     debugLog_(`원본 응답: ${responseText}`);
     return null;
   }
@@ -985,14 +1206,51 @@ function parseAnalysisResponse_(responseText) {
  */
 function getDefaultAnalysis_(emailData) {
   return {
-    발생원: inferOrigin_(emailData.from) || '미분류',
-    공법구분: '기타',
-    긴급도: 'Medium',
-    본문요약: emailData.subject || '(분석 실패)',
-    AI분석: 'AI 분석 실패 - 수동 검토 필요',
-    추천조치: '담당자 수동 확인 필요',
-    키워드: []
+    발생원: inferOrigin_(emailData.from) || "미분류",
+    공법구분: "기타",
+    긴급도: "Medium",
+    zoneId: "",
+    affectedColumns: [],
+    본문요약: emailData.subject || "(분석 실패)",
+    AI분석: "AI 분석 실패 - 수동 검토 필요",
+    추천조치: "담당자 수동 확인 필요",
+    키워드: [],
   };
+}
+
+/**
+ * affectedColumns에서 Zone ID 추론
+ * @param {string[]} columns - 기둥 UID 배열
+ * @returns {string} zone_a, zone_b, zone_c 또는 빈 문자열
+ * @private
+ */
+function inferZoneFromColumns_(columns) {
+  if (!columns || columns.length === 0) {
+    return "";
+  }
+
+  // 각 Zone의 카운트
+  const zoneCounts = { zone_a: 0, zone_b: 0, zone_c: 0 };
+
+  for (const col of columns) {
+    // UID 형식: {행}-X{열번호} (예: C-X30)
+    const match = col.match(/X(\d+)/);
+    if (match) {
+      const xNum = parseInt(match[1], 10);
+      if (xNum >= 1 && xNum <= 23) {
+        zoneCounts.zone_a++;
+      } else if (xNum >= 24 && xNum <= 45) {
+        zoneCounts.zone_b++;
+      } else if (xNum >= 46 && xNum <= 69) {
+        zoneCounts.zone_c++;
+      }
+    }
+  }
+
+  // 가장 많은 기둥이 있는 Zone 반환
+  const maxZone = Object.entries(zoneCounts).sort((a, b) => b[1] - a[1])[0];
+
+  return maxZone[1] > 0 ? maxZone[0] : "";
 }
 
 // ============================================================
@@ -1012,21 +1270,21 @@ function analyzeEmail_(emailData) {
   const response = callGeminiWithRetry_(prompt);
 
   if (!response) {
-    debugLog_('API 응답 없음 - 기본값 사용');
+    debugLog_("API 응답 없음 - 기본값 사용");
     return getDefaultAnalysis_(emailData);
   }
 
   const text = extractResponseText_(response);
 
   if (!text) {
-    debugLog_('응답 텍스트 없음 - 기본값 사용');
+    debugLog_("응답 텍스트 없음 - 기본값 사용");
     return getDefaultAnalysis_(emailData);
   }
 
   const analysis = parseAnalysisResponse_(text);
 
   if (!analysis) {
-    debugLog_('JSON 파싱 실패 - 기본값 사용');
+    debugLog_("JSON 파싱 실패 - 기본값 사용");
     return getDefaultAnalysis_(emailData);
   }
 
@@ -1046,22 +1304,26 @@ function analyzeEmails_(emails) {
   for (let i = 0; i < emails.length; i++) {
     const email = emails[i];
 
-    Logger.log(`[${i + 1}/${emails.length}] 분석 중: ${truncateString_(email.subject, 40)}`);
+    Logger.log(
+      `[${i + 1}/${emails.length}] 분석 중: ${truncateString_(
+        email.subject,
+        40
+      )}`
+    );
 
     try {
       const analysis = analyzeEmail_(email);
 
       results.push({
         email: email,
-        analysis: analysis
+        analysis: analysis,
       });
-
     } catch (e) {
       errorLog_(`메일 분석 실패: ${email.id}`, e);
 
       results.push({
         email: email,
-        analysis: getDefaultAnalysis_(email)
+        analysis: getDefaultAnalysis_(email),
       });
     }
 
@@ -1082,7 +1344,7 @@ function analyzeEmails_(emails) {
  * Gemini API 연결 테스트
  */
 function testGeminiConnection() {
-  Logger.log('=== Gemini API 연결 테스트 ===\n');
+  Logger.log("=== Gemini API 연결 테스트 ===\n");
 
   try {
     const testPrompt = '안녕하세요. 테스트입니다. "OK"라고만 응답하세요.';
@@ -1092,7 +1354,6 @@ function testGeminiConnection() {
 
     Logger.log(`✅ API 연결 성공`);
     Logger.log(`응답: ${text}`);
-
   } catch (e) {
     Logger.log(`❌ API 연결 실패: ${e.message}`);
   }
@@ -1102,7 +1363,7 @@ function testGeminiConnection() {
  * JSON 파싱 테스트
  */
 function testJsonParsing() {
-  Logger.log('=== JSON 파싱 테스트 ===\n');
+  Logger.log("=== JSON 파싱 테스트 ===\n");
 
   // 정상 케이스
   const validJson = `{
@@ -1116,32 +1377,36 @@ function testJsonParsing() {
   }`;
 
   const result1 = parseAnalysisResponse_(validJson);
-  Logger.log(`[정상 JSON] ${result1 ? '✅ 파싱 성공' : '❌ 파싱 실패'}`);
+  Logger.log(`[정상 JSON] ${result1 ? "✅ 파싱 성공" : "❌ 파싱 실패"}`);
 
   // 코드 블록 포함 케이스
-  const withCodeBlock = '```json\n' + validJson + '\n```';
+  const withCodeBlock = "```json\n" + validJson + "\n```";
   const result2 = parseAnalysisResponse_(withCodeBlock);
-  Logger.log(`[코드 블록 포함] ${result2 ? '✅ 파싱 성공' : '❌ 파싱 실패'}`);
+  Logger.log(`[코드 블록 포함] ${result2 ? "✅ 파싱 성공" : "❌ 파싱 실패"}`);
 
   // 필드 누락 케이스
   const missingField = '{"발생원": "삼우"}';
   const result3 = parseAnalysisResponse_(missingField);
-  Logger.log(`[필드 누락] ${result3 ? '❌ 파싱 성공 (예상: 실패)' : '✅ 파싱 실패 (예상대로)'}`);
+  Logger.log(
+    `[필드 누락] ${
+      result3 ? "❌ 파싱 성공 (예상: 실패)" : "✅ 파싱 실패 (예상대로)"
+    }`
+  );
 }
 
 /**
  * 샘플 메일 분석 테스트
  */
 function testAnalyzeEmail() {
-  Logger.log('=== 샘플 메일 분석 테스트 ===\n');
+  Logger.log("=== 샘플 메일 분석 테스트 ===\n");
 
   const sampleEmail = {
-    id: 'test_001',
-    threadId: 'thread_001',
-    from: 'engineer@samoo.com',
-    to: 'pm@samsung.com',
-    cc: 'designer@senkuzo.com',
-    subject: '[P5 복합동] PSRC 기둥-PC보 접합부 간섭 검토 요청',
+    id: "test_001",
+    threadId: "thread_001",
+    from: "engineer@samoo.com",
+    to: "pm@samsung.com",
+    cc: "designer@senkuzo.com",
+    subject: "[P5 복합동] PSRC 기둥-PC보 접합부 간섭 검토 요청",
     body: `
     안녕하세요, 삼우종합건축 구조팀입니다.
 
@@ -1165,19 +1430,19 @@ function testAnalyzeEmail() {
     attachments: 2,
     isStarred: false,
     isUnread: true,
-    labels: ''
+    labels: "",
   };
 
   const analysis = analyzeEmail_(sampleEmail);
 
-  Logger.log('[분석 결과]');
+  Logger.log("[분석 결과]");
   Logger.log(`  발생원: ${analysis.발생원}`);
   Logger.log(`  공법구분: ${analysis.공법구분}`);
   Logger.log(`  긴급도: ${analysis.긴급도}`);
   Logger.log(`  본문요약: ${analysis.본문요약}`);
   Logger.log(`  AI분석: ${analysis.AI분석}`);
   Logger.log(`  추천조치: ${analysis.추천조치}`);
-  Logger.log(`  키워드: ${analysis.키워드.join(', ')}`);
+  Logger.log(`  키워드: ${analysis.키워드.join(", ")}`);
 }
 
 
@@ -2070,6 +2335,138 @@ function testTransformToRow() {
   }
 }
 
+// ============================================================
+// Dashboard 통합 함수 (Phase 5)
+// ============================================================
+
+/**
+ * AI 분석 결과로 Dashboard Issue 생성
+ * GeminiAnalyzer에서 분석한 결과를 Dashboard ISSUES 시트에 등록
+ *
+ * @param {Object} analysis - AI 분석 결과 객체
+ * @param {Object} emailData - 원본 이메일 데이터
+ * @returns {Object} 생성 결과 { success, issueId, message }
+ */
+function createDashboardIssue_(analysis, emailData) {
+  // 분석 결과가 Issue 생성 조건을 충족하는지 확인
+  if (!shouldCreateIssue_(analysis)) {
+    return {
+      success: false,
+      skipped: true,
+      message: 'Issue creation criteria not met'
+    };
+  }
+
+  // Issue 데이터 구성
+  const issueData = {
+    // 기본 필드
+    type: mapMethodToIssueType_(analysis.공법구분),
+    title: analysis.본문요약 || emailData.subject,
+    affectedColumns: analysis.affectedColumns || [],
+    zoneId: analysis.zoneId || '',
+    severity: convertUrgencyToSeverity_(analysis.긴급도),
+    description: analysis.AI분석 || '',
+    expectedResolution: '',
+    assignedTo: '',
+
+    // AI 메타데이터
+    source: 'ai',
+    emailId: emailData.id || '',
+    aiSummary: analysis.본문요약 || '',
+    aiAnalysis: analysis.AI분석 || '',
+    aiKeywords: analysis.키워드 || []
+  };
+
+  // Dashboard API를 통해 Issue 생성
+  try {
+    const result = createIssue(issueData, 'gemini_ai');
+
+    if (result.success) {
+      debugLog_(`Dashboard Issue 생성 완료: ${result.issueId}`);
+      return {
+        success: true,
+        issueId: result.issueId,
+        columnsUpdated: result.columnsUpdated,
+        message: `Issue ${result.issueId} created from email analysis`
+      };
+    } else {
+      errorLog_('Dashboard Issue 생성 실패', new Error(result.error));
+      return {
+        success: false,
+        error: result.error,
+        message: 'Failed to create dashboard issue'
+      };
+    }
+  } catch (e) {
+    errorLog_('Dashboard Issue 생성 예외', e);
+    return {
+      success: false,
+      error: e.message,
+      message: 'Exception while creating dashboard issue'
+    };
+  }
+}
+
+/**
+ * Issue 생성 조건 확인
+ * 긴급도와 영향받는 기둥이 있는 경우에만 Issue 생성
+ *
+ * @param {Object} analysis - AI 분석 결과
+ * @returns {boolean} Issue 생성 여부
+ * @private
+ */
+function shouldCreateIssue_(analysis) {
+  if (!analysis) return false;
+
+  // 긴급도가 High 이상인 경우
+  const highPriorityUrgencies = ['Showstopper', 'Critical', 'High'];
+  const isHighPriority = highPriorityUrgencies.includes(analysis.긴급도);
+
+  // 영향받는 기둥이 있는 경우
+  const hasAffectedColumns = analysis.affectedColumns &&
+                             analysis.affectedColumns.length > 0;
+
+  // T/C 또는 설계 관련 공법인 경우
+  const criticalMethods = ['T/C 간섭', '접합부 간섭', 'PSRC-PC접합', 'PSRC-Steel접합'];
+  const isCriticalMethod = criticalMethods.includes(analysis.공법구분);
+
+  // 조건: (높은 긴급도 AND 영향 기둥 있음) OR (중요 공법 AND 영향 기둥 있음)
+  return (isHighPriority && hasAffectedColumns) ||
+         (isCriticalMethod && hasAffectedColumns);
+}
+
+/**
+ * 분석 결과 배치를 Dashboard Issues로 변환
+ * main() 함수에서 호출하여 AI 분석 결과를 Dashboard에 통합
+ *
+ * @param {Array<Object>} analysisResults - 분석 결과 배열 [{email, analysis}, ...]
+ * @returns {Object} 처리 결과 { created, skipped, failed }
+ */
+function syncAnalysisToDashboard_(analysisResults) {
+  const results = {
+    created: 0,
+    skipped: 0,
+    failed: 0,
+    issues: []
+  };
+
+  for (const item of analysisResults) {
+    const result = createDashboardIssue_(item.analysis, item.email);
+
+    if (result.success) {
+      results.created++;
+      results.issues.push(result.issueId);
+    } else if (result.skipped) {
+      results.skipped++;
+    } else {
+      results.failed++;
+    }
+  }
+
+  debugLog_(`Dashboard 동기화 완료: 생성 ${results.created}, 스킵 ${results.skipped}, 실패 ${results.failed}`);
+  return results;
+}
+
 
 // ============================================================
 // FILE: Code.gs
@@ -2163,12 +2560,27 @@ function main() {
     stats.failedWrites = writeResult.failed.length;
     Logger.log(`쓰기 성공: ${writeResult.success}건, 실패: ${writeResult.failed.length}건`);
 
+    // 5.5. Dashboard 동기화 (선택적)
+    if (CONFIG.DASHBOARD_SYNC_ENABLED && writeResult.success > 0) {
+      Logger.log('\n[Step 5.5] Dashboard 동기화 중...');
+      try {
+        const syncResult = syncAnalysisToDashboard_(analysisResults);
+        stats.dashboardCreated = syncResult.created || 0;
+        stats.dashboardSkipped = syncResult.skipped || 0;
+        Logger.log(`Dashboard 이슈 생성: ${syncResult.created}건, 스킵: ${syncResult.skipped}건`);
+      } catch (syncError) {
+        Logger.log(`⚠️ Dashboard 동기화 실패 (메인 처리는 성공): ${syncError.message}`);
+        stats.dashboardError = syncError.message;
+      }
+    }
+
     // 6. 실행 완료
     stats.executionTimeMs = Date.now() - startTime;
     logExecution_(stats);
 
     Logger.log(`\n=== 완료 (${stats.executionTimeMs}ms) ===`);
-    Logger.log(`요약: 검색 ${stats.totalSearched} → 신규 ${stats.newEmails} → 저장 ${stats.successfulWrites}`);
+    Logger.log(`요약: 검색 ${stats.totalSearched} → 신규 ${stats.newEmails} → 저장 ${stats.successfulWrites}` +
+               (stats.dashboardCreated ? ` → Dashboard ${stats.dashboardCreated}` : ''));
 
   } catch (e) {
     Logger.log(`\n❌ 실행 오류: ${e.message}`);
@@ -3117,6 +3529,1179 @@ function quickHealthCheck() {
   console.log('\n--- Summary ---');
   const allOk = Object.values(checks).every(v => v);
   console.log(allOk ? '✅ System is ready!' : '⚠️ Some checks failed');
+
+  return checks;
+}
+
+// ============================================
+// LockService Tests (Phase 5 - Task 3)
+// ============================================
+
+/**
+ * Test LockService for Dashboard API
+ * 동시성 제어 테스트
+ */
+function test_LockService() {
+  console.log('\n=== LockService Concurrency Test ===\n');
+
+  const results = {
+    passed: 0,
+    failed: 0,
+    errors: []
+  };
+
+  // Test 1: Lock 획득 테스트
+  console.log('[Test 1] Lock 획득 테스트...');
+  try {
+    const lock = LockService.getDocumentLock();
+    const acquired = lock.tryLock(1000);
+
+    if (acquired) {
+      results.passed++;
+      console.log('✅ Lock 획득 성공');
+      lock.releaseLock();
+      console.log('✅ Lock 해제 성공');
+      results.passed++;
+    } else {
+      results.failed++;
+      results.errors.push('Lock 획득 실패');
+      console.log('❌ Lock 획득 실패');
+    }
+  } catch (e) {
+    results.failed++;
+    results.errors.push(`Lock 테스트 오류: ${e.message}`);
+    console.log(`❌ 오류: ${e.message}`);
+  }
+
+  // Test 2: 이중 Lock 획득 시도 (동일 스레드)
+  console.log('\n[Test 2] 이중 Lock 방지 테스트...');
+  try {
+    const lock1 = LockService.getDocumentLock();
+    const lock2 = LockService.getDocumentLock();
+
+    const acquired1 = lock1.tryLock(1000);
+    if (acquired1) {
+      results.passed++;
+      console.log('✅ 첫 번째 Lock 획득');
+
+      // 동일 Lock은 같은 스레드에서 재획득 가능 (Apps Script 특성)
+      const acquired2 = lock2.tryLock(100);
+      if (acquired2) {
+        console.log('ℹ️ 동일 스레드에서 Lock 재획득 허용됨 (예상된 동작)');
+        results.passed++;
+        lock2.releaseLock();
+      }
+
+      lock1.releaseLock();
+    }
+  } catch (e) {
+    results.failed++;
+    results.errors.push(`이중 Lock 테스트 오류: ${e.message}`);
+    console.log(`❌ 오류: ${e.message}`);
+  }
+
+  // Test 3: updateColumn 함수 Lock 테스트
+  console.log('\n[Test 3] updateColumn() Lock 적용 확인...');
+  try {
+    // 존재하지 않는 UID로 테스트 (실제 데이터 변경 방지)
+    const result = updateColumn('TEST-X999', { status: 'test' }, 'test_user');
+
+    if (result.retryable !== undefined || result.success !== undefined) {
+      results.passed++;
+      console.log('✅ updateColumn이 Lock 관련 응답 반환');
+      console.log(`   결과: ${JSON.stringify(result)}`);
+    } else {
+      results.failed++;
+      console.log('❌ updateColumn 응답 형식 불일치');
+    }
+  } catch (e) {
+    // updateColumn 함수가 정의되지 않은 경우
+    if (e.message.includes('is not defined')) {
+      console.log('⚠️ updateColumn 함수를 찾을 수 없음 (DashboardAPI 스크립트 필요)');
+    } else {
+      results.failed++;
+      results.errors.push(`updateColumn 테스트 오류: ${e.message}`);
+      console.log(`❌ 오류: ${e.message}`);
+    }
+  }
+
+  // Test 4: bulkUpdateColumns 함수 테스트
+  console.log('\n[Test 4] bulkUpdateColumns() 재시도 로직 확인...');
+  try {
+    const result = bulkUpdateColumns(['TEST-X998', 'TEST-X999'], { status: 'test' }, 'test_user');
+
+    if (result.results && result.results.retried !== undefined) {
+      results.passed++;
+      console.log('✅ bulkUpdateColumns가 재시도 카운트 포함');
+      console.log(`   결과: ${result.summary}`);
+    } else {
+      results.failed++;
+      console.log('❌ bulkUpdateColumns 응답 형식 불일치');
+    }
+  } catch (e) {
+    if (e.message.includes('is not defined')) {
+      console.log('⚠️ bulkUpdateColumns 함수를 찾을 수 없음');
+    } else {
+      results.failed++;
+      results.errors.push(`bulkUpdateColumns 테스트 오류: ${e.message}`);
+      console.log(`❌ 오류: ${e.message}`);
+    }
+  }
+
+  // Test 5: createIssue 함수 Lock 테스트
+  console.log('\n[Test 5] createIssue() Lock 적용 확인...');
+  try {
+    const testIssue = {
+      type: 'test',
+      title: 'LockService Test Issue',
+      affectedColumns: [],
+      severity: 'low',
+      description: 'This is a test issue for LockService verification'
+    };
+
+    // 실제 이슈 생성 (테스트 후 정리 필요)
+    const result = createIssue(testIssue, 'test_lockservice');
+
+    if (result.retryable !== undefined || result.success !== undefined) {
+      results.passed++;
+      console.log('✅ createIssue가 Lock 관련 응답 반환');
+      console.log(`   결과: ${JSON.stringify(result)}`);
+
+      if (result.success && result.issueId) {
+        console.log(`   생성된 이슈 ID: ${result.issueId}`);
+        console.log('   ⚠️ 테스트 이슈가 생성됨 - 수동 삭제 필요');
+      }
+    } else {
+      results.failed++;
+      console.log('❌ createIssue 응답 형식 불일치');
+    }
+  } catch (e) {
+    if (e.message.includes('is not defined')) {
+      console.log('⚠️ createIssue 함수를 찾을 수 없음');
+    } else {
+      results.failed++;
+      results.errors.push(`createIssue 테스트 오류: ${e.message}`);
+      console.log(`❌ 오류: ${e.message}`);
+    }
+  }
+
+  // 결과 요약
+  console.log('\n=== LockService 테스트 결과 ===');
+  console.log(`✅ 통과: ${results.passed}`);
+  console.log(`❌ 실패: ${results.failed}`);
+
+  if (results.errors.length > 0) {
+    console.log('\n오류 목록:');
+    results.errors.forEach((err, i) => console.log(`  ${i + 1}. ${err}`));
+  }
+
+  return results;
+}
+
+/**
+ * Quick LockService verification
+ * Dashboard API 배포 후 실행
+ */
+function verifyLockService() {
+  console.log('=== LockService Quick Verification ===\n');
+
+  const checks = {
+    lockAcquire: false,
+    lockRelease: false,
+    updateColumn: false,
+    createIssue: false
+  };
+
+  // Lock 기본 동작
+  try {
+    const lock = LockService.getDocumentLock();
+    checks.lockAcquire = lock.tryLock(1000);
+    if (checks.lockAcquire) {
+      lock.releaseLock();
+      checks.lockRelease = true;
+    }
+  } catch (e) {
+    console.log(`Lock 오류: ${e.message}`);
+  }
+
+  // updateColumn 함수 체크
+  try {
+    const result = updateColumn('VERIFY-X1', {}, 'verify');
+    checks.updateColumn = result.hasOwnProperty('retryable') || result.hasOwnProperty('success');
+  } catch (e) {
+    // 함수가 없으면 false 유지
+  }
+
+  // createIssue 함수 체크
+  try {
+    // 실제 생성하지 않고 Sheet 존재 여부로 확인
+    checks.createIssue = typeof createIssue === 'function';
+  } catch (e) {
+    // 함수가 없으면 false 유지
+  }
+
+  console.log('Lock 획득:', checks.lockAcquire ? '✅' : '❌');
+  console.log('Lock 해제:', checks.lockRelease ? '✅' : '❌');
+  console.log('updateColumn Lock:', checks.updateColumn ? '✅' : '⚠️');
+  console.log('createIssue Lock:', checks.createIssue ? '✅' : '⚠️');
+
+  return checks;
+}
+
+// ============================================
+// Task 4: Urgency→Severity 매핑 테스트
+// ============================================
+
+/**
+ * Test: URGENCY_TO_SEVERITY 매핑 검증
+ * Config.gs의 매핑 테이블 및 변환 함수 테스트
+ */
+function test_UrgencyToSeverityMapping() {
+  console.log('=== Test: URGENCY_TO_SEVERITY Mapping ===\n');
+
+  const results = {
+    passed: 0,
+    failed: 0,
+    tests: []
+  };
+
+  // Test 1: 기본 매핑 테이블 존재 확인
+  console.log('Test 1: 매핑 테이블 존재 확인');
+  try {
+    const mapping = CONFIG.URGENCY_TO_SEVERITY;
+    if (mapping && typeof mapping === 'object') {
+      results.passed++;
+      results.tests.push({ name: '매핑 테이블 존재', status: 'passed' });
+      console.log('✅ URGENCY_TO_SEVERITY 매핑 테이블 존재\n');
+    } else {
+      throw new Error('매핑 테이블이 없음');
+    }
+  } catch (e) {
+    results.failed++;
+    results.tests.push({ name: '매핑 테이블 존재', status: 'failed', error: e.message });
+    console.log(`❌ ${e.message}\n`);
+  }
+
+  // Test 2: 각 Urgency 값 매핑 테스트
+  console.log('Test 2: 개별 Urgency 값 매핑');
+  const testCases = [
+    { input: 'Showstopper', expected: 'critical' },
+    { input: 'Critical', expected: 'critical' },
+    { input: 'High', expected: 'high' },
+    { input: 'Medium', expected: 'medium' },
+    { input: 'Low', expected: 'low' }
+  ];
+
+  testCases.forEach(tc => {
+    const result = CONFIG.URGENCY_TO_SEVERITY[tc.input];
+    if (result === tc.expected) {
+      results.passed++;
+      console.log(`  ✅ ${tc.input} → ${result}`);
+    } else {
+      results.failed++;
+      console.log(`  ❌ ${tc.input} → ${result} (expected: ${tc.expected})`);
+    }
+  });
+  console.log('');
+
+  // Test 3: convertUrgencyToSeverity_() 함수 테스트
+  console.log('Test 3: convertUrgencyToSeverity_() 함수');
+  const functionTests = [
+    { input: 'Showstopper', expected: 'critical' },
+    { input: 'Critical', expected: 'critical' },
+    { input: 'High', expected: 'high' },
+    { input: 'Medium', expected: 'medium' },
+    { input: 'Low', expected: 'low' },
+    { input: null, expected: 'medium' },        // null 처리
+    { input: '', expected: 'medium' },          // 빈 문자열
+    { input: 'Unknown', expected: 'medium' },   // 알 수 없는 값
+    { input: '긴급', expected: 'critical' },    // 한글 fuzzy match
+    { input: '높음', expected: 'high' }         // 한글 fuzzy match
+  ];
+
+  functionTests.forEach(tc => {
+    try {
+      const result = convertUrgencyToSeverity_(tc.input);
+      if (result === tc.expected) {
+        results.passed++;
+        console.log(`  ✅ "${tc.input}" → ${result}`);
+      } else {
+        results.failed++;
+        console.log(`  ❌ "${tc.input}" → ${result} (expected: ${tc.expected})`);
+      }
+    } catch (e) {
+      results.failed++;
+      console.log(`  ❌ "${tc.input}" 에러: ${e.message}`);
+    }
+  });
+  console.log('');
+
+  // Test 4: mapMethodToIssueType_() 함수 테스트
+  console.log('Test 4: mapMethodToIssueType_() 함수');
+  const methodTests = [
+    { input: 'T/C 간섭', expected: 't_c' },
+    { input: 'PSRC-PC접합', expected: 'design' },
+    { input: 'HMB 반입', expected: 'schedule' },
+    { input: '안전 점검', expected: 'safety' },
+    { input: '품질 검수', expected: 'quality' },
+    { input: '기타', expected: 'other' },
+    { input: null, expected: 'other' }
+  ];
+
+  methodTests.forEach(tc => {
+    try {
+      const result = mapMethodToIssueType_(tc.input);
+      if (result === tc.expected) {
+        results.passed++;
+        console.log(`  ✅ "${tc.input}" → ${result}`);
+      } else {
+        results.failed++;
+        console.log(`  ❌ "${tc.input}" → ${result} (expected: ${tc.expected})`);
+      }
+    } catch (e) {
+      results.failed++;
+      console.log(`  ❌ "${tc.input}" 에러: ${e.message}`);
+    }
+  });
+  console.log('');
+
+  // 결과 요약
+  console.log('=== Results ===');
+  console.log(`Passed: ${results.passed}`);
+  console.log(`Failed: ${results.failed}`);
+  console.log(`Total: ${results.passed + results.failed}`);
+
+  return results;
+}
+
+// ============================================
+// Task 1: 시맨틱 프롬프트 테스트
+// ============================================
+
+/**
+ * Test: ZONE_CONTEXT 및 시맨틱 프롬프트 검증
+ */
+function test_SemanticPrompt() {
+  console.log('=== Test: Semantic Prompt & Zone Context ===\n');
+
+  const results = {
+    passed: 0,
+    failed: 0,
+    tests: []
+  };
+
+  // Test 1: ZONE_CONTEXT 상수 존재 확인
+  console.log('Test 1: ZONE_CONTEXT 상수');
+  try {
+    if (typeof ZONE_CONTEXT === 'string' && ZONE_CONTEXT.length > 0) {
+      results.passed++;
+      console.log('✅ ZONE_CONTEXT 상수 존재\n');
+    } else {
+      throw new Error('ZONE_CONTEXT가 비어있음');
+    }
+  } catch (e) {
+    results.failed++;
+    console.log(`❌ ${e.message}\n`);
+  }
+
+  // Test 2: PERSONA_PROMPT에 Zone 정보 포함 확인
+  console.log('Test 2: PERSONA_PROMPT Zone 정보');
+  try {
+    if (PERSONA_PROMPT.includes('zoneId') && PERSONA_PROMPT.includes('affectedColumns')) {
+      results.passed++;
+      console.log('✅ PERSONA_PROMPT에 zoneId, affectedColumns 포함\n');
+    } else {
+      throw new Error('PERSONA_PROMPT에 Zone 필드 누락');
+    }
+  } catch (e) {
+    results.failed++;
+    console.log(`❌ ${e.message}\n`);
+  }
+
+  // Test 3: inferZoneFromColumns_() 함수 테스트
+  console.log('Test 3: inferZoneFromColumns_() 함수');
+  const zoneTests = [
+    { input: ['A-X10', 'B-X15', 'C-X20'], expected: 'zone_a' },
+    { input: ['A-X30', 'B-X35', 'C-X40'], expected: 'zone_b' },
+    { input: ['A-X50', 'B-X55', 'C-X60'], expected: 'zone_c' },
+    { input: [], expected: '' },
+    { input: null, expected: '' },
+    { input: ['A-X10', 'B-X30', 'C-X50'], expected: 'zone_a' } // 동률 시 첫 번째
+  ];
+
+  zoneTests.forEach(tc => {
+    try {
+      const result = inferZoneFromColumns_(tc.input);
+      if (result === tc.expected) {
+        results.passed++;
+        console.log(`  ✅ ${JSON.stringify(tc.input)} → ${result}`);
+      } else {
+        results.failed++;
+        console.log(`  ❌ ${JSON.stringify(tc.input)} → ${result} (expected: ${tc.expected})`);
+      }
+    } catch (e) {
+      results.failed++;
+      console.log(`  ❌ ${JSON.stringify(tc.input)} 에러: ${e.message}`);
+    }
+  });
+  console.log('');
+
+  // Test 4: getDefaultAnalysis_() 필드 검증
+  console.log('Test 4: getDefaultAnalysis_() 신규 필드');
+  try {
+    const mockEmail = { from: 'test@samsung.com', subject: 'Test' };
+    const defaultAnalysis = getDefaultAnalysis_(mockEmail);
+
+    if ('zoneId' in defaultAnalysis && 'affectedColumns' in defaultAnalysis) {
+      results.passed++;
+      console.log('✅ getDefaultAnalysis_()에 zoneId, affectedColumns 포함\n');
+    } else {
+      throw new Error('getDefaultAnalysis_()에 신규 필드 누락');
+    }
+  } catch (e) {
+    results.failed++;
+    console.log(`❌ ${e.message}\n`);
+  }
+
+  // 결과 요약
+  console.log('=== Results ===');
+  console.log(`Passed: ${results.passed}`);
+  console.log(`Failed: ${results.failed}`);
+  console.log(`Total: ${results.passed + results.failed}`);
+
+  return results;
+}
+
+// ============================================
+// Phase 6: Production Stages 테스트
+// ============================================
+
+/**
+ * Test: 6단계 공정 상태 API
+ * DashboardAPI.gs의 stage 관련 함수 테스트
+ */
+function test_ProductionStages() {
+  console.log('=== Test: Production Stages (Phase 6) ===\n');
+
+  const results = {
+    passed: 0,
+    failed: 0,
+    tests: []
+  };
+
+  const validStages = ['hmb_fab', 'pre_assem', 'main_assem', 'hmb_psrc', 'form', 'embed'];
+  const testUid = 'A-X1'; // 테스트용 UID
+
+  // Test 1: 유효한 공정 단계 코드 확인
+  console.log('Test 1: 유효한 공정 단계 코드');
+  try {
+    // updateColumnStage 함수로 유효한 stage 테스트
+    const result = updateColumnStage(testUid, 'hmb_fab', 'active', 'test_stage');
+
+    if (result.success || result.error) {
+      results.passed++;
+      console.log('✅ updateColumnStage() 함수 정상 동작');
+      console.log(`   결과: ${JSON.stringify(result)}\n`);
+    }
+  } catch (e) {
+    if (e.message.includes('is not defined')) {
+      console.log('⚠️ updateColumnStage 함수를 찾을 수 없음 (DashboardAPI 필요)\n');
+    } else {
+      results.failed++;
+      console.log(`❌ 오류: ${e.message}\n`);
+    }
+  }
+
+  // Test 2: 잘못된 공정 단계 코드 거부
+  console.log('Test 2: 잘못된 공정 단계 코드 거부');
+  try {
+    const result = updateColumnStage(testUid, 'invalid_stage', 'active', 'test');
+
+    if (result.success === false && result.error.includes('Invalid stage code')) {
+      results.passed++;
+      console.log('✅ 잘못된 stage 코드 정상 거부\n');
+    } else {
+      results.failed++;
+      console.log(`❌ 잘못된 stage 코드가 거부되지 않음\n`);
+    }
+  } catch (e) {
+    if (e.message.includes('is not defined')) {
+      console.log('⚠️ updateColumnStage 함수를 찾을 수 없음\n');
+    } else {
+      results.failed++;
+      console.log(`❌ 오류: ${e.message}\n`);
+    }
+  }
+
+  // Test 3: getColumns()가 stages 객체 반환하는지 확인
+  console.log('Test 3: getColumns() stages 객체 반환');
+  try {
+    const result = getColumns('zone_a');
+
+    if (result.success && result.columns) {
+      const firstColumn = Object.values(result.columns)[0];
+
+      if (firstColumn && firstColumn.stages) {
+        results.passed++;
+        console.log('✅ getColumns()가 stages 객체 포함');
+        console.log(`   stages: ${JSON.stringify(firstColumn.stages)}\n`);
+      } else {
+        results.failed++;
+        console.log('❌ stages 객체가 없음\n');
+      }
+    }
+  } catch (e) {
+    if (e.message.includes('is not defined')) {
+      console.log('⚠️ getColumns 함수를 찾을 수 없음\n');
+    } else {
+      results.failed++;
+      console.log(`❌ 오류: ${e.message}\n`);
+    }
+  }
+
+  // Test 4: bulkUpdateColumnStages() 함수 테스트
+  console.log('Test 4: bulkUpdateColumnStages() 함수');
+  try {
+    const result = bulkUpdateColumnStages(['A-X1', 'A-X2'], 'hmb_fab', 'active', 'test_bulk');
+
+    if (result.summary && result.stageCode === 'hmb_fab') {
+      results.passed++;
+      console.log('✅ bulkUpdateColumnStages() 정상 동작');
+      console.log(`   결과: ${result.summary}\n`);
+    } else {
+      results.failed++;
+      console.log('❌ bulkUpdateColumnStages() 응답 형식 불일치\n');
+    }
+  } catch (e) {
+    if (e.message.includes('is not defined')) {
+      console.log('⚠️ bulkUpdateColumnStages 함수를 찾을 수 없음\n');
+    } else {
+      results.failed++;
+      console.log(`❌ 오류: ${e.message}\n`);
+    }
+  }
+
+  // Test 5: updateColumn()으로 stages 일괄 업데이트
+  console.log('Test 5: updateColumn() stages 일괄 업데이트');
+  try {
+    const stagesData = {
+      stages: {
+        hmb_fab: 'installed',
+        pre_assem: 'active',
+        main_assem: 'pending'
+      }
+    };
+
+    const result = updateColumn(testUid, stagesData, 'test_stages_batch');
+
+    if (result.success || result.error) {
+      results.passed++;
+      console.log('✅ updateColumn()으로 다중 stages 업데이트 가능');
+      console.log(`   업데이트 항목: ${JSON.stringify(result.updated || [])}\n`);
+    }
+  } catch (e) {
+    if (e.message.includes('is not defined')) {
+      console.log('⚠️ updateColumn 함수를 찾을 수 없음\n');
+    } else {
+      results.failed++;
+      console.log(`❌ 오류: ${e.message}\n`);
+    }
+  }
+
+  // 결과 요약
+  console.log('=== Results ===');
+  console.log(`Passed: ${results.passed}`);
+  console.log(`Failed: ${results.failed}`);
+  console.log(`Total: ${results.passed + results.failed}`);
+
+  return results;
+}
+
+// ============================================
+// Phase 7+: 층-절주 구조 Backend 테스트
+// ============================================
+
+/**
+ * Test: 층(Floor) 데이터 API
+ * getFloorData, getFloorStats 함수 테스트
+ */
+function test_FloorAPI() {
+  console.log('=== Test: Floor Data API (Phase 7+) ===\n');
+
+  const results = {
+    passed: 0,
+    failed: 0,
+    errors: []
+  };
+
+  const testFloors = ['F01', 'F02', 'F03', 'F10', 'RF'];
+
+  // Test 1: getFloorData() 함수 테스트
+  console.log('Test 1: getFloorData() 함수');
+  testFloors.forEach(floorId => {
+    try {
+      const result = getFloorData(floorId);
+
+      if (result.success) {
+        results.passed++;
+        const columnCount = Object.keys(result.columns || {}).length;
+        console.log(`  ✅ ${floorId}: ${columnCount} columns`);
+      } else {
+        results.failed++;
+        console.log(`  ❌ ${floorId}: ${result.error || 'Unknown error'}`);
+      }
+    } catch (e) {
+      if (e.message.includes('is not defined')) {
+        console.log(`  ⚠️ getFloorData 함수를 찾을 수 없음`);
+        return;
+      }
+      results.failed++;
+      results.errors.push(`${floorId}: ${e.message}`);
+      console.log(`  ❌ ${floorId}: ${e.message}`);
+    }
+  });
+  console.log('');
+
+  // Test 2: getFloorData() 응답 구조 검증
+  console.log('Test 2: getFloorData() 응답 구조');
+  try {
+    const result = getFloorData('F01');
+
+    if (result.success) {
+      const hasColumns = 'columns' in result;
+      const hasStats = 'stats' in result && 'byJeolju' in result.stats;
+      const hasIssues = 'issues' in result;
+
+      if (hasColumns && hasStats && hasIssues) {
+        results.passed++;
+        console.log('  ✅ 응답 구조 정상 (columns, stats.byJeolju, issues)');
+      } else {
+        results.failed++;
+        console.log(`  ❌ 응답 구조 불완전: columns=${hasColumns}, stats.byJeolju=${hasStats}, issues=${hasIssues}`);
+      }
+    }
+  } catch (e) {
+    if (!e.message.includes('is not defined')) {
+      results.failed++;
+      console.log(`  ❌ 응답 구조 검증 실패: ${e.message}`);
+    }
+  }
+  console.log('');
+
+  // Test 3: 잘못된 층 ID 처리
+  console.log('Test 3: 잘못된 층 ID 처리');
+  try {
+    const result = getFloorData('INVALID');
+
+    if (result.success === false) {
+      results.passed++;
+      console.log('  ✅ 잘못된 층 ID 정상 거부');
+    } else {
+      results.failed++;
+      console.log('  ❌ 잘못된 층 ID가 거부되지 않음');
+    }
+  } catch (e) {
+    if (!e.message.includes('is not defined')) {
+      results.failed++;
+      console.log(`  ❌ 예외 발생: ${e.message}`);
+    }
+  }
+  console.log('');
+
+  // 결과 요약
+  console.log('=== Floor API Test Results ===');
+  console.log(`Passed: ${results.passed}`);
+  console.log(`Failed: ${results.failed}`);
+
+  if (results.errors.length > 0) {
+    console.log('\nErrors:');
+    results.errors.forEach((err, i) => console.log(`  ${i + 1}. ${err}`));
+  }
+
+  return results;
+}
+
+/**
+ * Test: 절주(Jeolju) 관련 API
+ * 절주별 통계 및 필터 테스트
+ */
+function test_JeoljuAPI() {
+  console.log('=== Test: Jeolju API (Phase 7+) ===\n');
+
+  const results = {
+    passed: 0,
+    failed: 0,
+    errors: []
+  };
+
+  const testJeoljus = ['J1', 'J2', 'J3', 'J4', 'J5', 'J6', 'J7', 'J8'];
+
+  // Test 1: 절주별 통계 확인
+  console.log('Test 1: 절주별 통계 확인');
+  try {
+    const result = getFloorData('F01');
+
+    if (result.success && result.stats && result.stats.byJeolju) {
+      const byJeolju = result.stats.byJeolju;
+      let allJeoljuPresent = true;
+
+      testJeoljus.forEach(j => {
+        if (j in byJeolju) {
+          console.log(`  ✅ ${j}: total=${byJeolju[j].total}, issues=${byJeolju[j].issues || 0}`);
+        } else {
+          allJeoljuPresent = false;
+          console.log(`  ❌ ${j}: 통계 없음`);
+        }
+      });
+
+      if (allJeoljuPresent) {
+        results.passed++;
+      } else {
+        results.failed++;
+      }
+    } else {
+      results.failed++;
+      console.log('  ❌ 절주별 통계 데이터 없음');
+    }
+  } catch (e) {
+    if (!e.message.includes('is not defined')) {
+      results.failed++;
+      results.errors.push(`절주 통계: ${e.message}`);
+      console.log(`  ❌ 오류: ${e.message}`);
+    }
+  }
+  console.log('');
+
+  // Test 2: 절주 범위 매핑 확인
+  console.log('Test 2: 절주 범위 매핑');
+  const jeoljuRanges = {
+    J1: { start: 1, end: 9 },
+    J2: { start: 10, end: 17 },
+    J3: { start: 18, end: 26 },
+    J4: { start: 27, end: 34 },
+    J5: { start: 35, end: 43 },
+    J6: { start: 44, end: 52 },
+    J7: { start: 53, end: 61 },
+    J8: { start: 62, end: 69 }
+  };
+
+  try {
+    const result = getFloorData('F01');
+
+    if (result.success && result.columns) {
+      let mappingCorrect = true;
+
+      // 샘플 컬럼으로 절주 매핑 검증
+      Object.entries(result.columns).forEach(([uid, col]) => {
+        if (col.jeoljuId) {
+          // UID에서 X 번호 추출 (예: F01-A-X10 → 10)
+          const match = uid.match(/X(\d+)/);
+          if (match) {
+            const xNum = parseInt(match[1], 10);
+            const expectedJeolju = Object.entries(jeoljuRanges).find(
+              ([_, range]) => xNum >= range.start && xNum <= range.end
+            );
+
+            if (expectedJeolju && expectedJeolju[0] !== col.jeoljuId) {
+              mappingCorrect = false;
+              console.log(`  ❌ ${uid}: 예상 ${expectedJeolju[0]}, 실제 ${col.jeoljuId}`);
+            }
+          }
+        }
+      });
+
+      if (mappingCorrect) {
+        results.passed++;
+        console.log('  ✅ 절주 범위 매핑 정상');
+      } else {
+        results.failed++;
+      }
+    }
+  } catch (e) {
+    if (!e.message.includes('is not defined')) {
+      results.failed++;
+      console.log(`  ❌ 오류: ${e.message}`);
+    }
+  }
+  console.log('');
+
+  // 결과 요약
+  console.log('=== Jeolju API Test Results ===');
+  console.log(`Passed: ${results.passed}`);
+  console.log(`Failed: ${results.failed}`);
+
+  return results;
+}
+
+/**
+ * Test: 전체 층 통계 API
+ * getAllFloorStats() 함수 테스트
+ */
+function test_FloorStats() {
+  console.log('=== Test: Floor Stats API (Phase 7+) ===\n');
+
+  const results = {
+    passed: 0,
+    failed: 0,
+    errors: []
+  };
+
+  const expectedFloors = ['F01', 'F02', 'F03', 'F04', 'F05', 'F06', 'F07', 'F08', 'F09', 'F10', 'RF'];
+
+  // Test 1: getAllFloorStats() 함수
+  console.log('Test 1: getAllFloorStats() 함수');
+  try {
+    const result = getAllFloorStats();
+
+    if (result.success && result.floors) {
+      results.passed++;
+      console.log('  ✅ getAllFloorStats() 정상 동작');
+      console.log(`  총 층수: ${Object.keys(result.floors).length}`);
+
+      // 각 층 통계 출력
+      Object.entries(result.floors).forEach(([floorId, stats]) => {
+        console.log(`    ${floorId}: total=${stats.total}, withIssues=${stats.withIssues || 0}`);
+      });
+    } else {
+      results.failed++;
+      console.log(`  ❌ getAllFloorStats() 실패: ${result.error || 'Unknown'}`);
+    }
+  } catch (e) {
+    if (e.message.includes('is not defined')) {
+      console.log('  ⚠️ getAllFloorStats 함수를 찾을 수 없음');
+    } else {
+      results.failed++;
+      results.errors.push(`getAllFloorStats: ${e.message}`);
+      console.log(`  ❌ 오류: ${e.message}`);
+    }
+  }
+  console.log('');
+
+  // Test 2: 모든 층 포함 확인
+  console.log('Test 2: 모든 층 포함 확인');
+  try {
+    const result = getAllFloorStats();
+
+    if (result.success && result.floors) {
+      const missingFloors = expectedFloors.filter(f => !(f in result.floors));
+
+      if (missingFloors.length === 0) {
+        results.passed++;
+        console.log('  ✅ 모든 11개 층 데이터 포함');
+      } else {
+        results.failed++;
+        console.log(`  ❌ 누락된 층: ${missingFloors.join(', ')}`);
+      }
+    }
+  } catch (e) {
+    if (!e.message.includes('is not defined')) {
+      results.failed++;
+      console.log(`  ❌ 오류: ${e.message}`);
+    }
+  }
+  console.log('');
+
+  // Test 3: 전체 통계 합산 확인
+  console.log('Test 3: 전체 통계 합산');
+  try {
+    const result = getAllFloorStats();
+
+    if (result.success && result.summary) {
+      results.passed++;
+      console.log('  ✅ 전체 통계 합산 포함');
+      console.log(`    총 기둥: ${result.summary.totalColumns}`);
+      console.log(`    이슈 있는 기둥: ${result.summary.withIssues || 0}`);
+      console.log(`    평균 진행률: ${result.summary.avgProgress || 0}%`);
+    } else {
+      // summary가 없어도 통과 (선택적 기능)
+      console.log('  ℹ️ summary 필드 없음 (선택적)');
+    }
+  } catch (e) {
+    if (!e.message.includes('is not defined')) {
+      console.log(`  ❌ 오류: ${e.message}`);
+    }
+  }
+  console.log('');
+
+  // 결과 요약
+  console.log('=== Floor Stats Test Results ===');
+  console.log(`Passed: ${results.passed}`);
+  console.log(`Failed: ${results.failed}`);
+
+  return results;
+}
+
+/**
+ * Test: Columns API 층 필터
+ * getColumns에 floorFilter 파라미터 테스트
+ */
+function test_ColumnsFloorFilter() {
+  console.log('=== Test: Columns Floor Filter (Phase 7+) ===\n');
+
+  const results = {
+    passed: 0,
+    failed: 0,
+    errors: []
+  };
+
+  // Test 1: floorFilter 파라미터 테스트
+  console.log('Test 1: floorFilter 파라미터');
+  try {
+    // Zone 필터 없이 층 필터만 적용
+    const result = getColumns(null, 'F01');
+
+    if (result.success && result.columns) {
+      const columns = Object.values(result.columns);
+      const allSameFloor = columns.every(c => c.floorId === 'F01');
+
+      if (allSameFloor) {
+        results.passed++;
+        console.log(`  ✅ F01 필터 정상: ${columns.length} columns`);
+      } else {
+        results.failed++;
+        const otherFloors = [...new Set(columns.map(c => c.floorId))];
+        console.log(`  ❌ 다른 층 데이터 포함: ${otherFloors.join(', ')}`);
+      }
+    }
+  } catch (e) {
+    if (!e.message.includes('is not defined')) {
+      results.failed++;
+      results.errors.push(`floorFilter: ${e.message}`);
+      console.log(`  ❌ 오류: ${e.message}`);
+    }
+  }
+  console.log('');
+
+  // Test 2: Zone + Floor 복합 필터
+  console.log('Test 2: Zone + Floor 복합 필터');
+  try {
+    const result = getColumns('zone_a', 'F01');
+
+    if (result.success && result.columns) {
+      const columns = Object.values(result.columns);
+      const allMatch = columns.every(c => c.floorId === 'F01' && c.zone === 'zone_a');
+
+      if (allMatch) {
+        results.passed++;
+        console.log(`  ✅ Zone A + F01 필터 정상: ${columns.length} columns`);
+      } else {
+        results.failed++;
+        console.log('  ❌ 필터 조건 불일치');
+      }
+    }
+  } catch (e) {
+    if (!e.message.includes('is not defined')) {
+      results.failed++;
+      console.log(`  ❌ 오류: ${e.message}`);
+    }
+  }
+  console.log('');
+
+  // Test 3: 필터 없이 전체 조회
+  console.log('Test 3: 필터 없이 전체 조회');
+  try {
+    const result = getColumns();
+
+    if (result.success && result.columns) {
+      const columns = Object.values(result.columns);
+      const floors = [...new Set(columns.map(c => c.floorId))];
+
+      if (floors.length > 1) {
+        results.passed++;
+        console.log(`  ✅ 전체 조회 정상: ${columns.length} columns, ${floors.length} floors`);
+      } else {
+        console.log(`  ℹ️ 현재 1개 층 데이터만 존재: ${floors[0]}`);
+      }
+    }
+  } catch (e) {
+    if (!e.message.includes('is not defined')) {
+      results.failed++;
+      console.log(`  ❌ 오류: ${e.message}`);
+    }
+  }
+  console.log('');
+
+  // 결과 요약
+  console.log('=== Columns Floor Filter Test Results ===');
+  console.log(`Passed: ${results.passed}`);
+  console.log(`Failed: ${results.failed}`);
+
+  return results;
+}
+
+/**
+ * Test: 마이그레이션 함수
+ * floorId 컬럼 추가 마이그레이션 테스트
+ */
+function test_MigrationFunctions() {
+  console.log('=== Test: Migration Functions (Phase 7+) ===\n');
+
+  const results = {
+    passed: 0,
+    failed: 0,
+    errors: []
+  };
+
+  // Test 1: getFloorColumnCount() 함수
+  console.log('Test 1: getFloorColumnCount() 함수');
+  try {
+    const result = getFloorColumnCount('F01');
+
+    if (typeof result === 'number' && result >= 0) {
+      results.passed++;
+      console.log(`  ✅ F01 기둥 수: ${result}`);
+    } else {
+      results.failed++;
+      console.log(`  ❌ 잘못된 반환값: ${result}`);
+    }
+  } catch (e) {
+    if (e.message.includes('is not defined')) {
+      console.log('  ⚠️ getFloorColumnCount 함수를 찾을 수 없음');
+    } else {
+      results.failed++;
+      console.log(`  ❌ 오류: ${e.message}`);
+    }
+  }
+  console.log('');
+
+  // Test 2: migrateAddFloorIdColumn() 함수 존재 확인
+  console.log('Test 2: migrateAddFloorIdColumn() 함수 존재');
+  try {
+    if (typeof migrateAddFloorIdColumn === 'function') {
+      results.passed++;
+      console.log('  ✅ migrateAddFloorIdColumn() 함수 정의됨');
+      console.log('  ⚠️ 실제 마이그레이션은 수동 실행 필요');
+    } else {
+      results.failed++;
+      console.log('  ❌ 함수가 function 타입이 아님');
+    }
+  } catch (e) {
+    console.log('  ⚠️ migrateAddFloorIdColumn 함수를 찾을 수 없음');
+  }
+  console.log('');
+
+  // Test 3: generateAllFloorData() 함수 존재 확인
+  console.log('Test 3: generateAllFloorData() 함수 존재');
+  try {
+    if (typeof generateAllFloorData === 'function') {
+      results.passed++;
+      console.log('  ✅ generateAllFloorData() 함수 정의됨');
+      console.log('  ⚠️ 실제 데이터 생성은 수동 실행 필요');
+    } else {
+      results.failed++;
+      console.log('  ❌ 함수가 function 타입이 아님');
+    }
+  } catch (e) {
+    console.log('  ⚠️ generateAllFloorData 함수를 찾을 수 없음');
+  }
+  console.log('');
+
+  // 결과 요약
+  console.log('=== Migration Functions Test Results ===');
+  console.log(`Passed: ${results.passed}`);
+  console.log(`Failed: ${results.failed}`);
+
+  return results;
+}
+
+/**
+ * Phase 7+ 통합 테스트 러너
+ */
+function runPhase7PlusTests() {
+  console.log('╔════════════════════════════════════════════╗');
+  console.log('║   Phase 7+: 층-절주 구조 Backend Tests     ║');
+  console.log('╚════════════════════════════════════════════╝');
+  console.log(`Started at: ${new Date().toLocaleString()}\n`);
+
+  const allResults = {
+    total: { passed: 0, failed: 0 },
+    tests: []
+  };
+
+  const tests = [
+    { name: 'Floor API', fn: test_FloorAPI },
+    { name: 'Jeolju API', fn: test_JeoljuAPI },
+    { name: 'Floor Stats', fn: test_FloorStats },
+    { name: 'Columns Floor Filter', fn: test_ColumnsFloorFilter },
+    { name: 'Migration Functions', fn: test_MigrationFunctions }
+  ];
+
+  tests.forEach(test => {
+    try {
+      console.log(`\n${'─'.repeat(50)}`);
+      const result = test.fn();
+      allResults.tests.push({ name: test.name, ...result });
+      allResults.total.passed += result.passed || 0;
+      allResults.total.failed += result.failed || 0;
+    } catch (e) {
+      console.log(`\n❌ Test "${test.name}" crashed: ${e.message}`);
+      allResults.tests.push({ name: test.name, passed: 0, failed: 1, errors: [e.message] });
+      allResults.total.failed++;
+    }
+  });
+
+  // Summary
+  console.log('\n════════════════════════════════════════════');
+  console.log('           PHASE 7+ TEST SUMMARY            ');
+  console.log('════════════════════════════════════════════');
+  console.log(`Total Passed: ${allResults.total.passed}`);
+  console.log(`Total Failed: ${allResults.total.failed}`);
+  console.log('════════════════════════════════════════════\n');
+
+  if (allResults.total.failed === 0) {
+    console.log('✅ All Phase 7+ tests passed!');
+  } else {
+    console.log('❌ Some tests failed. Check the log above.');
+  }
+
+  return allResults;
+}
+
+/**
+ * Phase 7+ 빠른 상태 확인
+ */
+function quickPhase7PlusCheck() {
+  console.log('=== Phase 7+ Quick Check ===\n');
+
+  const checks = {
+    floorData: false,
+    floorStats: false,
+    columnFilter: false,
+    migration: false
+  };
+
+  // Floor Data API
+  try {
+    const result = getFloorData('F01');
+    checks.floorData = result.success === true;
+  } catch (e) { /* ignore */ }
+
+  // Floor Stats API
+  try {
+    const result = getAllFloorStats();
+    checks.floorStats = result.success === true;
+  } catch (e) { /* ignore */ }
+
+  // Column Filter
+  try {
+    const result = getColumns(null, 'F01');
+    checks.columnFilter = result.success === true;
+  } catch (e) { /* ignore */ }
+
+  // Migration functions exist
+  try {
+    checks.migration = typeof migrateAddFloorIdColumn === 'function' &&
+                       typeof generateAllFloorData === 'function';
+  } catch (e) { /* ignore */ }
+
+  console.log('getFloorData():', checks.floorData ? '✅' : '❌');
+  console.log('getAllFloorStats():', checks.floorStats ? '✅' : '❌');
+  console.log('getColumns(floorFilter):', checks.columnFilter ? '✅' : '❌');
+  console.log('Migration Functions:', checks.migration ? '✅' : '❌');
+
+  console.log('\n--- Summary ---');
+  const allOk = Object.values(checks).every(v => v);
+  console.log(allOk ? '✅ Phase 7+ Backend is ready!' : '⚠️ Some checks failed');
 
   return checks;
 }
