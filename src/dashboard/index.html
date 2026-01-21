@@ -72,7 +72,10 @@
 
     <!-- Production Status Data (PSRC 제작현황) -->
     <script src="./data/production_status_import.js"></script>
-    
+
+    <!-- Meeting Issues Data (회의록 이슈) -->
+    <script src="./data/meeting_issues_import.js"></script>
+
     <!-- Column Data Generator (전수 기둥 데이터) -->
     <script src="./data/column_data_generator.js"></script>
     
@@ -3311,6 +3314,7 @@
                     <button class="view-mode-btn" :class="{ 'active': viewMode === 'grid' }" @click="viewMode = 'grid'">그리드</button>
                     <button class="view-mode-btn" :class="{ 'active': viewMode === 'cluster' }" @click="viewMode = 'cluster'">클러스터</button>
                     <button class="view-mode-btn" :class="{ 'active': viewMode === 'list' }" @click="viewMode = 'list'">리스트</button>
+                    <button class="view-mode-btn" :class="{ 'active': viewMode === 'timeline' }" @click="viewMode = 'timeline'">타임라인</button>
                 </div>
 
                 <button class="data-map-btn" @click="recalculateClusters()" title="클러스터 재계산">
@@ -3318,6 +3322,12 @@
                 </button>
                 <button class="data-map-btn" @click="exportJSON()" title="JSON 내보내기">
                     <span class="data-map-btn-icon">💾</span> 내보내기
+                </button>
+                <button class="data-map-btn" @click="loadMeetingIssues()" title="회의록 이슈 로드 (최근 2000건)" style="background: #3b82f6;">
+                    <span class="data-map-btn-icon">📋</span> 회의록
+                </button>
+                <button class="data-map-btn" @click="loadAllHistory()" title="전체 히스토리 로드 (5000건)" style="background: #8b5cf6;">
+                    <span class="data-map-btn-icon">📜</span> 전체 히스토리
                 </button>
                 <button class="data-map-btn" @click="syncToMainGrid()" title="메인 그리드와 동기화">
                     <span class="data-map-btn-icon">🔗</span> 동기화
@@ -3332,20 +3342,24 @@
         <!-- Stats Bar -->
         <div class="stats-bar">
             <div class="stat-item">
-                <span class="stat-value" x-text="formatNumber(stats.total)">0</span>
+                <span class="stat-value" x-text="formatNumber(loadedCount || stats.total || filteredIssues.length)">0</span>
                 <span class="stat-label">전체 이슈</span>
             </div>
             <div class="stat-item">
-                <span class="stat-value" x-text="formatNumber(stats.clusterCount)">0</span>
-                <span class="stat-label">클러스터</span>
+                <span class="stat-value" x-text="formatNumber(filteredIssues.length)">0</span>
+                <span class="stat-label">필터된 이슈</span>
             </div>
             <div class="stat-item">
                 <span class="stat-value" x-text="Object.keys(stats.byType || {}).length">0</span>
                 <span class="stat-label">유형</span>
             </div>
             <div class="stat-item">
-                <span class="stat-value" x-text="Object.keys(stats.byFloor || {}).length">0</span>
-                <span class="stat-label">층</span>
+                <span class="stat-value" x-text="Object.keys(stats.byStatus || {}).length">0</span>
+                <span class="stat-label">상태</span>
+            </div>
+            <div class="stat-item" x-show="meetingDates.length > 0">
+                <span class="stat-value" x-text="meetingDates.length">0</span>
+                <span class="stat-label">회의</span>
             </div>
         </div>
 
@@ -3386,6 +3400,24 @@
                     <option value="High">High</option>
                     <option value="Medium">Medium</option>
                     <option value="Low">Low</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <span class="filter-label">상태</span>
+                <select class="filter-select" x-model="filters.status">
+                    <option value="">전체</option>
+                    <template x-for="status in statuses" :key="status">
+                        <option :value="status" x-text="status"></option>
+                    </template>
+                </select>
+            </div>
+            <div class="filter-group" x-show="meetingDates.length > 0">
+                <span class="filter-label">회의일</span>
+                <select class="filter-select" x-model="filters.meetingDate">
+                    <option value="">전체</option>
+                    <template x-for="date in meetingDates.slice(0, 30)" :key="date">
+                        <option :value="date" x-text="formatMeetingDate(date)"></option>
+                    </template>
                 </select>
             </div>
             <input type="text" class="search-input" x-model="searchQuery" placeholder="검색...">
@@ -3511,6 +3543,96 @@
                     </template>
                     <div x-show="filteredIssues.length > 100" style="padding: 16px; text-align: center; color: var(--text-tertiary); font-size: 12px;">
                         ... 외 <span x-text="filteredIssues.length - 100"></span>개
+                    </div>
+                </div>
+            </template>
+
+            <!-- Timeline View -->
+            <template x-if="viewMode === 'timeline'">
+                <div class="timeline-view" style="overflow-y: auto; height: calc(100% - 200px); padding: 16px;">
+                    <div x-show="timelineData.length === 0" style="text-align: center; color: var(--text-tertiary); padding: 40px;">
+                        <p style="font-size: 14px; margin-bottom: 16px;">📜 타임라인 데이터가 없습니다</p>
+                        <p style="font-size: 12px; margin-bottom: 16px;">회의록을 로드하여 이슈 히스토리를 확인하세요</p>
+                        <button class="data-map-btn" @click="loadMeetingIssues()" style="background: #3b82f6;">
+                            <span class="data-map-btn-icon">📋</span> 회의록 로드
+                        </button>
+                    </div>
+
+                    <!-- Timeline Chart -->
+                    <div x-show="timelineData.length > 0">
+                        <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 16px; color: var(--text-primary);">
+                            📊 회의별 이슈 추이 (<span x-text="timelineData.length"></span>회 회의)
+                        </h3>
+
+                        <!-- Summary Stats -->
+                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px;">
+                            <div style="background: var(--bg-tertiary); padding: 12px; border-radius: 8px; text-align: center;">
+                                <div style="font-size: 24px; font-weight: 700; color: #3b82f6;" x-text="formatNumber(filteredIssues.length)"></div>
+                                <div style="font-size: 11px; color: var(--text-secondary);">전체 이슈</div>
+                            </div>
+                            <div style="background: var(--bg-tertiary); padding: 12px; border-radius: 8px; text-align: center;">
+                                <div style="font-size: 24px; font-weight: 700; color: #10b981;" x-text="formatNumber(filteredIssues.filter(i => i.status === 'Completed').length)"></div>
+                                <div style="font-size: 11px; color: var(--text-secondary);">완료</div>
+                            </div>
+                            <div style="background: var(--bg-tertiary); padding: 12px; border-radius: 8px; text-align: center;">
+                                <div style="font-size: 24px; font-weight: 700; color: #f59e0b;" x-text="formatNumber(filteredIssues.filter(i => i.status === 'Open').length)"></div>
+                                <div style="font-size: 11px; color: var(--text-secondary);">미완료</div>
+                            </div>
+                            <div style="background: var(--bg-tertiary); padding: 12px; border-radius: 8px; text-align: center;">
+                                <div style="font-size: 24px; font-weight: 700; color: #8b5cf6;" x-text="timelineData.length"></div>
+                                <div style="font-size: 11px; color: var(--text-secondary);">회의 수</div>
+                            </div>
+                        </div>
+
+                        <!-- Timeline Bar Chart -->
+                        <div style="margin-bottom: 24px;">
+                            <div style="display: flex; flex-direction: column; gap: 4px; max-height: 300px; overflow-y: auto;">
+                                <template x-for="meeting in timelineData.slice(-30)" :key="meeting.date">
+                                    <div style="display: flex; align-items: center; gap: 8px; font-size: 11px;">
+                                        <span style="width: 80px; color: var(--text-secondary); flex-shrink: 0;" x-text="formatMeetingDate(meeting.date)"></span>
+                                        <div style="flex: 1; height: 20px; background: var(--bg-tertiary); border-radius: 4px; overflow: hidden; display: flex;">
+                                            <div style="height: 100%; transition: width 0.3s;"
+                                                 :style="'width: ' + ((meeting.byStatus?.Completed || 0) / meeting.total * 100) + '%; background: #10b981;'"
+                                                 :title="'완료: ' + (meeting.byStatus?.Completed || 0)"></div>
+                                            <div style="height: 100%; transition: width 0.3s;"
+                                                 :style="'width: ' + ((meeting.byStatus?.Open || 0) / meeting.total * 100) + '%; background: #f59e0b;'"
+                                                 :title="'미완료: ' + (meeting.byStatus?.Open || 0)"></div>
+                                            <div style="height: 100%; transition: width 0.3s;"
+                                                 :style="'width: ' + ((meeting.byStatus?.Review || 0) / meeting.total * 100) + '%; background: #3b82f6;'"
+                                                 :title="'검토: ' + (meeting.byStatus?.Review || 0)"></div>
+                                        </div>
+                                        <span style="width: 40px; text-align: right; color: var(--text-primary); font-weight: 500;" x-text="meeting.total"></span>
+                                    </div>
+                                </template>
+                            </div>
+                            <div style="display: flex; gap: 16px; margin-top: 12px; justify-content: center;">
+                                <span style="font-size: 11px; color: var(--text-secondary);"><span style="display: inline-block; width: 12px; height: 12px; background: #10b981; border-radius: 2px; margin-right: 4px;"></span>완료</span>
+                                <span style="font-size: 11px; color: var(--text-secondary);"><span style="display: inline-block; width: 12px; height: 12px; background: #f59e0b; border-radius: 2px; margin-right: 4px;"></span>미완료</span>
+                                <span style="font-size: 11px; color: var(--text-secondary);"><span style="display: inline-block; width: 12px; height: 12px; background: #3b82f6; border-radius: 2px; margin-right: 4px;"></span>검토</span>
+                            </div>
+                        </div>
+
+                        <!-- Category History -->
+                        <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 16px; color: var(--text-primary);">
+                            📂 대분류별 이슈 현황 (상위 10개)
+                        </h3>
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <template x-for="cat in categoryHistory.slice(0, 10)" :key="cat.category">
+                                <div style="background: var(--bg-tertiary); padding: 12px; border-radius: 8px; cursor: pointer;"
+                                     @click="filters.type = ''; searchQuery = cat.category.substring(0, 20);">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                        <span style="font-size: 12px; font-weight: 500; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 300px;"
+                                              x-text="cat.category"></span>
+                                        <span style="font-size: 12px; color: var(--text-secondary);" x-text="cat.issues.length + '건'"></span>
+                                    </div>
+                                    <div style="display: flex; gap: 8px; font-size: 11px; color: var(--text-secondary);">
+                                        <span>✅ <span x-text="cat.issues.filter(i => i.status === 'Completed').length"></span></span>
+                                        <span>📋 <span x-text="cat.issues.filter(i => i.status === 'Open').length"></span></span>
+                                        <span>🔄 <span x-text="cat.issues.filter(i => i.status === 'In Progress').length"></span></span>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
                     </div>
                 </div>
             </template>

@@ -21,6 +21,12 @@
             viewMode: 'grid',        // 'grid' | 'cluster' | 'list' | 'timeline'
             isLoading: false,
             error: null,
+            loadedCount: 0,          // 로드된 이슈 수 (반응성 트리거용)
+
+            // 로컬 캐시 (반응성 보장)
+            _cachedIssues: [],
+            _cachedStats: {},
+            _lastRefresh: 0,
 
             // 필터
             filters: {
@@ -29,7 +35,8 @@
                 type: '',
                 severity: '',
                 status: '',
-                source: ''
+                source: '',
+                meetingDate: ''
             },
 
             // 선택
@@ -42,6 +49,10 @@
 
             // 파일 업로드
             dragActive: false,
+
+            // 타임라인 데이터
+            timelineData: [],
+            categoryHistory: [],
 
             // 그리드 설정
             gridConfig: {
@@ -70,8 +81,29 @@
                 return { issues: [], clusters: [], stats: {} };
             },
 
-            get filteredIssues() {
-                let issues = this.getStore().issues || [];
+            /**
+             * 캐시 새로고침 - 스토어에서 데이터 가져와 로컬 캐시 업데이트
+             */
+            refreshCache() {
+                const store = this.getStore();
+                this._cachedIssues = [...(store.issues || [])];
+                this._cachedStats = { ...(store.stats || {}) };
+                this._lastRefresh = Date.now();
+                console.log('[DataMapView] Cache refreshed:', this._cachedIssues.length, 'issues');
+            },
+
+            /**
+             * 필터링된 이슈 목록 가져오기 (메서드 방식)
+             */
+            getFilteredIssues() {
+                // 로컬 캐시 사용 (loadedCount 변경 시 갱신됨)
+                let issues = this._cachedIssues || [];
+
+                // 캐시가 비어있으면 스토어에서 직접 가져옴
+                if (issues.length === 0) {
+                    const store = this.getStore();
+                    issues = store.issues || [];
+                }
 
                 if (this.searchQuery) {
                     const query = this.searchQuery.toLowerCase();
@@ -100,8 +132,36 @@
                 if (this.filters.source) {
                     issues = issues.filter(i => i.source === this.filters.source);
                 }
+                if (this.filters.meetingDate) {
+                    issues = issues.filter(i => i.meetingDate === this.filters.meetingDate);
+                }
 
                 return issues;
+            },
+
+            // Getter alias (backward compatibility) - triggers on loadedCount change
+            get filteredIssues() {
+                // Trigger reactivity via loadedCount
+                const _ = this.loadedCount;
+                return this.getFilteredIssues();
+            },
+
+            get meetingDates() {
+                const byDate = this.stats?.byMeetingDate;
+                if (!byDate || typeof byDate !== 'object') return [];
+                return Object.keys(byDate)
+                    .filter(k => typeof k === 'string' && k !== '')
+                    .sort((a, b) => b.localeCompare(a));  // 최신 순
+            },
+
+            get majorCategories() {
+                const byCategory = this.stats?.byMajorCategory;
+                if (!byCategory || typeof byCategory !== 'object') return [];
+                return Object.entries(byCategory)
+                    .filter(([k, v]) => typeof k === 'string' && k !== '' && k !== 'undefined')
+                    .sort((a, b) => b[1] - a[1])  // 이슈 수 순
+                    .slice(0, 20)
+                    .map(([k]) => k);
             },
 
             get filteredClusters() {
@@ -119,6 +179,11 @@
             },
 
             get stats() {
+                // Use cached stats if available, triggered by loadedCount
+                const _ = this.loadedCount;
+                if (Object.keys(this._cachedStats || {}).length > 0) {
+                    return this._cachedStats;
+                }
                 return this.getStore().stats || {};
             },
 
@@ -147,6 +212,14 @@
                 return Object.keys(bySource).filter(k => typeof k === 'string' && k !== '').sort();
             },
 
+            get statuses() {
+                const byStatus = this.stats?.byStatus;
+                if (!byStatus || typeof byStatus !== 'object') {
+                    return ['Completed', 'In Progress', 'Open', 'Review', 'On Hold', 'Delayed'];
+                }
+                return Object.keys(byStatus).filter(k => typeof k === 'string' && k !== '').sort();
+            },
+
             // === 초기화 ===
 
             init() {
@@ -173,7 +246,30 @@
                     }
                 });
 
-                console.log('[DataMapView] Initialized, store issues:', this.getStore().issues?.length || 0);
+                // 초기 데이터 로드 확인 (localStorage에서 복구된 경우)
+                const initialCount = this.getStore().issues?.length || 0;
+                if (initialCount > 0) {
+                    // 캐시 새로고침
+                    this.refreshCache();
+                    this.loadedCount = initialCount;
+                    console.log('[DataMapView] Initial data found:', initialCount, 'issues');
+
+                    // 타임라인 데이터도 업데이트
+                    if (window.MeetingIssuesImport) {
+                        this.updateTimelineData(this._cachedIssues);
+                    }
+                }
+
+                // $watch를 사용하여 loadedCount 변경 시 캐시 갱신
+                if (typeof this.$watch === 'function') {
+                    this.$watch('loadedCount', (newCount) => {
+                        if (newCount > 0 && newCount !== this._cachedIssues.length) {
+                            this.refreshCache();
+                        }
+                    });
+                }
+
+                console.log('[DataMapView] Initialized, store issues:', initialCount);
             },
 
             // === 파일 처리 ===
@@ -219,6 +315,11 @@
 
                     if (result.success || result.successCount > 0) {
                         this.getStore().addIssues(result.issues, 'file_import');
+
+                        // 캐시 새로고침
+                        this.refreshCache();
+                        this.loadedCount = this._cachedIssues.length;
+
                         this.showToast(`${result.successCount}개 파일에서 ${result.issues.length}건 이슈 가져옴`, 'success');
 
                         if (result.errors.length > 0) {
@@ -380,7 +481,8 @@
                     type: '',
                     severity: '',
                     status: '',
-                    source: ''
+                    source: '',
+                    meetingDate: ''
                 };
                 this.searchQuery = '';
             },
@@ -447,6 +549,95 @@
                     this.getStore().syncToMainIssues();
                     this.showToast('메인 그리드와 동기화 완료', 'success');
                 }
+            },
+
+            /**
+             * 회의록 이슈 로드
+             */
+            async loadMeetingIssues(options = {}) {
+                if (!window.MeetingIssuesImport) {
+                    this.showError('MeetingIssuesImport 모듈이 로드되지 않았습니다');
+                    return;
+                }
+
+                this.isLoading = true;
+                this.error = null;
+
+                const {
+                    maxIssues = 2000,     // 더 많은 이슈 로드
+                    recentOnly = false,   // 전체 기간
+                    recentDays = 365      // 1년
+                } = options;
+
+                try {
+                    const result = await window.MeetingIssuesImport.loadIntoStore({
+                        maxIssues,
+                        recentOnly,
+                        recentDays,
+                        onProgress: (progress) => {
+                            console.log(`[DataMapView] Loading... ${progress.percent}%`);
+                        }
+                    });
+
+                    if (result.success) {
+                        const summary = result.stats;
+                        this.showToast(
+                            `회의록 ${summary.totalLoaded}건 로드 완료 (전체 ${summary.totalAvailable}건 중)`,
+                            'success'
+                        );
+                        console.log('[DataMapView] Meeting issues loaded:', summary);
+
+                        // 캐시 새로고침 (스토어 데이터 반영)
+                        this.refreshCache();
+
+                        // 타임라인 및 히스토리 데이터 생성
+                        this.updateTimelineData(result.issues);
+
+                        // 반응성 트리거 (마지막에 설정)
+                        this.loadedCount = this._cachedIssues.length;
+                    } else {
+                        this.showError('회의록 로드 실패: ' + result.error);
+                    }
+
+                } catch (err) {
+                    console.error('[DataMapView] Load meeting issues error:', err);
+                    this.showError('회의록 로드 중 오류: ' + err.message);
+                } finally {
+                    this.isLoading = false;
+                }
+            },
+
+            /**
+             * 전체 이슈 히스토리 로드
+             */
+            async loadAllHistory() {
+                await this.loadMeetingIssues({
+                    maxIssues: 5000,      // 5000개까지 로드
+                    recentOnly: false     // 전체 기간
+                });
+            },
+
+            /**
+             * 타임라인 데이터 업데이트
+             */
+            updateTimelineData(issues) {
+                if (!window.MeetingIssuesImport) return;
+
+                this.timelineData = window.MeetingIssuesImport.getTimeline(issues);
+                this.categoryHistory = window.MeetingIssuesImport.getHistoryByCategory(issues);
+
+                console.log('[DataMapView] Timeline data updated:', {
+                    meetings: this.timelineData.length,
+                    categories: this.categoryHistory.length
+                });
+            },
+
+            /**
+             * 회의 날짜 포맷
+             */
+            formatMeetingDate(dateStr) {
+                if (!window.MeetingIssuesImport) return dateStr;
+                return window.MeetingIssuesImport.formatMeetingDate(dateStr);
             },
 
             // === 유틸리티 ===
@@ -519,26 +710,26 @@
 
     // Alpine.js 컴포넌트 등록
     function registerComponent() {
-        if (typeof Alpine !== 'undefined') {
+        if (typeof Alpine !== 'undefined' && typeof Alpine.data === 'function') {
             Alpine.data('dataMapView', createDataMapComponent);
             console.log('[DataMapView] Component registered');
-        } else {
-            document.addEventListener('alpine:init', () => {
-                Alpine.data('dataMapView', createDataMapComponent);
-                console.log('[DataMapView] Component registered (deferred)');
-            });
+            return true;
         }
+        return false;
     }
 
-    // 등록
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', registerComponent);
-    } else {
-        registerComponent();
+    // 등록 시도
+    if (!registerComponent()) {
+        // Alpine이 아직 로드되지 않음 - alpine:init 이벤트 사용
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('dataMapView', createDataMapComponent);
+            console.log('[DataMapView] Component registered (via alpine:init)');
+        });
     }
 
-    // 전역 노출
+    // 전역 노출 (디버깅용)
     window.DataMapViewFactory = createDataMapComponent;
+    window.DataMapView = { createComponent: createDataMapComponent };
 
 })();
 
