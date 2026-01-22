@@ -253,7 +253,7 @@ case 'triggerAnalysis':
 ```json
 "productionStages": [
   { "code": "hmb_fab", "label": "HMB제작", "order": 1, "color": "#1f6feb" },
-  { "code": "pre_assem", "label": "연조립", "order": 2, "color": "#8957e5" },
+  { "code": "pre_assem", "label": "면조립", "order": 2, "color": "#8957e5" },
   { "code": "main_assem", "label": "대조립", "order": 3, "color": "#d29922" },
   { "code": "hmb_psrc", "label": "HMB+PSRC삽입", "order": 4, "color": "#238636" },
   { "code": "form", "label": "FORM", "order": 5, "color": "#da3633" },

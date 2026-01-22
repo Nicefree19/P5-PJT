@@ -125,7 +125,7 @@ if (!validStatuses.includes(stageStatus)) {
 
 - `P5Store.getDefaultData()`에 `productionStages` 추가
 - `init()`에서 `stageConfigs`를 `P5Store`에서 동적 로드
-- 한글 라벨 적용: HMB제작, 연조립, 대조립, HMB+PSRC, FORM, 앰베드
+- 한글 라벨 적용: HMB제작, 면조립, 대조립, HMB+PSRC, FORM, 앰베드
 
 ---
 

@@ -124,7 +124,7 @@ case 'triggerAnalysis':
 ```json
 "productionStages": [
   { "code": "hmb_fab", "label": "HMB제작", "order": 1 },
-  { "code": "pre_assem", "label": "연조립", "order": 2 },
+  { "code": "pre_assem", "label": "면조립", "order": 2 },
   { "code": "main_assem", "label": "대조립", "order": 3 },
   { "code": "hmb_psrc", "label": "HMB+PSRC삽입", "order": 4 },
   { "code": "form", "label": "FORM", "order": 5 },

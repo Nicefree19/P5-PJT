@@ -40,7 +40,7 @@ describe('Reporting Utils', () => {
 
   const stageConfigs = [
     { code: 'hmb_fab', label: 'HMB제작', color: '#f97316', order: 1 },
-    { code: 'pre_assem', label: '연조립', color: '#eab308', order: 2 },
+    { code: 'pre_assem', label: '면조립', color: '#eab308', order: 2 },
     { code: 'main_assem', label: '대조립', color: '#22c55e', order: 3 }
   ];
 

@@ -19,7 +19,7 @@
 - 📊 **Google Sheet DB화**: 26개 컬럼 구조화 데이터베이스
 - 🎯 **Live Grid Dashboard**: 12행×69열 기둥 현황 실시간 시각화
 - ⚠️ **Issue Overlay**: 이슈별 영향 범위 오버레이 및 추적
-- 🔄 **6단계 공정 관리**: HMB제작→연조립→대조립→HMB+PSRC→FORM→앰베드
+- 🔄 **6단계 공정 관리**: HMB제작→면조립→대조립→HMB+PSRC→FORM→앰베드
 
 ### 주요 이해관계자
 - **삼우종합건축** (`@samoo.com`) - 원설계
