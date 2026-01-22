@@ -6,6 +6,308 @@
 /* Alpine.js x-cloak: Hide elements until Alpine initializes */
 [x-cloak] { display: none !important; }
 
+/* === Header Compact Layout (수평 배열) === */
+header.header-compact {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 52px;
+    padding: 0 16px;
+    background: var(--panel-bg);
+    border-bottom: 1px solid var(--border-color);
+    gap: 16px;
+}
+
+/* 좌측: 브랜드 + 층 선택 */
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.brand-compact {
+    font-size: 18px;
+    font-weight: 700;
+    color: #58a6ff;
+    margin: 0;
+    white-space: nowrap;
+}
+
+.floor-btn-compact {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(135deg, #1f6feb 0%, #238636 100%);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.floor-btn-compact:hover {
+    background: linear-gradient(135deg, #2d7ff9 0%, #2ea043 100%);
+    transform: translateY(-1px);
+}
+
+/* 중앙: 진행률 + 통계 */
+.header-center {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex: 1;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.progress-bar-compact {
+    display: flex;
+    gap: 6px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+}
+
+.stage-chip {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    background: var(--bg-secondary, #21262d);
+    border-radius: 14px;
+    border-left: 3px solid;
+    font-size: 11px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.stage-chip-label {
+    color: var(--text-sub, #8b949e);
+    font-weight: 500;
+}
+
+.stage-chip-value {
+    font-weight: 700;
+    color: var(--text-main, #c9d1d9);
+}
+
+.stat-compact {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--text-sub, #8b949e);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.stat-compact .stat-num {
+    font-weight: 600;
+    color: var(--text-main, #c9d1d9);
+}
+
+.stat-divider {
+    width: 1px;
+    height: 16px;
+    background: var(--border-color);
+}
+
+/* 우측: 액션 버튼 그룹 */
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.search-input-compact {
+    width: 140px;
+    padding: 6px 12px 6px 32px;
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-secondary, #21262d);
+    font-size: 12px;
+    color: var(--text-main);
+    transition: all 0.2s;
+}
+
+.search-input-compact:focus {
+    outline: none;
+    border-color: #1f6feb;
+    width: 200px;
+}
+
+.search-input-compact::placeholder {
+    color: var(--text-sub, #8b949e);
+}
+
+.search-wrapper-compact {
+    position: relative;
+}
+
+.search-wrapper-compact .search-icon-compact {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    pointer-events: none;
+}
+
+.btn-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-secondary, #21262d);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    position: relative;
+    transition: all 0.2s;
+    color: var(--text-main);
+}
+
+.btn-icon:hover {
+    background: #30363d;
+    border-color: #8b949e;
+}
+
+.btn-icon .badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #da3633;
+    color: white;
+    font-size: 9px;
+    font-weight: 600;
+    padding: 2px 5px;
+    border-radius: 10px;
+    min-width: 16px;
+    text-align: center;
+}
+
+.btn-icon.has-alert {
+    border-color: #da3633;
+    color: #f85149;
+}
+
+/* 드롭다운 메뉴 */
+.header-dropdown {
+    position: relative;
+}
+
+.header-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    min-width: 180px;
+    background: var(--panel-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    z-index: 100;
+    overflow: hidden;
+}
+
+.header-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: var(--text-sub);
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.header-dropdown-item:hover {
+    background: rgba(31, 111, 235, 0.1);
+    color: var(--text-main);
+}
+
+.header-dropdown-item.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.header-dropdown-divider {
+    height: 1px;
+    background: var(--border-color);
+    margin: 4px 0;
+}
+
+/* Dashboard 토글 */
+.dashboard-toggle {
+    background: var(--panel-bg);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.dashboard-toggle-btn {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    background: transparent;
+    border: none;
+    color: var(--text-sub);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.dashboard-toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text-main);
+}
+
+.dashboard-toggle-btn .toggle-arrow {
+    transition: transform 0.2s;
+}
+
+.dashboard-toggle-btn .toggle-arrow.open {
+    transform: rotate(180deg);
+}
+
+.dashboard-content {
+    padding: 12px 16px;
+    border-top: 1px solid var(--border-color);
+}
+
+/* 반응형 */
+@media (max-width: 1200px) {
+    .stage-chip-label {
+        display: none;
+    }
+    .search-input-compact {
+        width: 100px;
+    }
+}
+
+@media (max-width: 768px) {
+    header.header-compact {
+        flex-wrap: wrap;
+        height: auto;
+        padding: 8px 12px;
+        gap: 8px;
+    }
+    .header-center {
+        order: 3;
+        width: 100%;
+        justify-content: flex-start;
+    }
+    .progress-bar-compact {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
         .btn {
             background: var(--border-color); color: var(--text-main); 
             border: 1px solid var(--border-color);

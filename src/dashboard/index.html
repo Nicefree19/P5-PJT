@@ -38,6 +38,8 @@
     <!-- Google Identity Services (GIS) SDK -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     
+    <!-- Alpine.js Collapse Plugin (for x-collapse directive) -->
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.14.1/dist/cdn.min.js"></script>
     <!-- Alpine.js (Core) -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
 
@@ -162,23 +164,20 @@
     </div>
 </div>
 
-<!-- Header -->
-<header role="banner">
-    <div class="brand">
-        <h1>P5 Live Grid</h1>
-        <span class="project-tag">v2.0 Admin</span>
+<!-- Header (Compact 수평 배열) -->
+<header role="banner" class="header-compact">
+    <!-- 좌측: 브랜드 + 층 선택 -->
+    <div class="header-left">
+        <h1 class="brand-compact">P5</h1>
 
-        <!-- Phase 7: 층 선택기 -->
+        <!-- 층 선택기 -->
         <div class="floor-selector" @click.outside="floorSelectorOpen = false">
-            <button class="floor-selector-btn" @click="floorSelectorOpen = !floorSelectorOpen"
-                    aria-label="층 선택"
-                    :aria-expanded="floorSelectorOpen"
-                    aria-haspopup="listbox">
-                <span class="floor-icon">🏢</span>
-                <span class="floor-label" x-text="currentFloorLabel"></span>
-                <span class="floor-arrow" :class="{'open': floorSelectorOpen}">▼</span>
+            <button class="floor-btn-compact" @click="floorSelectorOpen = !floorSelectorOpen"
+                    aria-label="층 선택" :aria-expanded="floorSelectorOpen" aria-haspopup="listbox">
+                <span>🏢</span>
+                <span x-text="currentFloorLabel"></span>
+                <span :class="{'open': floorSelectorOpen}" style="font-size:10px; transition:transform 0.2s;">▼</span>
             </button>
-
             <!-- 층 드롭다운 -->
             <div class="floor-dropdown" x-show="floorSelectorOpen" x-transition style="display: none;"
                  role="listbox" aria-label="층 목록">
@@ -186,8 +185,7 @@
                     <div class="floor-item"
                          :class="{'active': selectedFloor === floor.floorId, 'has-variation': floor.hasVariation}"
                          @click="selectFloor(floor.floorId)"
-                         role="option"
-                         :aria-selected="selectedFloor === floor.floorId">
+                         role="option" :aria-selected="selectedFloor === floor.floorId">
                         <span class="floor-item-label" x-text="floor.label"></span>
                         <span class="floor-item-badge" x-show="floor.hasVariation" title="표준층과 차이">⚠</span>
                         <span class="floor-item-check" x-show="selectedFloor === floor.floorId">✓</span>
@@ -195,172 +193,110 @@
                 </template>
             </div>
         </div>
+    </div>
 
-        <!-- Phase 6: Progress Summary -->
-        <div class="progress-summary" style="margin-left: 15px;">
+    <!-- 중앙: 진행률 칩 + 통계 -->
+    <div class="header-center">
+        <div class="progress-bar-compact">
             <template x-for="stage in stageConfigs" :key="stage.code">
-                <div class="stage-mini">
-                    <span class="stage-label" x-text="stage.label"></span>
-                    <span class="stage-progress"
-                          :style="'color:' + stage.color"
-                          x-text="getStageProgress(stage.code) + '%'"></span>
-                    <div class="stage-bar">
-                        <div class="stage-bar-fill"
-                             :style="'width:' + getStageProgress(stage.code) + '%; background:' + stage.color">
-                        </div>
-                    </div>
+                <div class="stage-chip" :style="'border-color:' + stage.color">
+                    <span class="stage-chip-label" x-text="stage.label.substring(0, 4)"></span>
+                    <span class="stage-chip-value" :style="'color:' + stage.color" x-text="getStageProgress(stage.code) + '%'"></span>
                 </div>
+            </template>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-compact">
+            <span class="stat-num" x-text="totalColumns"></span>기둥
+            <template x-if="selectedCells.length > 0">
+                <span style="color:#58a6ff;"> | <span class="stat-num" x-text="selectedCells.length"></span>선택</span>
             </template>
         </div>
     </div>
-    <div class="controls">
-        <div class="stat-box">
-            <span class="stat-label">전체 기둥</span>
-            <span class="stat-val" x-text="totalColumns + '개'"></span>
+
+    <!-- 우측: 검색 + 액션 버튼 -->
+    <div class="header-right">
+        <!-- 검색 -->
+        <div class="search-wrapper-compact" @click.outside="searchDropdownOpen = false">
+            <span class="search-icon-compact">🔍</span>
+            <input type="text" class="search-input-compact"
+                   placeholder="검색..."
+                   x-model="searchQuery"
+                   @focus="if(searchQuery) searchDropdownOpen = true"
+                   @input="performSearchDebounced()"
+                   @keydown.escape="clearSearch()"
+                   aria-label="검색">
+            <!-- 검색 드롭다운 -->
+            <div class="header-dropdown-menu" x-show="searchDropdownOpen && searchResults.length > 0" x-transition style="display: none; min-width: 250px;">
+                <div x-show="searchResults.some(r => r.type === 'column')">
+                    <div style="padding: 6px 12px; font-size: 10px; color: #8b949e; border-bottom: 1px solid var(--border-color);">기둥</div>
+                    <template x-for="result in searchResults.filter(r => r.type === 'column').slice(0, 5)" :key="result.id">
+                        <div class="header-dropdown-item" @click="selectSearchResult(result); searchDropdownOpen = false;">
+                            <span x-text="result.icon"></span>
+                            <span x-text="result.text"></span>
+                        </div>
+                    </template>
+                </div>
+                <div x-show="searchResults.some(r => r.type === 'zone')">
+                    <div style="padding: 6px 12px; font-size: 10px; color: #8b949e; border-bottom: 1px solid var(--border-color);">Zone</div>
+                    <template x-for="result in searchResults.filter(r => r.type === 'zone').slice(0, 3)" :key="result.id">
+                        <div class="header-dropdown-item" @click="selectSearchResult(result); searchDropdownOpen = false;">
+                            <span x-text="result.icon"></span>
+                            <span x-text="result.text"></span>
+                        </div>
+                    </template>
+                </div>
+            </div>
         </div>
-        <div class="stat-box">
-            <span class="stat-label">선택됨</span>
-            <span class="stat-val" style="color:#58a6ff" x-text="selectedCells.length + '개'"></span>
-        </div>
-        <!-- Sync Status Indicator -->
-        <div class="stat-box" x-show="syncEnabled">
-            <span class="stat-label">동기화 대기</span>
-            <span class="stat-val" :style="syncStatus.pending > 0 ? 'color:#d29922' : 'color:#238636'" 
-                  x-text="syncStatus.pending + '개 대기중'"></span>
-        </div>
-        <button class="btn" @click="clearSelection()" aria-label="선택 해제">선택 해제</button>
-        <button class="btn" @click="syncNow()" x-show="syncEnabled" :disabled="syncStatus.pending === 0" aria-label="지금 동기화">
-            🔄 지금 동기화
-        </button>
-        <!-- Phase 5: AI 분석 버튼 -->
-        <button class="btn" @click="triggerAnalysis()"
+
+        <!-- AI 분석 -->
+        <button class="btn-icon" @click="triggerAnalysis()"
                 :disabled="analysisJob.status === 'pending' || analysisJob.status === 'running'"
-                :style="analysisJob.status === 'running' ? 'border-color:#d29922; color:#d29922;' : ''"
-                aria-label="AI 분석 실행">
-            <span x-show="analysisJob.status !== 'running'">🔍 분석</span>
-            <span x-show="analysisJob.status === 'running'">⏳ 분석 중...</span>
+                :class="{'has-alert': analysisJob.status === 'running'}"
+                title="AI 분석">
+            <span x-show="analysisJob.status !== 'running'">🔍</span>
+            <span x-show="analysisJob.status === 'running'">⏳</span>
         </button>
-        <div class="controls">
-            <!-- Phase 7: 스마트 검색 -->
-            <div class="search-panel" @click.outside="searchDropdownOpen = false" role="search">
-                <div class="search-input-wrapper">
-                    <span class="search-icon" aria-hidden="true">🔍</span>
-                    <input type="text"
-                           class="search-input"
-                           placeholder="기둥/Zone/상태 검색 (예: A-1)"
-                           x-model="searchQuery"
-                           @focus="if(searchQuery) searchDropdownOpen = true"
-                           @input="performSearchDebounced()"
-                           @keydown.escape="clearSearch()"
-                           @keydown="handleSearchKeydown($event)"
-                           aria-label="기둥, Zone, 상태 검색"
-                           :aria-expanded="searchDropdownOpen"
-                           aria-autocomplete="list"
-                           aria-controls="search-results-dropdown">
-                    <button class="search-clear-btn" x-show="searchQuery" @click="clearSearch()" aria-label="검색어 지우기">✕</button>
 
-                    <!-- 검색 결과 드롭다운 -->
-                    <div class="search-dropdown" x-show="searchDropdownOpen && searchResults.length > 0" x-transition style="display: none;"
-                         id="search-results-dropdown" role="listbox" aria-label="검색 결과">
-                        <template x-if="searchResults.length === 0">
-                            <div class="search-dropdown-section" style="padding: 16px; text-align: center; color: #8b949e;">
-                                검색 결과가 없습니다
-                            </div>
-                        </template>
-
-                        <div class="search-dropdown-section" x-show="searchResults.some(r => r.type === 'column')">
-                            <div class="search-section-title" style="padding: 4px 12px; font-size: 10px; color: #8b949e;">기둥</div>
-                            <template x-for="result in searchResults.filter(r => r.type === 'column')" :key="result.id">
-                                <div class="quick-action-menu-item" @click="selectSearchResult(result)">
-                                    <span x-text="result.icon"></span>
-                                    <span x-text="result.text"></span>
-                                    <span style="margin-left: auto; font-size: 10px; color: #8b949e;" x-text="result.hint"></span>
-                                </div>
-                            </template>
-                        </div>
-                        
-                        <div class="search-dropdown-section" x-show="searchResults.some(r => r.type === 'zone')">
-                            <div class="search-section-title" style="padding: 4px 12px; font-size: 10px; color: #8b949e;">Zone</div>
-                            <template x-for="result in searchResults.filter(r => r.type === 'zone')" :key="result.id">
-                                <div class="quick-action-menu-item" @click="selectSearchResult(result)">
-                                    <span x-text="result.icon"></span>
-                                    <span x-text="result.text"></span>
-                                </div>
-                            </template>
-                        </div>
-
-                         <div class="search-dropdown-section" x-show="searchResults.some(r => r.type === 'issue')">
-                            <div class="search-section-title" style="padding: 4px 12px; font-size: 10px; color: #8b949e;">이슈</div>
-                            <template x-for="result in searchResults.filter(r => r.type === 'issue')" :key="result.id">
-                                <div class="quick-action-menu-item" @click="selectSearchResult(result)">
-                                    <span x-text="result.icon"></span>
-                                    <span x-text="result.text"></span>
-                                </div>
-                            </template>
-                        </div>
-                    </div>
+        <!-- 내보내기 드롭다운 -->
+        <div class="header-dropdown" x-data="{ exportOpen: false }" @click.outside="exportOpen = false">
+            <button class="btn-icon" @click="exportOpen = !exportOpen" title="내보내기">📥</button>
+            <div class="header-dropdown-menu" x-show="exportOpen" x-transition style="display: none;">
+                <div class="header-dropdown-item" @click="exportData(); exportOpen = false;">📄 JSON</div>
+                <div class="header-dropdown-item" @click="exportToCSV(); exportOpen = false;">📊 CSV</div>
+                <div class="header-dropdown-divider"></div>
+                <div class="header-dropdown-item" @click="exportToExcel({ scope: 'all' }); exportOpen = false;">📗 Excel 전체</div>
+                <div class="header-dropdown-item" @click="exportToExcel({ scope: 'filtered' }); exportOpen = false;">🔍 Excel 필터</div>
+                <div class="header-dropdown-item" :class="{'disabled': selectedCells.length === 0}"
+                     @click="selectedCells.length > 0 && (exportToExcel({ scope: 'selected' }), exportOpen = false)">
+                    ✓ Excel 선택 (<span x-text="selectedCells.length"></span>)
                 </div>
-            </div>
-
-            <div class="stat-box" style="min-width: 100px;">
-                <span class="stat-label">층 선택</span>
-                <select class="floor-select" x-model="currentFloor" @change="loadFloorDataLegacy()"
-                        style="background:#161b22; color:#c9d1d9; border:1px solid #30363d; border-radius:4px; padding:4px 8px; font-size:12px; cursor:pointer;">
-                    <option value="F1">1층</option>
-                    <option value="F2">2층</option>
-                    <option value="ALL">전체</option>
-                </select>
-            </div>
-        <!-- Excel Export Dropdown -->
-        <div class="header-export-btn" x-data="{ headerExportOpen: false }" @click.outside="headerExportOpen = false">
-            <button class="btn btn-primary" @click="headerExportOpen = !headerExportOpen">
-                📥 내보내기 <span style="font-size:10px;">▼</span>
-            </button>
-            <div class="header-export-dropdown" x-show="headerExportOpen" x-transition style="display:none;">
-                <div class="header-export-item" @click="exportData(); headerExportOpen = false;">
-                    📄 JSON (전체 백업)
-                </div>
-                <div class="header-export-item" @click="exportToCSV(); headerExportOpen = false;">
-                    📊 CSV (기둥 데이터)
-                </div>
-                <div class="header-export-item" @click="exportToExcel({ scope: 'all' }); headerExportOpen = false;">
-                    📗 Excel (전체)
-                </div>
-                <div class="header-export-item" @click="exportToExcel({ scope: 'filtered' }); headerExportOpen = false;">
-                    🔍 Excel (필터됨)
-                </div>
-                <div class="header-export-item"
-                     :class="{ 'disabled': selectedCells.length === 0 }"
-                     @click="selectedCells.length > 0 && (exportToExcel({ scope: 'selected' }), headerExportOpen = false)">
-                    ✓ Excel (선택: <span x-text="selectedCells.length"></span>개)
-                </div>
-                <div style="border-top: 1px solid var(--border-color); margin: 4px 0;"></div>
-                <div class="header-export-item" @click="generatePDFReport('summary'); headerExportOpen = false;">
-                    📕 PDF 요약 보고서
-                </div>
-                <div class="header-export-item" @click="generatePDFReport('detailed'); headerExportOpen = false;">
-                    📘 PDF 상세 보고서
-                </div>
-                <div class="header-export-item" @click="generatePDFReport('issues'); headerExportOpen = false;">
-                    📙 PDF 이슈 보고서
-                </div>
+                <div class="header-dropdown-divider"></div>
+                <div class="header-dropdown-item" @click="generatePDFReport('summary'); exportOpen = false;">📕 PDF 요약</div>
+                <div class="header-dropdown-item" @click="generatePDFReport('detailed'); exportOpen = false;">📘 PDF 상세</div>
             </div>
         </div>
-        <!-- WP-4: Report Panel Button -->
-        <button class="btn" @click="openReportPanel()" style="background:#238636; border-color:#238636;">
-            📊 리포트
+
+        <!-- 리포트 -->
+        <button class="btn-icon" @click="openReportPanel()" title="리포트" style="background:#238636; border-color:#238636;">📊</button>
+
+        <!-- 이슈 -->
+        <button class="btn-icon" @click="toggleIssuePanel()"
+                :class="{'has-alert': openIssues.length > 0}"
+                title="이슈 관리">
+            🚨
+            <span class="badge" x-show="openIssues.length > 0" x-text="openIssues.length"></span>
         </button>
-        <button class="btn" @click="toggleIssuePanel()" :style="openIssues.length > 0 ? 'border-color:#da3633; color:#f85149;' : ''">
-            🚨 이슈 <span x-show="openIssues.length > 0" x-text="`(${openIssues.length})`" style="font-weight:bold;"></span>
+
+        <!-- 알림 -->
+        <button class="btn-icon" @click="toggleNotificationPanel()" title="알림">
+            🔔
+            <span class="badge" x-show="unreadNotificationCount > 0"
+                  x-text="unreadNotificationCount > 9 ? '9+' : unreadNotificationCount"></span>
         </button>
-        <!-- Phase 7: 알림 버튼 -->
-        <div class="notification-bell" @click="toggleNotificationPanel()">
-            <button class="btn">🔔</button>
-            <template x-if="unreadNotificationCount > 0">
-                <span class="notification-badge" x-text="unreadNotificationCount > 9 ? '9+' : unreadNotificationCount"></span>
-            </template>
-        </div>
-        <button class="btn" @click="showAdminPanel = true">⚙️ 관리자</button>
+
+        <!-- 관리자 -->
+        <button class="btn-icon" @click="showAdminPanel = true" title="관리자 설정">⚙️</button>
     </div>
 </header>
 
@@ -1192,9 +1128,16 @@
 
     <!-- Canvas Area -->
     <div class="canvas-area" id="main-content" role="main" aria-label="이슈 그리드">
-        
-        <!-- Compact Top Dashboard -->
-        <div class="compact-dashboard" x-show="!isLoading">
+
+        <!-- Dashboard Toggle (기본 접힘) -->
+        <div class="dashboard-toggle" x-data="{ dashboardExpanded: false }">
+            <button class="dashboard-toggle-btn" @click="dashboardExpanded = !dashboardExpanded">
+                <span>📊 대시보드 요약</span>
+                <span class="toggle-arrow" :class="{ 'open': dashboardExpanded }">▼</span>
+            </button>
+
+            <!-- Compact Top Dashboard (토글 내부) -->
+            <div class="dashboard-content" x-show="dashboardExpanded" x-collapse x-cloak>
             <!-- Row 1: KPI Cards + Quick Filters -->
             <div class="dashboard-row-1">
                 <!-- KPI Cards (Horizontal) -->
@@ -1306,7 +1249,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+
         <!-- Progress Trend Chart -->
         <div class="progress-trend-section" x-show="!isLoading">
             <div class="trend-header">
@@ -1398,6 +1341,8 @@
                 </div>
             </div>
         </div>
+            </div><!-- /.dashboard-content -->
+        </div><!-- /.dashboard-toggle -->
 
         <!-- Phase 16: View Options Bar -->
         <div class="view-options-bar" style="display:flex; justify-content:space-between; align-items:center; padding:4px 8px; background:#161b22; border-bottom:1px solid #30363d;">
