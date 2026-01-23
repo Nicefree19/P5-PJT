@@ -75,9 +75,9 @@ function test_Configuration() {
     errors: []
   };
 
-  // Check API key exists
+  // Check API key exists (Script Properties 기반)
   try {
-    const key = CONFIG.GEMINI_API_KEY;
+    const key = getGeminiApiKey_();
     if (key && key !== 'YOUR_GEMINI_API_KEY_HERE') {
       results.passed++;
       console.log('✅ GEMINI_API_KEY is configured');
@@ -89,12 +89,13 @@ function test_Configuration() {
   } catch (e) {
     results.failed++;
     results.errors.push(e.message);
+    console.log(`❌ GEMINI_API_KEY: ${e.message}`);
   }
 
-  // Check Sheet ID exists
+  // Check Sheet ID exists (Script Properties 기반)
   try {
-    const sheetId = CONFIG.SHEET_ID;
-    if (sheetId && sheetId !== 'YOUR_SHEET_ID_HERE') {
+    const sheetId = getSheetId_();
+    if (sheetId && sheetId !== 'YOUR_GOOGLE_SHEET_ID_HERE') {
       results.passed++;
       console.log('✅ SHEET_ID is configured');
     } else {
@@ -105,6 +106,7 @@ function test_Configuration() {
   } catch (e) {
     results.failed++;
     results.errors.push(e.message);
+    console.log(`❌ SHEET_ID: ${e.message}`);
   }
 
   // Check keywords array
@@ -157,13 +159,13 @@ function test_GmailQueryBuilder() {
       results.errors.push('Empty query generated');
     }
 
-    // Check date range
-    if (query.includes('after:')) {
+    // Check date range (GmailFilter.gs uses newer_than:)
+    if (query.includes('newer_than:')) {
       results.passed++;
-      console.log('✅ Date range filter included');
+      console.log('✅ Date range filter included (newer_than)');
     } else {
       results.failed++;
-      results.errors.push('Date range filter missing');
+      results.errors.push('Date range filter missing (expected newer_than:)');
     }
 
     // Check participant filter
@@ -197,8 +199,16 @@ function test_GeminiConnection() {
     errors: []
   };
 
-  // Skip if API key not configured
-  if (!CONFIG.GEMINI_API_KEY || CONFIG.GEMINI_API_KEY === 'YOUR_GEMINI_API_KEY_HERE') {
+  // Skip if API key not configured (Script Properties 기반)
+  let apiKey;
+  try {
+    apiKey = getGeminiApiKey_();
+  } catch (e) {
+    console.log('⚠️ Skipping - API key not configured: ' + e.message);
+    return { passed: 0, failed: 0, skipped: true };
+  }
+
+  if (!apiKey || apiKey === 'YOUR_GEMINI_API_KEY_HERE') {
     console.log('⚠️ Skipping - API key not configured');
     return { passed: 0, failed: 0, skipped: true };
   }
@@ -206,7 +216,7 @@ function test_GeminiConnection() {
   try {
     // Simple API test
     const testPrompt = '테스트입니다. "OK"라고만 응답하세요.';
-    const endpoint = CONFIG.GEMINI_ENDPOINT + CONFIG.GEMINI_MODEL + ':generateContent?key=' + CONFIG.GEMINI_API_KEY;
+    const endpoint = CONFIG.GEMINI_ENDPOINT + CONFIG.GEMINI_MODEL + ':generateContent?key=' + apiKey;
 
     const payload = {
       contents: [{ parts: [{ text: testPrompt }] }],
@@ -263,14 +273,22 @@ function test_SheetConnection() {
     errors: []
   };
 
-  // Skip if Sheet ID not configured
-  if (!CONFIG.SHEET_ID || CONFIG.SHEET_ID === 'YOUR_SHEET_ID_HERE') {
+  // Skip if Sheet ID not configured (Script Properties 기반)
+  let sheetId;
+  try {
+    sheetId = getSheetId_();
+  } catch (e) {
+    console.log('⚠️ Skipping - Sheet ID not configured: ' + e.message);
+    return { passed: 0, failed: 0, skipped: true };
+  }
+
+  if (!sheetId || sheetId === 'YOUR_GOOGLE_SHEET_ID_HERE') {
     console.log('⚠️ Skipping - Sheet ID not configured');
     return { passed: 0, failed: 0, skipped: true };
   }
 
   try {
-    const ss = SpreadsheetApp.openById(CONFIG.SHEET_ID);
+    const ss = SpreadsheetApp.openById(sheetId);
 
     if (ss) {
       results.passed++;
@@ -325,8 +343,16 @@ function test_EmailAnalysisMock() {
     errors: []
   };
 
-  // Skip if API key not configured
-  if (!CONFIG.GEMINI_API_KEY || CONFIG.GEMINI_API_KEY === 'YOUR_GEMINI_API_KEY_HERE') {
+  // Skip if API key not configured (Script Properties 기반)
+  let apiKey;
+  try {
+    apiKey = getGeminiApiKey_();
+  } catch (e) {
+    console.log('⚠️ Skipping - API key not configured: ' + e.message);
+    return { passed: 0, failed: 0, skipped: true };
+  }
+
+  if (!apiKey || apiKey === 'YOUR_GEMINI_API_KEY_HERE') {
     console.log('⚠️ Skipping - API key not configured');
     return { passed: 0, failed: 0, skipped: true };
   }
@@ -517,7 +543,15 @@ function test_FullPipelineDryRun() {
           const first = filtered[0];
           console.log(`   Subject: ${first.subject}`);
 
-          if (CONFIG.GEMINI_API_KEY && CONFIG.GEMINI_API_KEY !== 'YOUR_GEMINI_API_KEY_HERE') {
+          // Script Properties 기반 API 키 체크
+          let analysisApiKey;
+          try {
+            analysisApiKey = getGeminiApiKey_();
+          } catch (e) {
+            analysisApiKey = null;
+          }
+
+          if (analysisApiKey && analysisApiKey !== 'YOUR_GEMINI_API_KEY_HERE') {
             const analysis = analyzeEmail_(first);
             if (analysis) {
               results.passed++;
@@ -617,18 +651,24 @@ function quickHealthCheck() {
     gmail: false
   };
 
-  // Config check
-  if (CONFIG.GEMINI_API_KEY && CONFIG.GEMINI_API_KEY !== 'YOUR_GEMINI_API_KEY_HERE') {
-    checks.config = true;
-    console.log('✅ Configuration: OK');
-  } else {
-    console.log('❌ Configuration: API key not set');
+  // Config check (Script Properties 기반)
+  let healthApiKey;
+  try {
+    healthApiKey = getGeminiApiKey_();
+    if (healthApiKey && healthApiKey !== 'YOUR_GEMINI_API_KEY_HERE') {
+      checks.config = true;
+      console.log('✅ Configuration: OK');
+    } else {
+      console.log('❌ Configuration: API key not set');
+    }
+  } catch (e) {
+    console.log('❌ Configuration: ' + e.message);
   }
 
   // Gemini check
   if (checks.config) {
     try {
-      const endpoint = CONFIG.GEMINI_ENDPOINT + CONFIG.GEMINI_MODEL + ':generateContent?key=' + CONFIG.GEMINI_API_KEY;
+      const endpoint = CONFIG.GEMINI_ENDPOINT + CONFIG.GEMINI_MODEL + ':generateContent?key=' + healthApiKey;
       const response = UrlFetchApp.fetch(endpoint, {
         method: 'post',
         contentType: 'application/json',
@@ -645,17 +685,19 @@ function quickHealthCheck() {
     }
   }
 
-  // Sheet check
-  if (CONFIG.SHEET_ID && CONFIG.SHEET_ID !== 'YOUR_SHEET_ID_HERE') {
-    try {
-      const ss = SpreadsheetApp.openById(CONFIG.SHEET_ID);
+  // Sheet check (Script Properties 기반)
+  let healthSheetId;
+  try {
+    healthSheetId = getSheetId_();
+    if (healthSheetId && healthSheetId !== 'YOUR_GOOGLE_SHEET_ID_HERE') {
+      const ss = SpreadsheetApp.openById(healthSheetId);
       checks.sheet = !!ss;
       console.log(checks.sheet ? '✅ Google Sheet: OK' : '❌ Google Sheet: Failed');
-    } catch (e) {
-      console.log('❌ Google Sheet: Error - ' + e.message);
+    } else {
+      console.log('❌ Google Sheet: ID not set');
     }
-  } else {
-    console.log('❌ Google Sheet: ID not set');
+  } catch (e) {
+    console.log('❌ Google Sheet: Error - ' + e.message);
   }
 
   // Gmail check

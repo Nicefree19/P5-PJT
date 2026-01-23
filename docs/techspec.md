@@ -1,7 +1,7 @@
 # Tech Spec: P5 복합동 구조 통합 관리 시스템 (Gmail-Gemini-Sheet Integration)
 
-**Version**: 1.0
-**Date**: 2025-11-19
+**Version**: 2.4.0
+**Date**: 2025-12-31
 **Author**: Multi-Agent Debate (GPT-5 + Gemini DeepThink + Claude Opus)
 **Status**: Draft → Review → Approved
 
@@ -11,7 +11,7 @@
 
 ### 1.1 핵심 기능
 - **G1**: Gmail에서 P5 프로젝트 관련 메일을 자동으로 필터링하여 수집
-- **G2**: Gemini 1.5 Flash AI를 활용한 메일 내용 분석 및 리스크 추출
+- **G2**: Gemini 2.0 Flash AI를 활용한 메일 내용 분석 및 리스크 추출
 - **G3**: 분석 결과를 Google Sheet에 자동으로 DB화 (26개 컬럼 구조)
 - **G4**: PSRC/HMB 공법 특화 페르소나를 통한 엔지니어링 리스크 평가
 - **G5**: 이해관계자별(삼우, ENA, 이앤디몰, 센코어) 발생원 자동 분류
@@ -54,9 +54,9 @@
   - Gmail 메시지 ID 기반 중복 체크
 
 #### FR2: AI 분석 엔진
-- **FR2.1**: Gemini 1.5 Flash API 호출
+- **FR2.1**: Gemini 2.0 Flash API 호출
   - API 키 인증 방식: `x-goog-api-key` 헤더
-  - 모델: `gemini-flash-latest`
+  - 모델: `gemini-2.0-flash`
 - **FR2.2**: 페르소나 기반 분석
   - Role: PSRC 및 HMB 공법 총괄 엔지니어
   - 분석 초점: 공법적 리스크, 접합부 이슈, 설계 변경
@@ -122,7 +122,7 @@ graph TD
     A[Gmail Inbox] -->|GmailApp.search| B[Gmail Filter Module]
     B -->|Filtered Threads| C[Mail Parser Module]
     C -->|Structured Data| D[Gemini AI Analyzer]
-    D -->|API Request| E[Gemini 1.5 Flash API]
+    D -->|API Request| E[Gemini 2.0 Flash API]
     E -->|JSON Response| D
     D -->|Analysis Result| F[Data Transformer]
     F -->|26-Column Row Data| G[Google Sheet Writer]
@@ -144,7 +144,7 @@ graph TD
 const CONFIG = {
   // API Settings
   GEMINI_API_KEY: PropertiesService.getScriptProperties().getProperty('GEMINI_API_KEY'),
-  GEMINI_MODEL: 'gemini-flash-latest',
+  GEMINI_MODEL: 'gemini-2.0-flash',
   GEMINI_ENDPOINT: 'https://generativelanguage.googleapis.com/v1beta/models/',
 
   // Gmail Filter
@@ -272,7 +272,7 @@ function writeToSheet_(analysisResults) {
 
 #### Gemini API Request
 ```http
-POST https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent
+POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent
 Headers:
   x-goog-api-key: YOUR_API_KEY
   Content-Type: application/json

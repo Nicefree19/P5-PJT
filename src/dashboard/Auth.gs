@@ -65,20 +65,46 @@ function validateIdToken_(idToken) {
 }
 
 /**
- * Bearer 토큰 추출 (Authorization 헤더에서)
+ * Bearer 토큰 추출 (다중 소스 지원)
+ * 우선순위: 1. Authorization 헤더 2. query parameter 3. POST body
  * @param {Object} e - 이벤트 객체
  * @returns {string|null} ID Token
  */
 function extractBearerToken_(e) {
-  // GAS Web App에서는 헤더에 직접 접근이 제한적이므로 파라미터 사용
-  if (e.parameter && e.parameter.token) {
-    return e.parameter.token;
+  // 1. Authorization 헤더에서 Bearer 토큰 추출 시도
+  // GAS Web App에서 헤더 접근 방법: e.parameter에 'authorization' 키로 전달되거나
+  // 또는 X-Authorization 커스텀 헤더 사용
+  if (e.parameter) {
+    // X-Authorization 헤더 (커스텀 헤더로 우회)
+    if (e.parameter['X-Authorization']) {
+      const authHeader = e.parameter['X-Authorization'];
+      if (authHeader.startsWith('Bearer ')) {
+        return authHeader.substring(7);
+      }
+      return authHeader;
+    }
+
+    // 직접 token 파라미터
+    if (e.parameter.token) {
+      return e.parameter.token;
+    }
   }
 
-  // POST 요청의 경우 body에서 추출
+  // 2. POST 요청의 경우 body에서 추출
   if (e.postData && e.postData.contents) {
     try {
       const body = JSON.parse(e.postData.contents);
+
+      // Authorization 필드 (Bearer 토큰 형식)
+      if (body.authorization) {
+        const auth = body.authorization;
+        if (auth.startsWith('Bearer ')) {
+          return auth.substring(7);
+        }
+        return auth;
+      }
+
+      // 직접 토큰 필드
       return body.token || body.idToken || null;
     } catch {
       return null;

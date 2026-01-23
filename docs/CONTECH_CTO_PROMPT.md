@@ -26,7 +26,7 @@
 | **UI Library** | Vanilla JS + Web Components | 경량 컴포넌트 |
 | **Backend** | Node.js, Python, Google Apps Script | API, 자동화 |
 | **Database** | Firebase Realtime DB, Supabase (PostgreSQL) | 실시간 동기화 |
-| **AI/ML** | Gemini 1.5 Flash/Pro, LangChain, RAG | 문서 분석 |
+| **AI/ML** | Gemini 2.0 Flash/Pro, LangChain, RAG | 문서 분석 |
 | **Automation** | Gmail API, Drive API, Zapier, n8n | 워크플로우 |
 | **BIM Integration** | Tekla CSV/Excel Parser, IFC | 데이터 연동 |
 | **DevOps** | Vercel, Google Cloud Run, GitHub Actions | 배포 |

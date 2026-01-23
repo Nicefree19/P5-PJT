@@ -109,6 +109,11 @@ const ApiClient = (function() {
             }
         });
 
+        // GAS Web App 호환: GET 요청 시 토큰을 query parameter로도 전달
+        if (window.AuthModule && window.AuthModule.isAuthenticated()) {
+            url.searchParams.append('token', window.AuthModule.getToken());
+        }
+
         return request('GET', url.toString(), null, 0, action);
     }
 
@@ -160,9 +165,12 @@ const ApiClient = (function() {
             'Content-Type': 'application/json'
         };
 
-        // 인증 토큰 추가
+        // 인증 토큰 가져오기
+        let authToken = null;
         if (window.AuthModule && window.AuthModule.isAuthenticated()) {
-            headers['Authorization'] = 'Bearer ' + window.AuthModule.getToken();
+            authToken = window.AuthModule.getToken();
+            // GAS Web App 호환: X-Authorization 헤더 사용 (표준 Authorization 헤더는 GAS에서 접근 불가)
+            headers['X-Authorization'] = 'Bearer ' + authToken;
         }
 
         const options = {
@@ -172,7 +180,11 @@ const ApiClient = (function() {
         };
 
         if (body && method !== 'GET') {
-            options.body = JSON.stringify(body);
+            // POST body에도 토큰 포함 (GAS Web App 폴백용)
+            const bodyWithAuth = authToken
+                ? { ...body, authorization: 'Bearer ' + authToken }
+                : body;
+            options.body = JSON.stringify(bodyWithAuth);
         }
 
         // WP-9-1: Performance 측정 시작

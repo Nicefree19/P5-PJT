@@ -93,7 +93,7 @@ function buildFullQuery_() {
 // ============================================================
 
 /**
- * Gmail 스레드 검색 (안전 버전)
+ * Gmail 스레드 검색 (안전 버전) - 단일 배치
  * @returns {GmailThread[]} 검색된 스레드 배열
  * @private
  */
@@ -109,6 +109,179 @@ function filterGmailThreads_() {
   } catch (e) {
     errorLog_('Gmail 검색 오류', e);
     return [];
+  }
+}
+
+/**
+ * Gmail 스레드 검색 (Pagination 지원)
+ * 50개씩 반복 조회하여 MAX_TOTAL_THREADS까지 모든 스레드 수집
+ * @returns {GmailThread[]} 검색된 전체 스레드 배열
+ * @private
+ */
+function filterGmailThreadsWithPagination_() {
+  const query = buildFullQuery_();
+  const pageSize = CONFIG.PAGINATION_SIZE || 50;
+  const maxTotal = CONFIG.MAX_TOTAL_THREADS || 500;
+
+  debugLog_(`Gmail 검색 쿼리 (Pagination): ${query}`);
+  debugLog_(`페이지 크기: ${pageSize}, 최대 수집: ${maxTotal}`);
+
+  const allThreads = [];
+  let start = 0;
+  let pageCount = 0;
+
+  try {
+    while (start < maxTotal) {
+      pageCount++;
+      const threads = GmailApp.search(query, start, pageSize);
+
+      debugLog_(`[Page ${pageCount}] offset=${start}, 조회=${threads.length}개`);
+
+      if (threads.length === 0) {
+        debugLog_(`페이지 ${pageCount}: 더 이상 결과 없음. 검색 종료.`);
+        break;
+      }
+
+      allThreads.push(...threads);
+      start += threads.length;
+
+      // 결과가 pageSize보다 적으면 마지막 페이지
+      if (threads.length < pageSize) {
+        debugLog_(`페이지 ${pageCount}: 마지막 페이지 (${threads.length} < ${pageSize})`);
+        break;
+      }
+
+      // API 쿼터 보호를 위한 짧은 대기
+      if (start < maxTotal) {
+        Utilities.sleep(100);
+      }
+    }
+
+    debugLog_(`Pagination 완료: 총 ${allThreads.length}개 스레드 (${pageCount}페이지)`);
+    return allThreads;
+
+  } catch (e) {
+    errorLog_('Gmail Pagination 검색 오류', e);
+    // 부분 결과라도 반환
+    if (allThreads.length > 0) {
+      debugLog_(`오류 발생 전까지 수집된 ${allThreads.length}개 스레드 반환`);
+      return allThreads;
+    }
+    return [];
+  }
+}
+
+/**
+ * Incremental 검색을 위한 마지막 처리 시점 조회
+ * @returns {Date|null} 마지막 처리된 메일 일시
+ * @private
+ */
+function getLastProcessedDate_() {
+  try {
+    const props = PropertiesService.getScriptProperties();
+    const lastProcessed = props.getProperty('LAST_PROCESSED_DATE');
+
+    if (lastProcessed) {
+      const date = new Date(lastProcessed);
+      debugLog_(`마지막 처리 시점: ${date.toLocaleString('ko-KR')}`);
+      return date;
+    }
+
+    debugLog_('마지막 처리 시점 없음 - 전체 검색 수행');
+    return null;
+  } catch (e) {
+    errorLog_('마지막 처리 시점 조회 오류', e);
+    return null;
+  }
+}
+
+/**
+ * 마지막 처리 시점 저장
+ * @param {Date} date - 저장할 일시
+ * @private
+ */
+function setLastProcessedDate_(date) {
+  try {
+    const props = PropertiesService.getScriptProperties();
+    props.setProperty('LAST_PROCESSED_DATE', date.toISOString());
+    debugLog_(`마지막 처리 시점 저장: ${date.toLocaleString('ko-KR')}`);
+  } catch (e) {
+    errorLog_('마지막 처리 시점 저장 오류', e);
+  }
+}
+
+/**
+ * Incremental 쿼리 생성 (마지막 처리 이후 메일만)
+ * @returns {string} after: 조건이 포함된 검색 쿼리
+ * @private
+ */
+function buildIncrementalQuery_() {
+  const baseQuery = buildFullQuery_();
+  const lastProcessed = getLastProcessedDate_();
+
+  if (!lastProcessed) {
+    return baseQuery;
+  }
+
+  // Gmail 검색에서 after: 는 YYYY/MM/DD 형식 사용
+  const year = lastProcessed.getFullYear();
+  const month = String(lastProcessed.getMonth() + 1).padStart(2, '0');
+  const day = String(lastProcessed.getDate()).padStart(2, '0');
+  const afterDate = `${year}/${month}/${day}`;
+
+  const incrementalQuery = `${baseQuery} after:${afterDate}`;
+  debugLog_(`Incremental 쿼리: after:${afterDate}`);
+
+  return incrementalQuery;
+}
+
+/**
+ * Gmail 스레드 Incremental 검색 (Pagination + 마지막 처리 시점 이후만)
+ * @param {boolean} useIncremental - Incremental 모드 사용 여부 (기본: true)
+ * @returns {GmailThread[]} 검색된 스레드 배열
+ * @private
+ */
+function filterGmailThreadsIncremental_(useIncremental) {
+  useIncremental = useIncremental !== false; // 기본값 true
+
+  const query = useIncremental ? buildIncrementalQuery_() : buildFullQuery_();
+  const pageSize = CONFIG.PAGINATION_SIZE || 50;
+  const maxTotal = CONFIG.MAX_TOTAL_THREADS || 500;
+
+  debugLog_(`Gmail Incremental 검색 (mode=${useIncremental ? 'incremental' : 'full'})`);
+  debugLog_(`쿼리: ${query}`);
+
+  const allThreads = [];
+  let start = 0;
+  let pageCount = 0;
+
+  try {
+    while (start < maxTotal) {
+      pageCount++;
+      const threads = GmailApp.search(query, start, pageSize);
+
+      if (threads.length === 0) {
+        break;
+      }
+
+      allThreads.push(...threads);
+      start += threads.length;
+
+      debugLog_(`[Page ${pageCount}] +${threads.length}개, 누적 ${allThreads.length}개`);
+
+      if (threads.length < pageSize) {
+        break;
+      }
+
+      Utilities.sleep(100);
+    }
+
+    debugLog_(`Incremental 검색 완료: ${allThreads.length}개 스레드`);
+    return allThreads;
+
+  } catch (e) {
+    errorLog_('Gmail Incremental 검색 오류', e);
+    return allThreads.length > 0 ? allThreads : [];
   }
 }
 
@@ -381,5 +554,103 @@ function testExtractMessages() {
     Logger.log(`발생원: ${inferOrigin_(sample.from)}`);
     Logger.log(`본문 (100자): ${sample.body.substring(0, 100)}...`);
     Logger.log(`첨부파일: ${sample.attachments}개`);
+  }
+}
+
+/**
+ * Pagination 검색 테스트
+ */
+function testPaginationSearch() {
+  Logger.log('=== Pagination 검색 테스트 ===\n');
+
+  const startTime = Date.now();
+  const threads = filterGmailThreadsWithPagination_();
+  const elapsed = Date.now() - startTime;
+
+  Logger.log(`\n[결과 요약]`);
+  Logger.log(`총 스레드: ${threads.length}개`);
+  Logger.log(`소요 시간: ${elapsed}ms`);
+  Logger.log(`페이지 크기: ${CONFIG.PAGINATION_SIZE}개`);
+  Logger.log(`최대 수집: ${CONFIG.MAX_TOTAL_THREADS}개`);
+
+  if (threads.length > 0) {
+    Logger.log('\n[최신 5개 스레드]');
+    threads.slice(0, 5).forEach((thread, idx) => {
+      const firstMsg = thread.getMessages()[0];
+      Logger.log(`${idx + 1}. ${firstMsg.getSubject()}`);
+      Logger.log(`   Date: ${firstMsg.getDate()}`);
+    });
+  }
+}
+
+/**
+ * Incremental 검색 테스트
+ */
+function testIncrementalSearch() {
+  Logger.log('=== Incremental 검색 테스트 ===\n');
+
+  // 현재 마지막 처리 시점 확인
+  const lastProcessed = getLastProcessedDate_();
+  if (lastProcessed) {
+    Logger.log(`마지막 처리 시점: ${lastProcessed.toLocaleString('ko-KR')}`);
+  } else {
+    Logger.log('마지막 처리 시점: 없음 (전체 검색)');
+  }
+
+  // Incremental 쿼리 확인
+  Logger.log(`\n[Incremental 쿼리]`);
+  Logger.log(buildIncrementalQuery_());
+
+  // Incremental 검색 실행
+  const startTime = Date.now();
+  const threads = filterGmailThreadsIncremental_(true);
+  const elapsed = Date.now() - startTime;
+
+  Logger.log(`\n[결과 요약]`);
+  Logger.log(`검색된 스레드: ${threads.length}개`);
+  Logger.log(`소요 시간: ${elapsed}ms`);
+
+  if (threads.length > 0) {
+    Logger.log('\n[최신 3개 스레드]');
+    threads.slice(0, 3).forEach((thread, idx) => {
+      const firstMsg = thread.getMessages()[0];
+      Logger.log(`${idx + 1}. ${firstMsg.getSubject()}`);
+      Logger.log(`   From: ${firstMsg.getFrom()}`);
+      Logger.log(`   Date: ${firstMsg.getDate()}`);
+    });
+  }
+}
+
+/**
+ * 전체 검색 vs Incremental 검색 비교 테스트
+ */
+function testCompareSearchModes() {
+  Logger.log('=== 검색 모드 비교 테스트 ===\n');
+
+  // 전체 검색
+  Logger.log('[1] 전체 검색 (Pagination)');
+  const fullStart = Date.now();
+  const fullThreads = filterGmailThreadsWithPagination_();
+  const fullElapsed = Date.now() - fullStart;
+  Logger.log(`   결과: ${fullThreads.length}개, ${fullElapsed}ms`);
+
+  // 짧은 대기
+  Utilities.sleep(500);
+
+  // Incremental 검색
+  Logger.log('\n[2] Incremental 검색');
+  const incStart = Date.now();
+  const incThreads = filterGmailThreadsIncremental_(true);
+  const incElapsed = Date.now() - incStart;
+  Logger.log(`   결과: ${incThreads.length}개, ${incElapsed}ms`);
+
+  // 비교 결과
+  Logger.log('\n[비교 결과]');
+  Logger.log(`전체 검색: ${fullThreads.length}개 (${fullElapsed}ms)`);
+  Logger.log(`Incremental: ${incThreads.length}개 (${incElapsed}ms)`);
+
+  if (fullThreads.length > 0) {
+    const reduction = Math.round((1 - incThreads.length / fullThreads.length) * 100);
+    Logger.log(`스레드 감소율: ${reduction}%`);
   }
 }

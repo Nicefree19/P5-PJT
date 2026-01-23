@@ -32,7 +32,7 @@
  * - generateAllFloorData()       - 11층 전체 데이터 생성
  * - initializeFloorJeoljuSheets() - Floors/Jeolju 시트 초기화
  *
- * @version 2.3 (Phase 12 Email Integration)
+ * @version 2.4.0 (Phase 7+ Complete)
  * @author P5 Dashboard Team
  */
 
@@ -370,15 +370,21 @@ function doPost(e) {
   try {
     // ===== Security Checks (Phase 10 + GIS) =====
 
-    // 1. 인증: API 키 또는 GIS ID Token (payload에서 추출)
+    // 1. 인증: API 키 또는 GIS ID Token (다중 소스 지원)
     const apiKeyValid = validateApiKey_(e);
-    let idToken = e.parameter?.token || null;
 
-    // POST body에서도 토큰 확인
+    // extractBearerToken_() 사용하여 토큰 추출 (헤더/query/body 모두 지원)
+    let idToken = extractBearerToken_(e);
+
+    // 추가 fallback: POST body에서 token/idToken 필드 직접 확인
     if (!idToken && e.postData?.contents) {
       try {
         const tempPayload = JSON.parse(e.postData.contents);
-        idToken = tempPayload.token || tempPayload.idToken || null;
+        idToken = tempPayload.token || tempPayload.idToken || tempPayload.authorization || null;
+        // Bearer 접두사 제거
+        if (idToken && idToken.startsWith('Bearer ')) {
+          idToken = idToken.substring(7);
+        }
       } catch {}
     }
 

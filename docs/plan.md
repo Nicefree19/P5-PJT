@@ -261,7 +261,7 @@
 ## 🤖 Phase 3: AI Analysis Engine (AI 분석 엔진)
 
 ### 목표
-- Gemini 1.5 Flash API 연동
+- Gemini 2.0 Flash API 연동
 - PSRC/HMB 공법 전문가 페르소나 구현
 - JSON 응답 파싱 및 검증
 

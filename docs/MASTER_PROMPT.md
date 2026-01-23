@@ -21,7 +21,7 @@
 
 [Technical Requirements]
 1. **Platform**: Google Apps Script (Standalone or Bound to Sheet)
-2. **AI Model**: Gemini 1.5 Flash (`gemini-flash-latest`)
+2. **AI Model**: Gemini 2.0 Flash (`gemini-2.0-flash`)
 3. **API Auth**: `x-goog-api-key` 헤더 방식 사용
 4. **Parsing**: JSON 응답의 Markdown Code block 제거 처리 필수
 
