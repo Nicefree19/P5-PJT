@@ -72,6 +72,10 @@
     <script src="./js/stores/unified-store.js"></script>
     <script src="./js/components/data-map-view.js"></script>
 
+    <!-- MGT Structure Overlay (골조 시각화) -->
+    <script src="./js/mgt-parser.js"></script>
+    <script src="./js/stores/structure-store.js?v=2.3.2"></script>
+
     <!-- Production Status Data (PSRC 제작현황) -->
     <script src="./data/production_status_import.js"></script>
 
@@ -88,6 +92,8 @@
     <link rel="stylesheet" href="./css/components.css">
     <!-- Issue Data Mapper Styles -->
     <link rel="stylesheet" href="./css/data-map.css">
+    <!-- Structure Overlay Styles (골조 오버레이) -->
+    <link rel="stylesheet" href="./css/structure.css">
 
     <style>
         /* Moved to components.css (Phase 8 WP-1-B) */
@@ -277,6 +283,15 @@
             </div>
         </div>
 
+        <!-- 골조 오버레이 토글 -->
+        <button class="btn-icon"
+                @click="$store.structure.toggle()"
+                :class="{'active': $store.structure.enabled}"
+                :title="$store.structure.enabled ? '골조 숨기기' : '골조 표시'"
+                style="font-size: 14px;">
+            🏗️
+        </button>
+
         <!-- 리포트 -->
         <button class="btn-icon" @click="openReportPanel()" title="리포트" style="background:#238636; border-color:#238636;">📊</button>
 
@@ -286,6 +301,15 @@
                 title="이슈 관리">
             🚨
             <span class="badge" x-show="openIssues.length > 0" x-text="openIssues.length"></span>
+        </button>
+
+        <!-- 회의록 이슈 -->
+        <button class="btn-icon" @click="meetingIssuesPanelOpen = !meetingIssuesPanelOpen"
+                :class="{'has-alert': meetingIssues.filter(i => i.status === 'Open').length > 0}"
+                title="회의록 이슈">
+            📋
+            <span class="badge" x-show="meetingIssues.filter(i => i.status === 'Open').length > 0"
+                  x-text="meetingIssues.filter(i => i.status === 'Open').length > 999 ? '999+' : meetingIssues.filter(i => i.status === 'Open').length"></span>
         </button>
 
         <!-- 알림 -->
@@ -1034,16 +1058,16 @@
                 <button class="btn elevation-viewer-toggle" @click="elevationViewOpen = false" title="접기">−</button>
             </div>
 
-            <!-- 층-절주 2D 그리드 -->
+            <!-- 층-구간 2D 그리드 -->
             <div class="elevation-grid">
-                <!-- 절주 헤더 행 -->
+                <!-- 구간 헤더 행 -->
                 <div class="elevation-floor-label" style="background:transparent;"></div>
-                <template x-for="jeolju in jeoljuList" :key="'header-' + jeolju.jeoljuId">
-                    <div class="elevation-jeolju-header" 
-                         :class="{'selected': selectedJeolju === jeolju.jeoljuId}"
-                         @click="filterByJeolju(jeolju.jeoljuId)"
-                         :title="'X' + jeolju.startColumn + '~X' + jeolju.endColumn"
-                         x-text="jeolju.label">
+                <template x-for="segment in segmentList" :key="'header-' + segment.segmentId">
+                    <div class="elevation-segment-header"
+                         :class="{'selected': selectedSegment === segment.segmentId}"
+                         @click="filterBySegment(segment.segmentId)"
+                         :title="'X' + segment.startColumn + '~X' + segment.endColumn"
+                         x-text="segment.label">
                     </div>
                 </template>
 
@@ -1058,13 +1082,13 @@
                              x-text="floor.label">
                         </div>
 
-                        <!-- 절주별 셀 -->
-                        <template x-for="jeolju in jeoljuList" :key="floor.floorId + '-' + jeolju.jeoljuId">
+                        <!-- 구간별 셀 -->
+                        <template x-for="segment in segmentList" :key="floor.floorId + '-' + segment.segmentId">
                             <div class="elevation-cell"
-                                 :class="getElevationCellClass(floor.floorId, jeolju.jeoljuId)"
-                                 @click="selectFloorAndJeolju(floor.floorId, jeolju.jeoljuId)"
-                                 :title="floor.label + ' / ' + jeolju.label">
-                                <span x-text="getFloorJeoljuProgress(floor.floorId, jeolju.jeoljuId) + '%'" 
+                                 :class="getElevationCellClass(floor.floorId, segment.segmentId)"
+                                 @click="selectFloorAndSegment(floor.floorId, segment.segmentId)"
+                                 :title="floor.label + ' / ' + segment.label">
+                                <span x-text="getFloorSegmentProgress(floor.floorId, segment.segmentId) + '%'"
                                       style="font-size:9px;"></span>
                             </div>
                         </template>
@@ -1092,28 +1116,28 @@
                 </div>
             </div>
 
-            <!-- 선택된 층-절주 정보 -->
-            <div class="elevation-info" x-show="selectedJeolju || selectedFloor" style="margin-top:12px; padding:12px; background:#0d1117; border-radius:8px;">
+            <!-- 선택된 층-구간 정보 -->
+            <div class="elevation-info" x-show="selectedSegment || selectedFloor" style="margin-top:12px; padding:12px; background:#0d1117; border-radius:8px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                    <span style="font-size:12px; font-weight:600; color:#fff;" 
-                          x-text="(floors.find(f => f.floorId === selectedFloor)?.label || '전체') + ' / ' + (getSelectedJeoljuLabel() || '전체')"></span>
-                    <button class="btn" style="font-size:10px; padding:4px 8px;" 
-                            @click="selectedJeolju = null; selectedFloor = 'F01'">초기화</button>
+                    <span style="font-size:12px; font-weight:600; color:#fff;"
+                          x-text="(floors.find(f => f.floorId === selectedFloor)?.label || '전체') + ' / ' + (getSelectedSegmentLabel() || '전체')"></span>
+                    <button class="btn" style="font-size:10px; padding:4px 8px;"
+                            @click="selectedSegment = null; selectedFloor = 'F01'">초기화</button>
                 </div>
                 <div style="display:flex; gap:16px;">
                     <div style="text-align:center;">
-                        <div style="font-size:18px; font-weight:bold; color:#58a6ff;" 
-                             x-text="getJeoljuColumnCount(selectedJeolju) || totalColumns"></div>
+                        <div style="font-size:18px; font-weight:bold; color:#58a6ff;"
+                             x-text="getSegmentColumnCount(selectedSegment) || totalColumns"></div>
                         <div style="font-size:10px; color:#8b949e;">기둥</div>
                     </div>
                     <div style="text-align:center;">
-                        <div style="font-size:18px; font-weight:bold; color:#238636;" 
-                             x-text="(getJeoljuProgressPercent(selectedJeolju) || getOverallProgress()) + '%'"></div>
+                        <div style="font-size:18px; font-weight:bold; color:#238636;"
+                             x-text="(getSegmentProgressPercent(selectedSegment) || getOverallProgress()) + '%'"></div>
                         <div style="font-size:10px; color:#8b949e;">진행률</div>
                     </div>
                     <div style="text-align:center;">
-                        <div style="font-size:18px; font-weight:bold; color:#da3633;" 
-                             x-text="getJeoljuIssueCount(selectedJeolju) || issues.filter(i => i.status === 'open').length"></div>
+                        <div style="font-size:18px; font-weight:bold; color:#da3633;"
+                             x-text="getSegmentIssueCount(selectedSegment) || issues.filter(i => i.status === 'open').length"></div>
                         <div style="font-size:10px; color:#8b949e;">이슈</div>
                     </div>
                 </div>
@@ -1122,7 +1146,7 @@
 
         <!-- 뷰어 접힌 상태 -->
         <div class="elevation-collapsed" x-show="!elevationViewOpen" @click="elevationViewOpen = true">
-            <span>📐 절주 뷰어 펼치기</span>
+            <span>📐 구간 뷰어 펼치기</span>
         </div>
     </aside>
 
@@ -1397,10 +1421,10 @@
                  :style="`width: ${totalGridWidth}px; height: ${totalGridHeight}px;`"></div>
 
             <div class="grid-container"
-                 :class="{ 'is-scrolling': virtualScroll.isScrolling, 'compact-mode': compactMode }"
-                 :style="virtualScroll.enabled
+                 :class="{ 'is-scrolling': virtualScroll.isScrolling, 'compact-mode': compactMode, 'structure-mode': $store.structure.enabled }"
+                 :style="(virtualScroll.enabled
                      ? `--cols: ${visibleColCount}; --rows: ${visibleRowCount}; transform: translate(${virtualScroll.visibleColStart * virtualScroll.cellWidth}px, ${virtualScroll.visibleRowStart * virtualScroll.cellHeight}px);`
-                     : `--cols: ${gridConfig.cols}; --rows: ${gridConfig.rows}`"
+                     : `--cols: ${gridConfig.cols}; --rows: ${gridConfig.rows}`) + ($store.structure.enabled ? `; --stage-opacity: ${$store.structure.display.stageGridOpacity}` : '')"
                  id="gridMap"
                  role="grid"
                  aria-label="구조 이슈 관리 그리드">
@@ -1425,13 +1449,13 @@
                                  :class="{
                                      'locked': isLocked(cell.row, cell.col),
                                      'workflow-filtered': isCellFilteredByWorkflow(cell.row, cell.col),
-                                     'jeolju-filtered': !isInSelectedJeolju(cell.col),
+                                     'segment-filtered': !isInSelectedSegment(cell.col),
                                      'has-issue': hasIssue(cell),
                                      'has-issue-critical': hasIssue(cell) && getIssueForCell(cell)?.severity === 'critical'
                                  }"
                                  :data-uid="cell.row + '-X' + cell.col"
                                  :title="hasIssue(cell) ? getIssueTitle(cell) : getStageTooltip(cell.row, cell.col)"
-                                 :data-jeolju="getJeoljuForColumn(cell.col)">
+                                 :data-segment="getSegmentForColumn(cell.col)">
                                 <!-- Row 1: hmb_fab, pre_assem, main_assem -->
                                 <div class="stage-cell" data-stage="hmb_fab"
                                      :class="'st-' + getStageStatus(cell.row, cell.col, 'hmb_fab')"></div>
@@ -1467,6 +1491,16 @@
                         </template>
                     </div>
                 </template>
+                <!-- Structure Overlay (골조 오버레이) - grid-container 내부에 위치해야 transform 적용됨 -->
+                <!-- x-html 사용하여 SVG 요소 동적 생성 (Alpine x-for는 SVG 내에서 작동 안함) -->
+                <svg class="structure-overlay"
+                     x-show="$store.structure.enabled && $store.structure.loaded"
+                     x-cloak
+                     :style="`opacity: ${$store.structure.display.opacity}; width: ${totalGridWidth || 2000}px; height: ${totalGridHeight || 400}px;`"
+                     :viewBox="`0 0 ${totalGridWidth || 2000} ${totalGridHeight || 400}`"
+                     x-html="$store.structure.getSvgContent()"
+                     preserveAspectRatio="xMinYMin meet">
+                </svg>
             </div>
 
             <!-- Phase 16: Issue Overlays (contained within grid-scroll-view) -->
@@ -1483,6 +1517,91 @@
         <div class="virtual-scroll-indicator"
              :class="{ 'visible': virtualScroll.isScrolling && virtualScroll.enabled }"
              x-text="scrollPositionInfo"></div>
+    </div>
+
+    <!-- Structure Controls Panel (골조 설정 패널) -->
+    <div class="structure-controls"
+         x-show="$store.structure.enabled"
+         x-cloak
+         x-transition>
+        <div class="structure-controls-header">
+            <span>골조 표시 설정</span>
+            <button @click="$store.structure.toggle()"
+                    style="background:none; border:none; color:#8b949e; cursor:pointer; font-size:14px;">✕</button>
+        </div>
+
+        <!-- Load MGT Button -->
+        <div class="structure-control-row" style="margin-bottom:8px; padding-bottom:8px; border-bottom:1px solid var(--border-color, #30363d);">
+            <template x-if="!$store.structure.loaded">
+                <button @click="$store.structure.loadFromURL()"
+                        :disabled="$store.structure.loading"
+                        style="flex:1; padding:6px 12px; background:rgba(35,134,54,0.3); border:1px solid #238636; border-radius:4px; color:#c9d1d9; cursor:pointer; font-size:11px;">
+                    <span x-show="!$store.structure.loading">📂 MGT 파일 로드</span>
+                    <span x-show="$store.structure.loading">⏳ 로딩 중...</span>
+                </button>
+            </template>
+            <template x-if="$store.structure.loaded">
+                <div style="display:flex; flex-direction:column; gap:2px; font-size:10px; color:#8b949e;">
+                    <span>✅ <span x-text="$store.structure.meta.sourceFile"></span></span>
+                    <span>노드: <span x-text="$store.structure.stats.totalNodes"></span> |
+                          보: <span x-text="$store.structure.stats.totalBeams"></span> |
+                          거더: <span x-text="$store.structure.stats.totalGirders"></span></span>
+                </div>
+            </template>
+        </div>
+
+        <!-- Error Display -->
+        <template x-if="$store.structure.error">
+            <div class="structure-control-row" style="color:#f85149; font-size:10px;">
+                ❌ <span x-text="$store.structure.error"></span>
+            </div>
+        </template>
+
+        <!-- Element Type Toggles -->
+        <div class="structure-control-row">
+            <input type="checkbox" id="showGirders"
+                   :checked="$store.structure.display.showGirders"
+                   @change="$store.structure.toggleElementType('girders')">
+            <label for="showGirders">거더 (주보)</label>
+            <span style="width:12px; height:3px; background:rgba(35,134,54,0.8); border-radius:2px;"></span>
+        </div>
+
+        <div class="structure-control-row">
+            <input type="checkbox" id="showBeams"
+                   :checked="$store.structure.display.showBeams"
+                   @change="$store.structure.toggleElementType('beams')">
+            <label for="showBeams">보</label>
+            <span style="width:12px; height:3px; background:rgba(88,166,255,0.7); border-radius:2px;"></span>
+        </div>
+
+        <div class="structure-control-row">
+            <input type="checkbox" id="showColumns"
+                   :checked="$store.structure.display.showColumns"
+                   @change="$store.structure.toggleElementType('columns')">
+            <label for="showColumns">기둥</label>
+            <span style="width:8px; height:8px; background:rgba(218,54,51,0.9); border-radius:50%;"></span>
+        </div>
+
+        <!-- Opacity Sliders -->
+        <div class="structure-control-row" style="margin-top:8px;">
+            <label>골조 투명도</label>
+            <input type="range" min="0.1" max="1" step="0.1"
+                   :value="$store.structure.display.opacity"
+                   @input="$store.structure.setOpacity(parseFloat($event.target.value))">
+        </div>
+
+        <div class="structure-control-row">
+            <label>공정 투명도</label>
+            <input type="range" min="0" max="1" step="0.1"
+                   :value="$store.structure.display.stageGridOpacity"
+                   @input="$store.structure.setStageGridOpacity(parseFloat($event.target.value))">
+        </div>
+
+        <!-- Floor Info -->
+        <div class="structure-control-row" style="margin-top:8px; padding-top:8px; border-top:1px solid var(--border-color, #30363d);">
+            <span>현재 층:</span>
+            <span x-text="$store.structure.currentFloor" style="color:#58a6ff; font-weight:600;"></span>
+        </div>
     </div>
 
     <!-- Detail Panel -->
@@ -1736,6 +1855,222 @@
 </div>
 
 <!-- Issue Overlays moved inside grid-scroll-view for proper containment -->
+
+<!-- Meeting Issues Panel (Right Sidebar) -->
+<aside class="meeting-issues-panel" :class="{ 'open': meetingIssuesPanelOpen }">
+    <div class="meeting-panel-header">
+        <h3>📋 회의록 이슈 <span style="color:#8b949e; font-weight:normal;" x-text="`(${meetingIssues.length}건)`"></span></h3>
+        <button @click="meetingIssuesPanelOpen = false"
+                style="background:none; border:none; color:#8b949e; cursor:pointer; font-size:16px;"
+                aria-label="회의록 패널 닫기">✕</button>
+    </div>
+
+    <!-- Meeting Filters -->
+    <div class="meeting-filters">
+        <select x-model="meetingFilter.status" class="meeting-filter-select">
+            <option value="all">전체 상태</option>
+            <option value="Open">미해결</option>
+            <option value="Completed">완료</option>
+        </select>
+        <select x-model="meetingFilter.type" class="meeting-filter-select">
+            <option value="all">전체 유형</option>
+            <option value="HMB">HMB</option>
+            <option value="PSRC">PSRC</option>
+            <option value="PC">PC</option>
+            <option value="Steel">Steel</option>
+            <option value="Joint">Joint</option>
+            <option value="General">일반</option>
+        </select>
+        <input type="text" class="meeting-search-input"
+               placeholder="검색..."
+               x-model="meetingFilter.search"
+               @input.debounce.300ms="meetingPage = 1">
+    </div>
+
+    <!-- Stats Bar -->
+    <div class="meeting-stats-bar">
+        <span class="meeting-stat">
+            <span style="color:#3fb950;">완료:</span>
+            <span x-text="meetingIssues.filter(i => i.status === 'Completed').length"></span>
+        </span>
+        <span class="meeting-stat">
+            <span style="color:#f85149;">미해결:</span>
+            <span x-text="meetingIssues.filter(i => i.status === 'Open').length"></span>
+        </span>
+        <span class="meeting-stat">
+            <span style="color:#58a6ff;">매핑됨:</span>
+            <span x-text="meetingIssues.filter(i => i.mappedToDashboard).length"></span>
+        </span>
+    </div>
+
+    <!-- Meeting Issues List -->
+    <div class="meeting-issues-list">
+        <template x-if="getFilteredMeetingIssues().length === 0">
+            <div class="meeting-empty-state">
+                <div style="font-size:32px; margin-bottom:8px;">📭</div>
+                <div>이슈가 없습니다</div>
+            </div>
+        </template>
+
+        <template x-for="issue in getFilteredMeetingIssues()" :key="issue.id">
+            <div class="meeting-issue-card"
+                 :class="{ 'mapped': issue.mappedToDashboard }"
+                 @click="selectMeetingIssue(issue)">
+                <div class="meeting-issue-header">
+                    <span class="meeting-issue-date" x-text="formatMeetingDateDisplay(issue.meetingDate)"></span>
+                    <span class="meeting-issue-status"
+                          :class="issue.status === 'Open' ? 'open' : 'completed'"
+                          x-text="issue.status === 'Open' ? '미해결' : '완료'"></span>
+                </div>
+                <div class="meeting-issue-title" x-text="(issue.description || '').substring(0, 80) + (issue.description?.length > 80 ? '...' : '')"></div>
+                <div class="meeting-issue-meta">
+                    <span class="meeting-issue-type" x-text="issue.issueType || 'N/A'"></span>
+                    <span x-show="issue.actionBy" x-text="'→ ' + issue.actionBy"></span>
+                </div>
+                <button class="btn-map"
+                        @click.stop="openMappingModal(issue)"
+                        :class="{ 'mapped': issue.location?.columns?.length > 0 || issue.mappedToDashboard }">
+                    <span x-show="!issue.mappedToDashboard">📍 기둥 매핑</span>
+                    <span x-show="issue.mappedToDashboard">✓ 매핑됨</span>
+                </button>
+            </div>
+        </template>
+    </div>
+
+    <!-- Pagination -->
+    <div class="meeting-pagination">
+        <button class="btn"
+                @click="meetingPage = Math.max(1, meetingPage - 1)"
+                :disabled="meetingPage <= 1"
+                style="padding:4px 8px; font-size:11px;">← 이전</button>
+        <span class="meeting-page-info" x-text="`${meetingPage} / ${Math.ceil(getTotalFilteredMeetingIssues() / meetingPageSize) || 1}`"></span>
+        <button class="btn"
+                @click="meetingPage = Math.min(Math.ceil(getTotalFilteredMeetingIssues() / meetingPageSize), meetingPage + 1)"
+                :disabled="meetingPage >= Math.ceil(getTotalFilteredMeetingIssues() / meetingPageSize)"
+                style="padding:4px 8px; font-size:11px;">다음 →</button>
+    </div>
+</aside>
+
+<!-- Column Mapping Modal -->
+<div class="mapping-modal-overlay" x-show="mappingModalOpen" x-cloak @click.self="closeMappingModal()">
+    <div class="mapping-modal">
+        <div class="mapping-modal-header">
+            <h3>📍 기둥 매핑</h3>
+            <button @click="closeMappingModal()"
+                    style="background:none; border:none; color:#8b949e; cursor:pointer; font-size:18px;"
+                    aria-label="매핑 모달 닫기">✕</button>
+        </div>
+
+        <div class="mapping-modal-body">
+            <!-- Issue Preview -->
+            <div class="issue-preview">
+                <p><strong>회의일:</strong> <span x-text="formatMeetingDateDisplay(mappingIssue?.meetingDate)"></span></p>
+                <p><strong>설명:</strong> <span x-text="(mappingIssue?.description || '').substring(0, 200)"></span></p>
+                <p><strong>유형:</strong> <span x-text="mappingIssue?.issueType || 'N/A'"></span></p>
+                <p x-show="mappingIssue?.majorCategory"><strong>분류:</strong> <span x-text="mappingIssue?.majorCategory"></span></p>
+            </div>
+
+            <!-- Mapping Mode Selection -->
+            <div class="mapping-options">
+                <button class="mapping-option-btn"
+                        @click="mappingMode = 'select'"
+                        :class="{ 'active': mappingMode === 'select' }">
+                    🖱️ 그리드에서 선택
+                </button>
+                <button class="mapping-option-btn"
+                        @click="mappingMode = 'range'"
+                        :class="{ 'active': mappingMode === 'range' }">
+                    📐 범위 입력
+                </button>
+                <button class="mapping-option-btn"
+                        @click="mappingMode = 'manual'"
+                        :class="{ 'active': mappingMode === 'manual' }">
+                    ⌨️ ID 직접 입력
+                </button>
+            </div>
+
+            <!-- Selected Columns Display -->
+            <div class="selected-columns-section">
+                <label>선택된 기둥: <span x-text="mappingColumns.length"></span>개</label>
+                <div class="column-chips">
+                    <template x-for="col in mappingColumns.slice(0, 20)" :key="col">
+                        <span class="column-chip">
+                            <span x-text="col"></span>
+                            <button @click="removeMappingColumn(col)" class="chip-remove">✕</button>
+                        </span>
+                    </template>
+                    <span x-show="mappingColumns.length > 20" class="column-chip more">
+                        +<span x-text="mappingColumns.length - 20"></span>개 더
+                    </span>
+                </div>
+                <button x-show="mappingColumns.length > 0"
+                        @click="mappingColumns = []"
+                        class="btn" style="margin-top:8px; font-size:11px; padding:4px 8px;">
+                    전체 초기화
+                </button>
+            </div>
+
+            <!-- Grid Select Mode Hint -->
+            <div class="mapping-mode-content" x-show="mappingMode === 'select'">
+                <div class="mode-hint">
+                    <p>💡 그리드에서 셀을 클릭하면 자동으로 추가됩니다.</p>
+                    <p>Ctrl/Cmd + 클릭으로 다중 선택이 가능합니다.</p>
+                </div>
+            </div>
+
+            <!-- Range Input Mode -->
+            <div class="mapping-mode-content" x-show="mappingMode === 'range'">
+                <div class="range-input-group">
+                    <div class="range-row">
+                        <label>행:</label>
+                        <select x-model="mappingRange.startRow" class="range-select">
+                            <template x-for="row in rowLabels" :key="row">
+                                <option :value="row" x-text="row"></option>
+                            </template>
+                        </select>
+                        <span>~</span>
+                        <select x-model="mappingRange.endRow" class="range-select">
+                            <template x-for="row in rowLabels" :key="row">
+                                <option :value="row" x-text="row"></option>
+                            </template>
+                        </select>
+                    </div>
+                    <div class="range-row">
+                        <label>열:</label>
+                        <input type="number" x-model.number="mappingRange.startCol" min="1" max="69" class="range-input">
+                        <span>~</span>
+                        <input type="number" x-model.number="mappingRange.endCol" min="1" max="69" class="range-input">
+                    </div>
+                    <button @click="applyRangeMapping()" class="btn btn-primary" style="margin-top:12px;">
+                        범위 적용
+                    </button>
+                </div>
+            </div>
+
+            <!-- Manual Input Mode -->
+            <div class="mapping-mode-content" x-show="mappingMode === 'manual'">
+                <div class="manual-input-group">
+                    <input type="text"
+                           x-model="mappingManualInput"
+                           placeholder="예: A-X1, B-X2~5, C-X10"
+                           class="manual-input"
+                           @keydown.enter="parseManualInput()">
+                    <button @click="parseManualInput()" class="btn btn-primary">추가</button>
+                </div>
+                <p class="input-hint">콤마(,)로 구분, 범위는 ~ 사용 (예: X2~5)</p>
+            </div>
+        </div>
+
+        <div class="mapping-modal-footer">
+            <button class="btn" @click="closeMappingModal()">취소</button>
+            <button class="btn btn-primary"
+                    @click="saveMappingAndCreateIssue()"
+                    :disabled="mappingColumns.length === 0">
+                ✅ 매핑 저장 & 이슈 생성
+            </button>
+        </div>
+    </div>
+</div>
 
 <!-- New Issue Modal -->
 <div class="issue-modal" x-show="newIssueModalOpen" x-cloak @click.self="newIssueModalOpen = false"
@@ -4049,7 +4384,7 @@ const P5Store = {
             projectInfo: {
                 name: "P5 Dashboard Project",
                 exportDate: new Date().toISOString(),
-                version: "1.0.0"
+                version: "2.4.0"
             },
             configurations: {
                 floors: app.floors,
@@ -4197,6 +4532,27 @@ function dashboard() {
         showDataMapPanel: false,
         shopIssueFilter: 'all',   // all|resolved|unresolved
         shopIssueSortBy: 'type',  // type|location|date
+
+        // Meeting Issues Panel State (Phase 17)
+        meetingIssues: [],                    // 전체 회의록 이슈 (18,570+)
+        meetingIssuesPanelOpen: false,
+        meetingFilter: {
+            status: 'all',
+            type: 'all',
+            severity: 'all',
+            search: '',
+            meetingDate: 'all'
+        },
+        meetingPage: 1,
+        meetingPageSize: 50,
+
+        // Column Mapping Modal State
+        mappingModalOpen: false,
+        mappingIssue: null,
+        mappingMode: 'select',               // 'select' | 'range' | 'manual'
+        mappingColumns: [],
+        mappingRange: { startRow: 'A', endRow: 'A', startCol: 1, endCol: 1 },
+        mappingManualInput: '',
 
         // Phase 15: Excel 회의록 파서 통합
         issueColumnLinks: [],     // 이슈 ID ↔ 기둥 ID 매핑
@@ -4412,14 +4768,14 @@ function dashboard() {
         },
         analysisPollingInterval: null,
 
-        // Phase 7: 층-절주 구조
-        // ★ 절주 = 수직 분절 (층 그룹), 열 구간 = 수평 분절 (컬럼 범위)
+        // Phase 7: 층-구간 구조
+        // ★ 절주 = 수직 분절 (층 그룹), 구간 = 수평 분절 (컬럼 범위)
         floors: [],              // 11개 층 데이터 (API에서 로드)
-        jeoljuConfig: [],        // 절주 = 층 그룹 (수직 분절, 1절주~4절주)
+        jeoljuConfig: [],        // 절주 = 층 그룹 (수직 분절, 1절주~8절주)
         columnSegments: [],      // 열 구간 = 컬럼 범위 (수평 분절, S1~S8)
-        jeoljuList: [],          // 하위 호환: columnSegments 참조
+        segmentList: [],         // 구간 리스트 (columnSegments 참조)
         selectedFloor: 'F1',     // 현재 선택된 층 (F1~F10, RF 레거시 형식)
-        selectedJeolju: null,    // 선택된 절주 필터 (null = 전체)
+        selectedSegment: null,   // 선택된 구간 필터 (null = 전체)
         elevationViewOpen: true, // 입면 뷰어 표시 여부
         floorSelectorOpen: false, // 층 선택기 드롭다운 열림 상태
         lastFloorLoad: null, // 마지막 층 데이터 로드 정보
@@ -4433,17 +4789,17 @@ function dashboard() {
             return floor ? floor.label : '1층';
         },
 
-        // Phase 7: 절주별 진행률 (computed)
-        get jeoljuProgress() {
+        // Phase 7: 구간별 진행률 (computed)
+        get segmentProgress() {
             const progress = {};
-            this.jeoljuList.forEach(j => {
+            this.segmentList.forEach(s => {
                 const cols = Object.values(this.columns).filter(c => {
                     const colNum = parseInt(c.location.column);
-                    return colNum >= j.startColumn && colNum <= j.endColumn;
+                    return colNum >= s.startColumn && colNum <= s.endColumn;
                 });
                 const total = cols.length || 1;
                 const installed = cols.filter(c => c.status.code === 'installed').length;
-                progress[j.jeoljuId] = Math.round((installed / total) * 100);
+                progress[s.segmentId] = Math.round((installed / total) * 100);
             });
             return progress;
         },
@@ -5564,6 +5920,9 @@ function dashboard() {
             // ★ PSRC 제작현황 데이터 로드 (production_status_import.js)
             this.loadProductionStatusData();
 
+            // Phase 17: 회의록 이슈 데이터 로드 (meeting_issues_import.js)
+            this.loadMeetingIssuesData();
+
             // Initialize sample issues for demo
             this.initSampleIssues();
 
@@ -5605,34 +5964,35 @@ function dashboard() {
                 { floorId: 'RF', label: 'RF (지붕)', order: 11, level: 99.4, hasVariation: true, variationNote: '지붕층' }
             ];
 
-            // ★ 6개 절주 (수직 분절 - 층 그룹) - column_data_generator.js jeoljuMap 기준
+            // ★ 8개 절주 (수직 분절 - 층 그룹) - DashboardAPI.gs getDefaultFloors_() SSOT 기준
             this.jeoljuConfig = [
-                { jeoljuId: '1절주', label: '1절주', floors: ['1F', '2F', '3F'], heightRange: '0.3m ~ 14.3m', length: 14.0, columnSize: 'PSRC/HMB', description: '1절주 (1~3F)' },
-                { jeoljuId: '2절주', label: '2절주', floors: ['4F', '5F'], heightRange: '21.3m ~ 28.3m', length: 7.0, columnSize: '1600x1600', description: '2절주 (4~5F)' },
-                { jeoljuId: '3절주', label: '3절주', floors: ['6F', '7F'], heightRange: '35.3m ~ 42.3m', length: 7.0, columnSize: '1400x1400', description: '3절주 (6~7F)' },
-                { jeoljuId: '4절주', label: '4절주', floors: ['8F'], heightRange: '49.3m ~', length: 7.0, columnSize: '1200x1200', description: '4절주 (8F)' },
-                { jeoljuId: '5절주', label: '5절주', floors: ['9F'], heightRange: '56.3m ~', length: 7.0, columnSize: '1000x1000', description: '5절주 (9F)' },
-                { jeoljuId: '6절주', label: '6절주', floors: ['10F', 'RF'], heightRange: '63.3m ~ 99.4m', length: 36.1, columnSize: '800x800', description: '6절주 (10F~RF)' }
+                { jeoljuId: '1절주', label: '1절주', floors: ['1F', '2F'], heightRange: '0.3m ~ 7.8m', length: 7.5, columnSize: '1600x1600', description: '1절주 (1~2F)' },
+                { jeoljuId: '2절주', label: '2절주', floors: ['3F'], heightRange: '14.3m', length: 6.5, columnSize: '1600x1600', description: '2절주 (3F)' },
+                { jeoljuId: '3절주', label: '3절주', floors: ['4F'], heightRange: '21.3m', length: 7.0, columnSize: '1500x1500', description: '3절주 (4F)' },
+                { jeoljuId: '4절주', label: '4절주', floors: ['5F'], heightRange: '28.3m', length: 7.0, columnSize: '1500x1500', description: '4절주 (5F)' },
+                { jeoljuId: '5절주', label: '5절주', floors: ['6F', '7F'], heightRange: '35.3m ~ 42.3m', length: 7.0, columnSize: '1300x1300', description: '5절주 (6~7F)' },
+                { jeoljuId: '6절주', label: '6절주', floors: ['8F'], heightRange: '49.3m', length: 7.0, columnSize: '1300x1300', description: '6절주 (8F)' },
+                { jeoljuId: '7절주', label: '7절주', floors: ['9F'], heightRange: '56.3m', length: 7.0, columnSize: '1300x1300', description: '7절주 (9F)' },
+                { jeoljuId: '8절주', label: '8절주', floors: ['10F', 'RF'], heightRange: '63.3m ~ 99.4m', length: 36.1, columnSize: '1200x1200', description: '8절주 (10F~RF)' }
             ];
 
-            // ★ 열 구간 (수평 분절 - 컬럼 범위) - 기존 jeoljuList를 명칭 변경
+            // ★ 열 구간 (수평 분절 - 컬럼 범위)
             // 그리드 뷰어에서 컬럼 범위별 필터링/하이라이트 용도
-            // jeoljuId 포함: 하위 호환성 (템플릿에서 jeolju.jeoljuId 사용)
             this.columnSegments = [
-                { segmentId: 'S1', jeoljuId: 'S1', label: '1구간', startColumn: 1, endColumn: 9, columnCount: 9, priority: 1 },
-                { segmentId: 'S2', jeoljuId: 'S2', label: '2구간', startColumn: 10, endColumn: 18, columnCount: 9, priority: 2 },
-                { segmentId: 'S3', jeoljuId: 'S3', label: '3구간', startColumn: 19, endColumn: 27, columnCount: 9, priority: 3 },
-                { segmentId: 'S4', jeoljuId: 'S4', label: '4구간', startColumn: 28, endColumn: 36, columnCount: 9, priority: 4 },
-                { segmentId: 'S5', jeoljuId: 'S5', label: '5구간', startColumn: 37, endColumn: 45, columnCount: 9, priority: 5 },
-                { segmentId: 'S6', jeoljuId: 'S6', label: '6구간', startColumn: 46, endColumn: 54, columnCount: 9, priority: 6 },
-                { segmentId: 'S7', jeoljuId: 'S7', label: '7구간', startColumn: 55, endColumn: 62, columnCount: 8, priority: 7 },
-                { segmentId: 'S8', jeoljuId: 'S8', label: '8구간', startColumn: 63, endColumn: 69, columnCount: 7, priority: 8 }
+                { segmentId: 'S1', label: '1구간', startColumn: 1, endColumn: 9, columnCount: 9, priority: 1 },
+                { segmentId: 'S2', label: '2구간', startColumn: 10, endColumn: 18, columnCount: 9, priority: 2 },
+                { segmentId: 'S3', label: '3구간', startColumn: 19, endColumn: 27, columnCount: 9, priority: 3 },
+                { segmentId: 'S4', label: '4구간', startColumn: 28, endColumn: 36, columnCount: 9, priority: 4 },
+                { segmentId: 'S5', label: '5구간', startColumn: 37, endColumn: 45, columnCount: 9, priority: 5 },
+                { segmentId: 'S6', label: '6구간', startColumn: 46, endColumn: 54, columnCount: 9, priority: 6 },
+                { segmentId: 'S7', label: '7구간', startColumn: 55, endColumn: 62, columnCount: 8, priority: 7 },
+                { segmentId: 'S8', label: '8구간', startColumn: 63, endColumn: 69, columnCount: 7, priority: 8 }
             ];
 
-            // 하위 호환성: jeoljuList를 columnSegments로 매핑 (기존 코드 호환)
-            this.jeoljuList = this.columnSegments;
+            // segmentList = columnSegments 참조
+            this.segmentList = this.columnSegments;
 
-            console.log('[Phase 7] Floor-Jeolju data initialized:', this.floors.length, 'floors,', this.jeoljuConfig.length, 'jeolju(수직),', this.columnSegments.length, 'segments(수평)');
+            console.log('[Phase 7] Floor-Segment data initialized:', this.floors.length, 'floors,', this.jeoljuConfig.length, 'jeolju(수직/8절주),', this.columnSegments.length, 'segments(수평)');
             
             // 층별 통계 초기화 (API 호출 전 기본값)
             this.floorStats = {};
@@ -5674,32 +6034,68 @@ function dashboard() {
             }
 
             let updated = 0;
-            
+
+            // legacyUid → 새 UID 역참조 맵 빌드
+            const legacyToUid = {};
+            for (const key in this.columns) {
+                const col = this.columns[key];
+                if (col.legacyUid) {
+                    // floorId 포함 키로 매핑 (같은 legacyUid가 여러 층에 존재)
+                    const lookupKey = `${col.location.floorId}:${col.legacyUid}`;
+                    legacyToUid[lookupKey] = key;
+                }
+            }
+
             // 헬퍼 함수: 데이터 세트 처리
             const processDataSet = (dataSet, floorId) => {
                 for (const uid in dataSet) {
+                    // 1) 새 UID 직접 매칭
+                    // 2) legacyUid fallback: floor + legacy로 검색
+                    let targetUid = uid;
+                    if (!this.columns[uid]) {
+                        const lookupKey = `${floorId}:${uid}`;
+                        if (legacyToUid[lookupKey]) {
+                            targetUid = legacyToUid[lookupKey];
+                        }
+                    }
+
                     // UID가 이미 존재하면 stages 업데이트
-                    if (this.columns[uid]) {
-                        this.columns[uid].stages = { ...dataSet[uid] };
-                        this.columns[uid].location.floorId = floorId; // 층 정보 업데이트
+                    if (this.columns[targetUid]) {
+                        this.columns[targetUid].stages = { ...dataSet[uid] };
+                        this.columns[targetUid].location.floorId = floorId;
                         updated++;
                     } else {
-                        // 새 기둥 생성 (UID 형식: "A-X36")
-                        const [row, colPart] = uid.split('-');
-                        const col = parseInt(colPart.replace('X', ''));
-                        
-                        // Zone 결정
-                        let zoneId = 'zone_c';
-                        if (col <= 25) zoneId = 'zone_a';
-                        else if (col <= 47) zoneId = 'zone_b';
+                        // 새 기둥 생성 (UID 형식: legacy "A-X36" or new "F1-A-X36")
+                        const parts = uid.split('-');
+                        let row, col;
+                        if (parts.length === 3) {
+                            // New format: F1-A-X36
+                            row = parts[1];
+                            col = parseInt(parts[2].replace('X', ''));
+                        } else {
+                            // Legacy format: A-X36
+                            row = parts[0];
+                            col = parseInt(parts[1].replace('X', ''));
+                        }
 
-                        this.columns[uid] = {
-                            uid,
+                        // Zone 결정 (getZoneId if available, else simple)
+                        let zoneId = 'zone_c';
+                        if (typeof getZoneId === 'function') {
+                            zoneId = getZoneId(col, floorId);
+                        } else {
+                            if (col <= 23) zoneId = 'zone_a';
+                            else if (col <= 45) zoneId = 'zone_b';
+                        }
+
+                        const newUid = `${floorId}-${row}-X${col}`;
+                        this.columns[newUid] = {
+                            uid: newUid,
+                            legacyUid: `${row}-X${col}`,
                             location: {
                                 row: this.rowLabels.indexOf(row),
                                 column: col,
                                 zoneId,
-                                floorId: floorId, // 올바른 층 ID 할당 (F1 or F2)
+                                floorId: floorId,
                                 x: 0,
                                 y: 0,
                                 z: 0
@@ -5734,6 +6130,295 @@ function dashboard() {
 
             // 데이터 저장
             this.saveToLocalStorage();
+        },
+
+        // ========================================
+        // Phase 17: Meeting Issues Methods
+        // ========================================
+
+        /**
+         * 회의록 이슈 데이터 로드 (meeting_issues_import.js)
+         */
+        async loadMeetingIssuesData() {
+            if (typeof MeetingIssuesImport === 'undefined') {
+                console.warn('[Meeting Issues] meeting_issues_import.js not loaded');
+                return;
+            }
+
+            try {
+                console.log('[Meeting Issues] Loading meeting issues...');
+                const result = await MeetingIssuesImport.load({
+                    maxIssues: null,   // 전체 로드 (제한 없음)
+                    recentOnly: false  // 전체 기간
+                });
+
+                if (result.success) {
+                    this.meetingIssues = result.issues;
+                    console.log(`[Meeting Issues] Loaded ${this.meetingIssues.length} issues`);
+                    console.log('[Meeting Issues] Stats:', result.stats);
+                } else {
+                    console.error('[Meeting Issues] Failed to load:', result.error);
+                }
+            } catch (error) {
+                console.error('[Meeting Issues] Error loading:', error);
+            }
+        },
+
+        /**
+         * 필터링된 회의록 이슈 반환 (페이지네이션 적용)
+         */
+        getFilteredMeetingIssues() {
+            let filtered = this.meetingIssues;
+
+            // 상태 필터
+            if (this.meetingFilter.status !== 'all') {
+                filtered = filtered.filter(i => i.status === this.meetingFilter.status);
+            }
+
+            // 유형 필터
+            if (this.meetingFilter.type !== 'all') {
+                filtered = filtered.filter(i => i.issueType === this.meetingFilter.type);
+            }
+
+            // 검색 필터
+            if (this.meetingFilter.search) {
+                const q = this.meetingFilter.search.toLowerCase();
+                filtered = filtered.filter(i =>
+                    i.description?.toLowerCase().includes(q) ||
+                    i.majorCategory?.toLowerCase().includes(q) ||
+                    i.issueType?.toLowerCase().includes(q)
+                );
+            }
+
+            // 페이지네이션
+            const start = (this.meetingPage - 1) * this.meetingPageSize;
+            return filtered.slice(start, start + this.meetingPageSize);
+        },
+
+        /**
+         * 전체 필터링된 이슈 개수 (페이지네이션 전)
+         */
+        getTotalFilteredMeetingIssues() {
+            let filtered = this.meetingIssues;
+
+            if (this.meetingFilter.status !== 'all') {
+                filtered = filtered.filter(i => i.status === this.meetingFilter.status);
+            }
+            if (this.meetingFilter.type !== 'all') {
+                filtered = filtered.filter(i => i.issueType === this.meetingFilter.type);
+            }
+            if (this.meetingFilter.search) {
+                const q = this.meetingFilter.search.toLowerCase();
+                filtered = filtered.filter(i =>
+                    i.description?.toLowerCase().includes(q) ||
+                    i.majorCategory?.toLowerCase().includes(q)
+                );
+            }
+
+            return filtered.length;
+        },
+
+        /**
+         * 회의일 포맷 (YYMMDD → YYYY-MM-DD)
+         */
+        formatMeetingDateDisplay(dateStr) {
+            if (!dateStr || dateStr.length < 6) return dateStr || 'N/A';
+            const year = '20' + dateStr.substring(0, 2);
+            const month = dateStr.substring(2, 4);
+            const day = dateStr.substring(4, 6);
+            return `${year}-${month}-${day}`;
+        },
+
+        /**
+         * 회의록 이슈 선택
+         */
+        selectMeetingIssue(issue) {
+            console.log('[Meeting Issues] Selected:', issue.id);
+            // 이슈 세부정보 표시 또는 하이라이트
+        },
+
+        /**
+         * 기둥 매핑 모달 열기
+         */
+        openMappingModal(issue) {
+            this.mappingIssue = issue;
+            this.mappingColumns = [...(issue.location?.columns || [])];
+            this.mappingMode = 'select';
+            this.mappingRange = { startRow: 'A', endRow: 'A', startCol: 1, endCol: 1 };
+            this.mappingManualInput = '';
+            this.mappingModalOpen = true;
+            console.log('[Mapping] Modal opened for issue:', issue.id);
+        },
+
+        /**
+         * 기둥 매핑 모달 닫기
+         */
+        closeMappingModal() {
+            this.mappingModalOpen = false;
+            this.mappingIssue = null;
+            this.mappingColumns = [];
+        },
+
+        /**
+         * 매핑에서 기둥 제거
+         */
+        removeMappingColumn(col) {
+            this.mappingColumns = this.mappingColumns.filter(c => c !== col);
+        },
+
+        /**
+         * 범위 입력으로 기둥 추가
+         */
+        applyRangeMapping() {
+            const startRowIdx = this.rowLabels.indexOf(this.mappingRange.startRow);
+            const endRowIdx = this.rowLabels.indexOf(this.mappingRange.endRow);
+            const startCol = Math.min(this.mappingRange.startCol, this.mappingRange.endCol);
+            const endCol = Math.max(this.mappingRange.startCol, this.mappingRange.endCol);
+
+            const newColumns = [];
+            for (let r = Math.min(startRowIdx, endRowIdx); r <= Math.max(startRowIdx, endRowIdx); r++) {
+                for (let c = startCol; c <= endCol; c++) {
+                    const uid = `${this.rowLabels[r]}-X${c}`;
+                    if (!this.mappingColumns.includes(uid)) {
+                        newColumns.push(uid);
+                    }
+                }
+            }
+
+            this.mappingColumns = [...this.mappingColumns, ...newColumns];
+            this.showToast(`${newColumns.length}개 기둥 추가됨`, 'success');
+        },
+
+        /**
+         * 수동 입력 파싱
+         */
+        parseManualInput() {
+            const input = this.mappingManualInput.trim();
+            if (!input) return;
+
+            const parts = input.split(',').map(p => p.trim()).filter(Boolean);
+            const newColumns = [];
+
+            for (const part of parts) {
+                // 범위 형식: A-X2~5 or X2~5
+                const rangeMatch = part.match(/^([A-L])?-?X(\d+)~(\d+)$/i);
+                if (rangeMatch) {
+                    const row = rangeMatch[1] ? rangeMatch[1].toUpperCase() : null;
+                    const startCol = parseInt(rangeMatch[2]);
+                    const endCol = parseInt(rangeMatch[3]);
+
+                    if (row) {
+                        for (let c = startCol; c <= endCol; c++) {
+                            const uid = `${row}-X${c}`;
+                            if (!this.mappingColumns.includes(uid) && !newColumns.includes(uid)) {
+                                newColumns.push(uid);
+                            }
+                        }
+                    } else {
+                        // 모든 행에 적용
+                        for (const r of this.rowLabels) {
+                            for (let c = startCol; c <= endCol; c++) {
+                                const uid = `${r}-X${c}`;
+                                if (!this.mappingColumns.includes(uid) && !newColumns.includes(uid)) {
+                                    newColumns.push(uid);
+                                }
+                            }
+                        }
+                    }
+                    continue;
+                }
+
+                // 단일 형식: A-X1
+                const singleMatch = part.match(/^([A-L])-X(\d+)$/i);
+                if (singleMatch) {
+                    const uid = `${singleMatch[1].toUpperCase()}-X${singleMatch[2]}`;
+                    if (!this.mappingColumns.includes(uid) && !newColumns.includes(uid)) {
+                        newColumns.push(uid);
+                    }
+                }
+            }
+
+            if (newColumns.length > 0) {
+                this.mappingColumns = [...this.mappingColumns, ...newColumns];
+                this.mappingManualInput = '';
+                this.showToast(`${newColumns.length}개 기둥 추가됨`, 'success');
+            } else {
+                this.showToast('입력 형식을 확인하세요', 'warning');
+            }
+        },
+
+        /**
+         * 매핑 저장 & 대시보드 이슈 생성
+         */
+        saveMappingAndCreateIssue() {
+            if (!this.mappingIssue || this.mappingColumns.length === 0) {
+                this.showToast('매핑할 기둥을 선택하세요', 'warning');
+                return;
+            }
+
+            // 1. 이슈 타입 매핑
+            const typeMap = {
+                'HMB': 'tc',
+                'PSRC': 'design',
+                'PC': 'material',
+                'Steel': 'material',
+                'Joint': 'design',
+                'General': 'material'
+            };
+
+            // 2. 대시보드 이슈 생성
+            const dashboardIssue = {
+                id: `MTG-${this.mappingIssue.meetingDate}-${this.mappingIssue.id}`,
+                type: typeMap[this.mappingIssue.issueType] || 'material',
+                title: (this.mappingIssue.description || '').substring(0, 100),
+                severity: (this.mappingIssue.severity || 'medium').toLowerCase(),
+                affectedColumns: [...this.mappingColumns],
+                description: this.mappingIssue.description,
+                status: this.mappingIssue.status === 'Open' ? 'open' : 'resolved',
+                reportedAt: this.formatMeetingDateDisplay(this.mappingIssue.meetingDate),
+                source: 'meeting',
+                meetingIssueId: this.mappingIssue.id,
+                overlay: {
+                    show: true,
+                    label: `📋 ${this.mappingIssue.issueType || ''}\n${this.formatMeetingDateDisplay(this.mappingIssue.meetingDate)}`
+                }
+            };
+
+            // 3. 대시보드 이슈 배열에 추가
+            this.issues.push(dashboardIssue);
+
+            // 4. 이슈 인덱스 재빌드 (issue-store.js의 O(1) 조회용)
+            if (typeof IssueStore !== 'undefined' && IssueStore.buildIndex) {
+                IssueStore.buildIndex(this.issues);
+            }
+
+            // 5. 원본 회의록 이슈에 매핑 정보 저장
+            const meetingIssueIdx = this.meetingIssues.findIndex(i => i.id === this.mappingIssue.id);
+            if (meetingIssueIdx >= 0) {
+                this.meetingIssues[meetingIssueIdx].location = {
+                    ...this.meetingIssues[meetingIssueIdx].location,
+                    columns: [...this.mappingColumns]
+                };
+                this.meetingIssues[meetingIssueIdx].mappedToDashboard = true;
+            }
+
+            // 6. 로컬 스토리지 저장
+            this.saveToLocalStorage();
+
+            // 7. 알림
+            this.showToast(`이슈가 ${this.mappingColumns.length}개 기둥에 매핑되었습니다`, 'success');
+            this.addNotification({
+                id: 'mapping-' + Date.now(),
+                type: 'success',
+                title: '이슈 매핑 완료',
+                message: `${dashboardIssue.title.substring(0, 50)}... → ${this.mappingColumns.length}개 기둥`,
+                timestamp: new Date().toISOString(),
+                autoDismiss: true,
+                dismissAfter: 5000
+            });
+
+            // 8. 모달 닫기
+            this.closeMappingModal();
         },
 
         // Phase 7: 층 선택
@@ -5793,13 +6478,14 @@ function dashboard() {
                         console.log(`[Phase 7] Columns updated: ${Object.keys(this.columns).length} columns`);
                     }
 
-                    // 2. 절주별 통계 업데이트
-                    if (result.stats?.byJeolju) {
-                        this.jeoljuList = this.jeoljuList.map(j => {
-                            const stats = result.stats.byJeolju[j.jeoljuId];
+                    // 2. 구간별 통계 업데이트 (API 하위호환: byJeolju → bySegment)
+                    const segmentStats = result.stats?.bySegment || result.stats?.byJeolju;
+                    if (segmentStats) {
+                        this.segmentList = this.segmentList.map(s => {
+                            const stats = segmentStats[s.segmentId];
                             if (stats) {
                                 return {
-                                    ...j,
+                                    ...s,
                                     issueCount: stats.hold || 0,
                                     total: stats.total || 0,
                                     pending: stats.pending || 0,
@@ -5807,7 +6493,7 @@ function dashboard() {
                                     installed: stats.installed || 0
                                 };
                             }
-                            return j;
+                            return s;
                         });
                     }
 
@@ -5891,47 +6577,47 @@ function dashboard() {
         },
 
         // Phase 9: 입면 뷰어 셀 클래스 결정
-        getElevationCellClass(floorId, jeoljuId) {
+        getElevationCellClass(floorId, segmentId) {
             const classes = [];
-            
-            // 현재 선택된 층/절주이면 selected
-            if (this.selectedFloor === floorId && this.selectedJeolju === jeoljuId) {
+
+            // 현재 선택된 층/구간이면 selected
+            if (this.selectedFloor === floorId && this.selectedSegment === segmentId) {
                 classes.push('selected');
             }
-            
+
             // 진행률 기반 클래스
-            const progress = this.getFloorJeoljuProgress(floorId, jeoljuId);
+            const progress = this.getFloorSegmentProgress(floorId, segmentId);
             if (progress >= 100) {
                 classes.push('complete');
             } else if (progress > 0) {
                 classes.push('in-progress');
             }
-            
-            // 이슈 여부 (해당 층-절주에 이슈가 있으면)
-            const hasIssue = this.issues.some(issue => 
-                issue.status === 'open' && 
+
+            // 이슈 여부 (해당 층-구간에 이슈가 있으면)
+            const hasIssue = this.issues.some(issue =>
+                issue.status === 'open' &&
                 issue.affectedColumns?.some(uid => {
-                    const jeolju = this.getJeoljuForColumn(parseInt(uid.split('-X')[1]) || 1);
-                    return jeolju?.jeoljuId === jeoljuId;
+                    const segment = this.getSegmentForColumn(parseInt(uid.split('-X')[1]) || 1);
+                    return segment?.segmentId === segmentId;
                 })
             );
             if (hasIssue) {
                 classes.push('has-issue');
             }
-            
+
             return classes.join(' ');
         },
 
-        // Phase 9: 층-절주 동시 선택
-        selectFloorAndJeolju(floorId, jeoljuId) {
+        // Phase 9: 층-구간 동시 선택
+        selectFloorAndSegment(floorId, segmentId) {
             const previousFloor = this.selectedFloor; // 변경 전 층 저장
-            
-            // 토글 로직: 이미 선택된 셀이면 절주만 해제
-            if (this.selectedFloor === floorId && this.selectedJeolju === jeoljuId) {
-                this.selectedJeolju = null;
+
+            // 토글 로직: 이미 선택된 셀이면 구간만 해제
+            if (this.selectedFloor === floorId && this.selectedSegment === segmentId) {
+                this.selectedSegment = null;
             } else {
                 this.selectedFloor = floorId;
-                this.selectedJeolju = jeoljuId;
+                this.selectedSegment = segmentId;
             }
             
             // 층이 변경되었으면 데이터 로드
@@ -5940,56 +6626,56 @@ function dashboard() {
             }
             
             const floorLabel = this.floors.find(f => f.floorId === floorId)?.label || floorId;
-            const jeoljuLabel = this.jeoljuList.find(j => j.jeoljuId === jeoljuId)?.label || jeoljuId;
-            this.showToast(`${floorLabel} / ${jeoljuLabel} 선택됨`, 'info');
+            const segmentLabel = this.segmentList.find(s => s.segmentId === segmentId)?.label || segmentId;
+            this.showToast(`${floorLabel} / ${segmentLabel} 선택됨`, 'info');
         },
 
-        // Phase 9: 층-절주 조합의 진행률 계산 (0-100)
-        getFloorJeoljuProgress(floorId, jeoljuId) {
+        // Phase 9: 층-구간 조합의 진행률 계산 (0-100)
+        getFloorSegmentProgress(floorId, segmentId) {
             // 현재 층이 선택된 층이면 실제 데이터 기반 계산
             if (this.selectedFloor === floorId && this.columns) {
-                const jeolju = this.jeoljuList.find(j => j.jeoljuId === jeoljuId);
-                if (!jeolju) return 0;
-                
+                const segment = this.segmentList.find(s => s.segmentId === segmentId);
+                if (!segment) return 0;
+
                 let total = 0, installed = 0;
-                
+
                 Object.values(this.columns).forEach(col => {
                     const colNum = parseInt(col.location?.column) || 0;
-                    if (colNum >= jeolju.startColumn && colNum <= jeolju.endColumn) {
+                    if (colNum >= segment.startColumn && colNum <= segment.endColumn) {
                         total++;
                         if (col.status?.code === 'installed') {
                             installed++;
                         }
                     }
                 });
-                
+
                 return total > 0 ? Math.round((installed / total) * 100) : 0;
             }
-            
+
             // API에서 로드한 층별 통계 사용
             if (this.floorStats && this.floorStats[floorId]) {
                 return this.floorStats[floorId].progress || 0;
             }
-            
+
             // 통계 없으면 0 반환
             return 0;
         },
 
-        // Phase 9: 절주 필터
-        filterByJeolju(jeoljuId) {
-            if (this.selectedJeolju === jeoljuId) {
-                this.selectedJeolju = null; // 토글 해제
-                this.showToast('절주 필터 해제', 'info');
+        // Phase 9: 구간 필터
+        filterBySegment(segmentId) {
+            if (this.selectedSegment === segmentId) {
+                this.selectedSegment = null; // 토글 해제
+                this.showToast('구간 필터 해제', 'info');
             } else {
-                this.selectedJeolju = jeoljuId;
-                const jeolju = this.jeoljuList.find(j => j.jeoljuId === jeoljuId);
-                this.showToast(`${jeolju?.label || jeoljuId} 필터 적용`, 'info');
+                this.selectedSegment = segmentId;
+                const segment = this.segmentList.find(s => s.segmentId === segmentId);
+                this.showToast(`${segment?.label || segmentId} 필터 적용`, 'info');
             }
         },
 
-        // Phase 9: 컬럼 번호로 절주 찾기
-        getJeoljuForColumn(colNum) {
-            return this.jeoljuList.find(j => colNum >= j.startColumn && colNum <= j.endColumn);
+        // Phase 9: 컬럼 번호로 구간 찾기
+        getSegmentForColumn(colNum) {
+            return this.segmentList.find(s => colNum >= s.startColumn && s.endColumn >= colNum);
         },
 
         // Phase 7: 층 이동 (방향: -1 = 상위, +1 = 하위)
@@ -6006,71 +6692,71 @@ function dashboard() {
             }
         },
 
-        // Phase 7: 절주 필터 순환
-        cycleJeoljuFilter() {
-            if (!this.jeoljuList || this.jeoljuList.length === 0) return;
+        // Phase 7: 구간 필터 순환
+        cycleSegmentFilter() {
+            if (!this.segmentList || this.segmentList.length === 0) return;
 
-            if (!this.selectedJeolju) {
-                // 필터 없음 → 첫 번째 절주
-                this.selectedJeolju = this.jeoljuList[0].jeoljuId;
+            if (!this.selectedSegment) {
+                // 필터 없음 → 첫 번째 구간
+                this.selectedSegment = this.segmentList[0].segmentId;
             } else {
-                const currentIndex = this.jeoljuList.findIndex(j => j.jeoljuId === this.selectedJeolju);
-                if (currentIndex === this.jeoljuList.length - 1) {
+                const currentIndex = this.segmentList.findIndex(s => s.segmentId === this.selectedSegment);
+                if (currentIndex === this.segmentList.length - 1) {
                     // 마지막 → 필터 해제
-                    this.selectedJeolju = null;
-                    this.showToast('절주 필터 해제', 'info');
+                    this.selectedSegment = null;
+                    this.showToast('구간 필터 해제', 'info');
                     return;
                 } else {
-                    // 다음 절주
-                    this.selectedJeolju = this.jeoljuList[currentIndex + 1].jeoljuId;
+                    // 다음 구간
+                    this.selectedSegment = this.segmentList[currentIndex + 1].segmentId;
                 }
             }
 
-            const jeolju = this.jeoljuList.find(j => j.jeoljuId === this.selectedJeolju);
-            if (jeolju) {
-                this.showToast(`${jeolju.label} 필터 적용`, 'info');
+            const segment = this.segmentList.find(s => s.segmentId === this.selectedSegment);
+            if (segment) {
+                this.showToast(`${segment.label} 필터 적용`, 'info');
             }
         },
 
-        // Phase 7: 해당 기둥이 선택된 절주에 속하는지 확인
-        isInSelectedJeolju(columnNumber) {
-            if (!this.selectedJeolju) return true;
-            const jeolju = this.jeoljuList.find(j => j.jeoljuId === this.selectedJeolju);
-            if (!jeolju) return true;
-            return columnNumber >= jeolju.startColumn && columnNumber <= jeolju.endColumn;
+        // Phase 7: 해당 기둥이 선택된 구간에 속하는지 확인
+        isInSelectedSegment(columnNumber) {
+            if (!this.selectedSegment) return true;
+            const segment = this.segmentList.find(s => s.segmentId === this.selectedSegment);
+            if (!segment) return true;
+            return columnNumber >= segment.startColumn && columnNumber <= segment.endColumn;
         },
 
-        // Phase 7: 절주별 이슈 수 계산
-        getJeoljuIssueCount(jeoljuId) {
-            if (!jeoljuId) return 0;
-            const jeolju = this.jeoljuList.find(j => j.jeoljuId === jeoljuId);
-            if (!jeolju) return 0;
+        // Phase 7: 구간별 이슈 수 계산
+        getSegmentIssueCount(segmentId) {
+            if (!segmentId) return 0;
+            const segment = this.segmentList.find(s => s.segmentId === segmentId);
+            if (!segment) return 0;
 
             return this.issues.filter(issue => {
                 if (issue.status === 'resolved') return false;
-                // affectedColumns에서 절주 범위 내 기둥 확인
+                // affectedColumns에서 구간 범위 내 기둥 확인
                 const affected = issue.affectedColumns || [];
                 return affected.some(uid => {
                     const match = uid.match(/X(\d+)/);
                     if (!match) return false;
                     const colNum = parseInt(match[1]);
-                    return colNum >= jeolju.startColumn && colNum <= jeolju.endColumn;
+                    return colNum >= segment.startColumn && colNum <= segment.endColumn;
                 });
             }).length;
         },
 
-        // Phase 7: 절주별 진행률 계산 (%)
-        getJeoljuProgressPercent(jeoljuId) {
-            if (!jeoljuId) return 0;
-            const jeolju = this.jeoljuList.find(j => j.jeoljuId === jeoljuId);
-            if (!jeolju) return 0;
+        // Phase 7: 구간별 진행률 계산 (%)
+        getSegmentProgressPercent(segmentId) {
+            if (!segmentId) return 0;
+            const segment = this.segmentList.find(s => s.segmentId === segmentId);
+            if (!segment) return 0;
 
             let total = 0;
             let completed = 0;
 
             Object.values(this.columns).forEach(col => {
                 const colNum = col.location?.column;
-                if (colNum >= jeolju.startColumn && colNum <= jeolju.endColumn) {
+                if (colNum >= segment.startColumn && colNum <= segment.endColumn) {
                     total++;
                     // installed 상태를 완료로 간주
                     const lastStage = col.stages?.embed || col.stages?.form;
@@ -6085,23 +6771,23 @@ function dashboard() {
             return total > 0 ? Math.round((completed / total) * 100) : 0;
         },
 
-        // Phase 7: 선택된 절주 라벨 반환
-        getSelectedJeoljuLabel() {
-            if (!this.selectedJeolju) return '';
-            const jeolju = this.jeoljuList.find(j => j.jeoljuId === this.selectedJeolju);
-            return jeolju ? `${jeolju.label} (X${jeolju.startColumn}~X${jeolju.endColumn})` : '';
+        // Phase 7: 선택된 구간 라벨 반환
+        getSelectedSegmentLabel() {
+            if (!this.selectedSegment) return '';
+            const segment = this.segmentList.find(s => s.segmentId === this.selectedSegment);
+            return segment ? `${segment.label} (X${segment.startColumn}~X${segment.endColumn})` : '';
         },
 
-        // Phase 7: 절주별 기둥 수 계산
-        getJeoljuColumnCount(jeoljuId) {
-            if (!jeoljuId) return 0;
-            const jeolju = this.jeoljuList.find(j => j.jeoljuId === jeoljuId);
-            if (!jeolju) return 0;
+        // Phase 7: 구간별 기둥 수 계산
+        getSegmentColumnCount(segmentId) {
+            if (!segmentId) return 0;
+            const segment = this.segmentList.find(s => s.segmentId === segmentId);
+            if (!segment) return 0;
 
             let count = 0;
             Object.values(this.columns).forEach(col => {
                 const colNum = col.location?.column;
-                if (colNum >= jeolju.startColumn && colNum <= jeolju.endColumn) {
+                if (colNum >= segment.startColumn && colNum <= segment.endColumn) {
                     count++;
                 }
             });
@@ -9675,10 +10361,10 @@ function dashboard() {
                     return;
                 }
 
-                // J: 절주 필터 순환
+                // J: 구간 필터 순환
                 if (e.key === 'j' || e.key === 'J') {
                     e.preventDefault();
-                    self.cycleJeoljuFilter();
+                    self.cycleSegmentFilter();
                     return;
                 }
             });
@@ -10501,13 +11187,13 @@ function dashboard() {
                     break;
 
                 case 'filtered':
-                    // Export based on current filters (jeolju, workflow, search)
-                    if (this.selectedJeolju) {
-                        const jeolju = this.jeoljuList.find(j => j.jeoljuId === this.selectedJeolju);
-                        if (jeolju) {
+                    // Export based on current filters (segment, workflow, search)
+                    if (this.selectedSegment) {
+                        const segment = this.segmentList.find(s => s.segmentId === this.selectedSegment);
+                        if (segment) {
                             columns = columns.filter(c => {
                                 const colNum = parseInt(c.location?.column);
-                                return colNum >= jeolju.startColumn && colNum <= jeolju.endColumn;
+                                return colNum >= segment.startColumn && colNum <= segment.endColumn;
                             });
                         }
                     }
@@ -10585,7 +11271,7 @@ function dashboard() {
                 criticalIssues: issuesData.filter(i => i.severity === 'critical').length,
                 exportedAt: new Date().toISOString(),
                 selectedFloor: this.selectedFloor,
-                selectedJeolju: this.selectedJeolju
+                selectedSegment: this.selectedSegment
             };
         },
 
@@ -10706,7 +11392,7 @@ function dashboard() {
             rows.push({ '항목': '=== 내보내기 정보 ===', '값': '' });
             rows.push({ '항목': '내보내기 시간', '값': new Date(summaryData.exportedAt).toLocaleString('ko-KR') });
             rows.push({ '항목': '선택된 층', '값': summaryData.selectedFloor || 'ALL' });
-            rows.push({ '항목': '선택된 절주', '값': summaryData.selectedJeolju || 'ALL' });
+            rows.push({ '항목': '선택된 구간', '값': summaryData.selectedSegment || 'ALL' });
 
             const ws = XLSX.utils.json_to_sheet(rows);
 
@@ -10904,7 +11590,7 @@ function dashboard() {
                     zones: this.zones,
                     statusCodes: this.statusCodes,
                     selectedFloor: this.selectedFloor,
-                    selectedJeolju: this.selectedJeolju
+                    selectedSegment: this.selectedSegment
                 });
 
                 if (result.success) {
@@ -11454,17 +12140,15 @@ function dashboard() {
                 this.currentFloorLabel = this.floors[0].label;
             }
             
-            // Generate zones from parsed data
-            const totalCols = parsed.gridConfig.cols;
-            const zoneSize = Math.ceil(totalCols / 3);
-            
+            // Generate zones from SSOT (master_config.json 기준 고정 경계)
+            const maxRow = parsed.gridConfig.rows - 1;
             this.zones = [
                 {
                     id: 'zone_a',
                     name: 'ZONE A',
                     displayName: 'FAB',
                     description: 'Utility Support',
-                    range: { startColumn: 3, endColumn: 3 + zoneSize - 1, startRow: 0, endRow: parsed.gridConfig.rows - 1 },
+                    range: { startColumn: 1, endColumn: 23, startRow: 0, endRow: maxRow },
                     style: { primaryColor: '#238636', backgroundColor: 'rgba(35, 134, 54, 0.1)' }
                 },
                 {
@@ -11472,7 +12156,7 @@ function dashboard() {
                     name: 'ZONE B',
                     displayName: 'CUB',
                     description: 'Main Link',
-                    range: { startColumn: 3 + zoneSize, endColumn: 3 + zoneSize * 2 - 1, startRow: 0, endRow: parsed.gridConfig.rows - 1 },
+                    range: { startColumn: 24, endColumn: 45, startRow: 0, endRow: maxRow },
                     style: { primaryColor: '#1f6feb', backgroundColor: 'rgba(31, 111, 235, 0.1)' }
                 },
                 {
@@ -11480,7 +12164,7 @@ function dashboard() {
                     name: 'ZONE C',
                     displayName: 'COMPLEX',
                     description: 'Office/Amenity - 복합동',
-                    range: { startColumn: 3 + zoneSize * 2, endColumn: totalCols + 2, startRow: 0, endRow: parsed.gridConfig.rows - 1 },
+                    range: { startColumn: 46, endColumn: 69, startRow: 0, endRow: maxRow },
                     style: { primaryColor: '#d29922', backgroundColor: 'rgba(210, 153, 34, 0.1)' }
                 }
             ];

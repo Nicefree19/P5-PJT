@@ -316,13 +316,14 @@ function calculateGridConfig(nodes) {
     const yValues = [...new Set(nodes.map(n => n.y))].sort((a, b) => a - b);
     const zValues = [...new Set(nodes.map(n => n.z))].sort((a, b) => a - b);
 
-    // 건축 그리드: 67열 (X3~X69), 10.8m 간격 기준
-    const archCols = 67;  // X3 ~ X69
+    // 건축 그리드: 69열 (X1~X69), 7.2m 간격
+    // 실제 데이터는 X4~X69 범위 (X1~X3 미사용)
+    const archCols = 69;
     const xSpacing = GRID_MAPPING.spacing;
     const ySpacing = yValues.length > 1 ? yValues[1] - yValues[0] : 12.3;
 
     return {
-        cols: archCols,         // 건축 그리드 열 수 (X3~X69 = 67)
+        cols: archCols,         // 건축 그리드 열 수 (X1~X69, 실제 X4~X69)
         rows: yValues.length,
         floors: zValues.length,
         xSpacing,
@@ -546,6 +547,8 @@ function generateColumns(nodes, gridConfig, elements) {
         return '8절주';                      // F10, RF
     };
 
+    let duplicateCount = 0;
+
     for (const node of allColumnNodes) {
         // ── Step 2a: X좌표 → 건축 그리드 열 번호 (tolerance 기반) ──
         const column = xToGridColumn(node.x);
@@ -565,6 +568,12 @@ function generateColumns(nodes, gridConfig, elements) {
         // UID: F{floor}-{Row}-X{col} (e.g. F1-A-X36, RF-K-X3)
         const uid = `${floorId}-${row}-X${column}`;
         const legacyUid = `${row}-X${column}`;
+
+        // 중복 UID 감지
+        if (columns[uid]) {
+            duplicateCount++;
+            continue; // 첫 번째 노드 유지, 이후 중복은 스킵
+        }
 
         // Zone 결정 (Multi-Floor Logic 적용)
         const zoneId = getZoneId(column, floorId);
@@ -602,7 +611,7 @@ function generateColumns(nodes, gridConfig, elements) {
         };
     }
 
-    console.log(`[MGT Parser] Generated ${Object.keys(columns).length} columns from ${allColumnNodes.length} column nodes across ${zValues.length} floors (element filter: ${useElementFilter})`);
+    console.log(`[MGT Parser] Generated ${Object.keys(columns).length} columns from ${allColumnNodes.length} column nodes across ${zValues.length} floors (element filter: ${useElementFilter}, duplicates skipped: ${duplicateCount})`);
     console.log(`[MGT Parser] Z-levels: ${zValues.length}, Floor mapping: F1~F${zValues.length - 1}, RF`);
     
     return columns;
