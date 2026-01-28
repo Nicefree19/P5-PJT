@@ -47,14 +47,15 @@ src/
 | Phase 5 | ✅ 완료 | AI-Dashboard 통합 (LockService, 매핑, 비동기) |
 | Phase 6 | ✅ 완료 | 6단계 공정 모델 + 워크플로우 필터 |
 | Phase 7 | ✅ 완료 | UX 개선 (검색, 알림, 히스토리) |
-| Phase 7+ | ✅ 완료 | 층-절주 Backend 연동 (11F x 8절주) |
-| Future | 📋 진행예정 | 모바일 UX, 이슈 핀 시각화, 보고서 |
+| Phase 7+ | ✅ 완료 | 층-절주 Backend 연동 (F1~F10 x 8절주) |
+| Phase 8 | ✅ 완료 | 정합성 통합 (층ID F1 표준, 그리드 SSOT, 골조 연동) |
+| Future | 📋 진행예정 | 모바일 UX, 이슈 핀 시각화, 모듈 분리 |
 
 ## 버전 정보
 
-- **시스템 버전**: v2.4.0 (Phase 7+ Complete)
+- **시스템 버전**: v2.5.0 (Phase 8 Complete)
 - **Gemini 모델**: gemini-2.0-flash
-- **최종 업데이트**: 2025-12-31
+- **최종 업데이트**: 2026-01-28
 
 ## 구현 시 마스터 참조
 1. **SSOT**: `project_master_snapshot.json` (전체 상태 백업/복구의 기준)

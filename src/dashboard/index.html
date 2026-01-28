@@ -1122,7 +1122,7 @@
                     <span style="font-size:12px; font-weight:600; color:#fff;"
                           x-text="(floors.find(f => f.floorId === selectedFloor)?.label || '전체') + ' / ' + (getSelectedSegmentLabel() || '전체')"></span>
                     <button class="btn" style="font-size:10px; padding:4px 8px;"
-                            @click="selectedSegment = null; selectedFloor = 'F01'">초기화</button>
+                            @click="selectedSegment = null; selectedFloor = 'F1'">초기화</button>
                 </div>
                 <div style="display:flex; gap:16px;">
                     <div style="text-align:center;">
@@ -4431,11 +4431,11 @@ const P5Store = {
 
 // ===== Alpine.js Application =====
 function dashboard() {
-    // ★ MGT Grid Config from column_data_generator.js (197,835 columns support)
+    // ★ Grid SSOT: COLUMN_CONFIG (column_data_generator.js) — 69cols × 11rows (A-K), F1~F10+RF
     const MGT_CONFIG = (typeof COLUMN_CONFIG !== 'undefined') ? COLUMN_CONFIG : null;
 
     return {
-        // Grid Config - MGT 규격 (327 cols × 55 rows) or fallback to legacy
+        // Grid Config — SSOT: COLUMN_CONFIG, fallback: 69×11
         gridConfig: MGT_CONFIG
             ? { cols: MGT_CONFIG.columnRange.end - MGT_CONFIG.columnRange.start + 1, rows: MGT_CONFIG.rowLabels.length }
             : { cols: 69, rows: 11 },
@@ -5950,30 +5950,31 @@ function dashboard() {
         // ⚠️ 중요: "절주" = 수직 분절 (층 그룹), "열 구간" = 수평 분절 (컬럼 범위)
         initFloorJeoljuData() {
             // ★ P5 복합동 11개 층 데이터 (실제 규격)
+            // floorId 규격: F1~F10, RF (column_data_generator, structure-store 공통)
             this.floors = [
-                { floorId: '1F', label: '1F (기초)', order: 1, level: 0.3, hasVariation: false },
-                { floorId: '2F', label: '2F', order: 2, level: 7.8, hasVariation: false },
-                { floorId: '3F', label: '3F', order: 3, level: 14.3, hasVariation: false },
-                { floorId: '4F', label: '4F', order: 4, level: 21.3, hasVariation: false },
-                { floorId: '5F', label: '5F', order: 5, level: 28.3, hasVariation: false },
-                { floorId: '6F', label: '6F', order: 6, level: 35.3, hasVariation: false },
-                { floorId: '7F', label: '7F', order: 7, level: 42.3, hasVariation: false },
-                { floorId: '8F', label: '8F', order: 8, level: 49.3, hasVariation: false },
-                { floorId: '9F', label: '9F', order: 9, level: 56.3, hasVariation: false },
-                { floorId: '10F', label: '10F', order: 10, level: 63.3, hasVariation: false },
+                { floorId: 'F1', label: '1F (기초)', order: 1, level: 0.3, hasVariation: false },
+                { floorId: 'F2', label: '2F', order: 2, level: 7.8, hasVariation: false },
+                { floorId: 'F3', label: '3F', order: 3, level: 14.3, hasVariation: false },
+                { floorId: 'F4', label: '4F', order: 4, level: 21.3, hasVariation: false },
+                { floorId: 'F5', label: '5F', order: 5, level: 28.3, hasVariation: false },
+                { floorId: 'F6', label: '6F', order: 6, level: 35.3, hasVariation: false },
+                { floorId: 'F7', label: '7F', order: 7, level: 42.3, hasVariation: false },
+                { floorId: 'F8', label: '8F', order: 8, level: 49.3, hasVariation: false },
+                { floorId: 'F9', label: '9F', order: 9, level: 56.3, hasVariation: false },
+                { floorId: 'F10', label: '10F', order: 10, level: 63.3, hasVariation: false },
                 { floorId: 'RF', label: 'RF (지붕)', order: 11, level: 99.4, hasVariation: true, variationNote: '지붕층' }
             ];
 
             // ★ 8개 절주 (수직 분절 - 층 그룹) - DashboardAPI.gs getDefaultFloors_() SSOT 기준
             this.jeoljuConfig = [
-                { jeoljuId: '1절주', label: '1절주', floors: ['1F', '2F'], heightRange: '0.3m ~ 7.8m', length: 7.5, columnSize: '1600x1600', description: '1절주 (1~2F)' },
-                { jeoljuId: '2절주', label: '2절주', floors: ['3F'], heightRange: '14.3m', length: 6.5, columnSize: '1600x1600', description: '2절주 (3F)' },
-                { jeoljuId: '3절주', label: '3절주', floors: ['4F'], heightRange: '21.3m', length: 7.0, columnSize: '1500x1500', description: '3절주 (4F)' },
-                { jeoljuId: '4절주', label: '4절주', floors: ['5F'], heightRange: '28.3m', length: 7.0, columnSize: '1500x1500', description: '4절주 (5F)' },
-                { jeoljuId: '5절주', label: '5절주', floors: ['6F', '7F'], heightRange: '35.3m ~ 42.3m', length: 7.0, columnSize: '1300x1300', description: '5절주 (6~7F)' },
-                { jeoljuId: '6절주', label: '6절주', floors: ['8F'], heightRange: '49.3m', length: 7.0, columnSize: '1300x1300', description: '6절주 (8F)' },
-                { jeoljuId: '7절주', label: '7절주', floors: ['9F'], heightRange: '56.3m', length: 7.0, columnSize: '1300x1300', description: '7절주 (9F)' },
-                { jeoljuId: '8절주', label: '8절주', floors: ['10F', 'RF'], heightRange: '63.3m ~ 99.4m', length: 36.1, columnSize: '1200x1200', description: '8절주 (10F~RF)' }
+                { jeoljuId: '1절주', label: '1절주', floors: ['F1', 'F2'], heightRange: '0.3m ~ 7.8m', length: 7.5, columnSize: '1600x1600', description: '1절주 (1~2F)' },
+                { jeoljuId: '2절주', label: '2절주', floors: ['F3'], heightRange: '14.3m', length: 6.5, columnSize: '1600x1600', description: '2절주 (3F)' },
+                { jeoljuId: '3절주', label: '3절주', floors: ['F4'], heightRange: '21.3m', length: 7.0, columnSize: '1500x1500', description: '3절주 (4F)' },
+                { jeoljuId: '4절주', label: '4절주', floors: ['F5'], heightRange: '28.3m', length: 7.0, columnSize: '1500x1500', description: '4절주 (5F)' },
+                { jeoljuId: '5절주', label: '5절주', floors: ['F6', 'F7'], heightRange: '35.3m ~ 42.3m', length: 7.0, columnSize: '1300x1300', description: '5절주 (6~7F)' },
+                { jeoljuId: '6절주', label: '6절주', floors: ['F8'], heightRange: '49.3m', length: 7.0, columnSize: '1300x1300', description: '6절주 (8F)' },
+                { jeoljuId: '7절주', label: '7절주', floors: ['F9'], heightRange: '56.3m', length: 7.0, columnSize: '1300x1300', description: '7절주 (9F)' },
+                { jeoljuId: '8절주', label: '8절주', floors: ['F10', 'RF'], heightRange: '63.3m ~ 99.4m', length: 36.1, columnSize: '1200x1200', description: '8절주 (10F~RF)' }
             ];
 
             // ★ 열 구간 (수평 분절 - 컬럼 범위)
@@ -6421,12 +6422,37 @@ function dashboard() {
             this.closeMappingModal();
         },
 
+        // Phase 7: 층 ID 정규화 유틸리티
+        // 프론트엔드 표준: F1~F10, RF
+        // 백엔드(API) 표준: F01~F10, RF
+        normalizeFloorId(id) {
+            if (!id || id === 'RF') return id;
+            // '1F' → 'F1', '10F' → 'F10'
+            const nfMatch = id.match(/^(\d+)F$/);
+            if (nfMatch) return `F${nfMatch[1]}`;
+            // 'F01' → 'F1', 'F02' → 'F2' (strip leading zero)
+            const f0Match = id.match(/^F0(\d)$/);
+            if (f0Match) return `F${f0Match[1]}`;
+            return id;
+        },
+        // F1 → F01 (API 호출용)
+        toApiFloorId(id) {
+            if (!id || id === 'RF') return id;
+            const m = id.match(/^F(\d)$/);
+            return m ? `F0${m[1]}` : id;
+        },
+
         // Phase 7: 층 선택
         selectFloor(floorId) {
             const previousFloor = this.selectedFloor;
             this.selectedFloor = floorId;
             this.floorSelectorOpen = false;
             console.log('[Phase 7] Floor selected:', floorId);
+
+            // 층 변경 시 structure-store 동기화 (골조 오버레이 갱신)
+            if (typeof Alpine !== 'undefined') {
+                Alpine.store('structure')?.setFloor?.(floorId);
+            }
 
             // 층 변경 시 API에서 해당 층 데이터 로드
             if (previousFloor !== floorId) {
@@ -6457,7 +6483,8 @@ function dashboard() {
                     throw new Error('API URL not configured');
                 }
 
-                const response = await fetch(`${apiUrl}?action=getFloorData&floorId=${floorId}`);
+                const apiFloorId = this.toApiFloorId(floorId);
+                const response = await fetch(`${apiUrl}?action=getFloorData&floorId=${apiFloorId}`);
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}`);
                 }
@@ -6547,13 +6574,11 @@ function dashboard() {
 
         // Phase 7+: 그리드 데이터 업데이트 (columns → grid 변환)
         updateGridData() {
-            // grid 데이터 재생성 (rows × cols 구조)
-            const rowLabels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
-
-            this.grid = rowLabels.map((rowLabel, rowIndex) => {
+            // grid 데이터 재생성 (rows × cols 구조) — SSOT: this.rowLabels, this.gridConfig
+            this.grid = this.rowLabels.map((rowLabel, rowIndex) => {
                 const cells = [];
-                for (let col = 1; col <= 69; col++) {
-                    // UID 형식: "A-X1" 또는 "F01-A-X1"
+                for (let col = 1; col <= this.gridConfig.cols; col++) {
+                    // UID 형식: "A-X1" 또는 "F1-A-X1"
                     const simpleUid = `${rowLabel}-X${col}`;
                     const floorUid = `${this.selectedFloor}-${rowLabel}-X${col}`;
 
@@ -6620,11 +6645,14 @@ function dashboard() {
                 this.selectedSegment = segmentId;
             }
             
-            // 층이 변경되었으면 데이터 로드
+            // 층이 변경되었으면 데이터 로드 + 골조 동기화
             if (previousFloor !== floorId) {
+                if (typeof Alpine !== 'undefined') {
+                    Alpine.store('structure')?.setFloor?.(floorId);
+                }
                 this.loadFloorData(floorId);
             }
-            
+
             const floorLabel = this.floors.find(f => f.floorId === floorId)?.label || floorId;
             const segmentLabel = this.segmentList.find(s => s.segmentId === segmentId)?.label || segmentId;
             this.showToast(`${floorLabel} / ${segmentLabel} 선택됨`, 'info');
@@ -8626,14 +8654,12 @@ function dashboard() {
 
         // === Phase 7: Floor Data Loading (Legacy wrapper) ===
         loadFloorDataLegacy() {
-            // 레거시 currentFloor 값을 새 selectedFloor 형식으로 변환
+            // 레거시 currentFloor 값을 selectedFloor 형식으로 변환
             const floorMapping = {
-                'F1': 'F01',
-                'F2': 'F02',
                 'ALL': null  // 전체는 필터 없음
             };
 
-            const floorId = floorMapping[this.currentFloor] || this.selectedFloor || 'F01';
+            const floorId = floorMapping[this.currentFloor] || this.selectedFloor || 'F1';
             const floorName = this.currentFloor === 'F1' ? '1층' :
                               this.currentFloor === 'F2' ? '2층' : '전체';
             console.log(`[Floor Legacy] Loading data for: ${floorName} (${floorId})`);
@@ -11631,7 +11657,7 @@ function dashboard() {
          * Add Detailed Floor Pages to PDF
          */
         _addPdfDetailedPages_REMOVED(doc, margin, contentWidth) {
-            const floorIds = ['F01', 'F02', 'F03', 'F04', 'F05', 'F06', 'F07', 'F08', 'F09', 'F10', 'RF'];
+            const floorIds = ['F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'RF'];
             const pageWidth = doc.internal.pageSize.getWidth();
 
             floorIds.forEach(floorId => {
@@ -12079,12 +12105,12 @@ function dashboard() {
             const minX = xValues[0] || 0;
             const excludedColumns = minX > 15 ? [1, 2] : [];
             
-            // Generate floor mapping from Z values (F01~F10, RF)
-            const floorLabels = ['F01', 'F02', 'F03', 'F04', 'F05', 'F06', 'F07', 'F08', 'F09', 'F10', 'RF'];
+            // Generate floor mapping from Z values (F1~F10, RF)
+            const floorLabels = ['F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'RF'];
             const floorMapping = {};
             zValues.forEach((z, idx) => {
                 // Use predefined labels for first 11 floors, then generate dynamically
-                const floorId = idx < floorLabels.length ? floorLabels[idx] : `F${String(idx + 1).padStart(2, '0')}`;
+                const floorId = idx < floorLabels.length ? floorLabels[idx] : `F${idx + 1}`;
                 floorMapping[z] = floorId;
             });
             
@@ -12123,12 +12149,12 @@ function dashboard() {
             this.gridConfig.cols = parsed.gridConfig.cols;
             this.gridConfig.rows = parsed.gridConfig.rows;
             
-            // Generate floors from Z values (F01~RF)
+            // Generate floors from Z values (F1~RF)
             const { zValues, floorMapping } = parsed.gridConfig;
-            const floorLabels = ['F01', 'F02', 'F03', 'F04', 'F05', 'F06', 'F07', 'F08', 'F09', 'F10', 'RF'];
+            const floorLabels = ['F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'RF'];
             this.floors = zValues.map((z, idx) => ({
                 floorId: floorMapping[z],
-                label: floorLabels[idx] || `F${String(idx + 1).padStart(2, '0')}`,
+                label: floorLabels[idx] || `F${idx + 1}`,
                 zLevel: z,
                 hasVariation: false,
                 columnSize: '' // Can be populated later with actual section data

@@ -1,7 +1,7 @@
 # Tech Spec: P5 복합동 구조 통합 관리 시스템 (Gmail-Gemini-Sheet Integration)
 
-**Version**: 2.4.0
-**Date**: 2025-12-31
+**Version**: 2.5.0
+**Date**: 2026-01-28
 **Author**: Multi-Agent Debate (GPT-5 + Gemini DeepThink + Claude Opus)
 **Status**: Draft → Review → Approved
 
@@ -16,6 +16,9 @@
 - **G4**: PSRC/HMB 공법 특화 페르소나를 통한 엔지니어링 리스크 평가
 - **G5**: 이해관계자별(삼우, ENA, 이앤디몰, 센코어) 발생원 자동 분류
 - **G6**: 접합부 간섭, Shop Drawing 이슈, 설계 변경 사항 추적
+- **G7**: Alpine.js SPA 대시보드 — 층별 기둥 상태 그리드 (69열×11행, F1~F10+RF)
+- **G8**: MGT 구조 파일 파싱 및 골조(beam/girder/column) 오버레이 시각화
+- **G9**: 6단계 공정 모델 기반 실시간 진행률 관리
 
 ### 1.2 비즈니스 목표
 - **B1**: 메일 처리 시간 90% 단축 (수동 → 자동)
@@ -27,7 +30,7 @@
 ## 2. Non-Goals (구현하지 않을 것)
 
 - **NG1**: 메일 송신 기능 (읽기 전용 시스템)
-- **NG2**: 복잡한 UI 개발 (Google Sheet를 UI로 사용)
+- **NG2**: ~~복잡한 UI 개발~~ → Alpine.js SPA 대시보드로 대체 완료 (Phase 1~8)
 - **NG3**: 이미지/도면 자동 분석 (향후 OCR 연계 가능)
 - **NG4**: 실시간 푸시 알림 (배치 처리 기반, 향후 트리거 추가 가능)
 - **NG5**: 다른 프로젝트로의 확장 (P5 복합동 전용)
@@ -338,59 +341,81 @@ sequenceDiagram
 
 ---
 
-## 5. File Structure (예상 파일 구조)
+## 5. File Structure (파일 구조)
 
 ```
 P5_PJT/
 ├── docs/
-│   ├── techspec.md              # 이 문서
-│   ├── plan.md                   # 구현 계획 (차후 생성)
-│   ├── agent.md                  # Agent 지침 (차후 생성)
-│   └── debate_log.md             # Multi-Agent Debate 기록
+│   ├── techspec.md              # 이 문서 (SSOT)
+│   ├── task_list.md             # 태스크 목록 및 진행현황
+│   ├── plan.md                  # 초기 계획
+│   ├── design_review.md         # 설계 리뷰
+│   └── DEPLOYMENT.md            # 배포 가이드
 ├── src/
-│   ├── Code.gs                   # 메인 Apps Script 파일
-│   ├── Config.gs                 # 설정 관리
-│   ├── GmailFilter.gs            # Gmail 필터링 로직
-│   ├── GeminiAnalyzer.gs         # AI 분석 엔진
-│   ├── SheetWriter.gs            # Sheet 쓰기 로직
-│   └── Utils.gs                  # 유틸리티 함수
+│   ├── Code.gs                  # 메인 엔트리포인트, 트리거 관리
+│   ├── Config.gs                # 전역 설정, 환경변수
+│   ├── GmailFilter.gs           # Gmail 필터링 로직
+│   ├── GeminiAnalyzer.gs        # AI 분석 엔진 (프롬프트)
+│   ├── SheetWriter.gs           # 메일분석 DB 기록
+│   ├── Utils.gs                 # 유틸리티 함수
+│   ├── Tests.gs                 # 테스트 함수
+│   └── dashboard/
+│       ├── DashboardAPI.gs      # REST API (doGet/doPost)
+│       ├── index.html           # Alpine.js SPA Dashboard (~11,000줄)
+│       ├── css/
+│       │   ├── components.css   # UI 컴포넌트 스타일
+│       │   └── structure.css    # 골조 오버레이 스타일
+│       ├── js/
+│       │   ├── mgt-parser.js    # MGT 구조 파일 파서
+│       │   └── stores/
+│       │       ├── column-store.js     # 컬럼 상태 관리 스토어
+│       │       ├── structure-store.js  # 골조 데이터 스토어 (Alpine store)
+│       │       └── unified-store.js    # 통합 데이터 스토어
+│       └── data/
+│           ├── column_data_generator.js  # 층별 컬럼 UID 생성기 (Grid SSOT)
+│           ├── master_config.json        # Zone/상태코드 마스터데이터
+│           └── mgt_parsed_config.json    # (테스트 산출물, 앱 미사용)
 ├── tests/
-│   ├── test_gmail_filter.gs      # Gmail 필터 테스트
-│   ├── test_ai_parser.gs         # AI 파싱 테스트
-│   └── test_sheet_writer.gs      # Sheet 쓰기 테스트
-├── .vibe/
-│   └── state.json                # Vibe 워크플로우 상태
-└── README.md                     # 프로젝트 소개
+│   ├── column-store.test.js     # 컬럼 스토어 단위 테스트
+│   └── e2e/
+│       └── smoke.spec.ts        # Playwright E2E 스모크 테스트
+└── README.md
 ```
 
 ---
 
 ## 6. Implementation Phases (구현 단계)
 
-### Phase 1: Foundation (기초 설정)
-- Google Apps Script 프로젝트 생성
-- Script Properties 설정 (API_KEY, SHEET_ID)
-- Google Sheet 생성 및 26개 컬럼 헤더 작성
+### Backend Phases (GAS)
+| Phase | 명칭 | 상태 | 핵심 산출물 |
+|-------|------|------|------------|
+| 1 | Foundation | ✅ | GAS 프로젝트, Script Properties, 26컬럼 Sheet |
+| 2 | Gmail Integration | ✅ | 키워드+참여자 필터링, 중복 방지 |
+| 3 | AI Analysis Engine | ✅ | Gemini API, 페르소나 프롬프트, JSON 파싱 |
+| 4 | Data Pipeline | ✅ | 26컬럼 매핑, Sheet 쓰기, 타임스탬프 |
 
-### Phase 2: Gmail Integration (Gmail 연동)
-- Gmail 검색 쿼리 로직 구현
-- 키워드 + 참여자 필터링 검증
-- 중복 방지 메커니즘 구현
+### Dashboard Phases (Frontend)
+| Phase | 명칭 | 상태 | 핵심 산출물 |
+|-------|------|------|------------|
+| 0-1 | Dashboard Core | ✅ | Alpine.js SPA, LocalStorage CRUD, Bulk Edit |
+| 2 | Sheet Sync | ✅ | doGet/doPost API, Optimistic UI, 충돌 감지 |
+| 3 | AI & Issue Integration | ✅ | AI 분석 오버레이, Lock 로직, 이슈 시각화 |
+| 4 | Admin Tools | ✅ | Zone/Master Data UI, CSV 임포트, 모바일 뷰 |
+| 5 | AI-Dashboard Integration | ✅ | LockService, Urgency→Severity, 비동기 트리거 |
+| 6 | 공정 모델 | ✅ | 6단계 공정, Multi-Stage 셀, 워크플로우 필터 |
+| 7 | UX 개선 | ✅ | 검색, 알림, 히스토리, 층 선택기, 절주 입면 뷰어 |
+| 7+ | 층-절주 Backend | ✅ | floorId 컬럼, getFloorData API, 마이그레이션 |
+| 8 | 정합성 통합 | ✅ | 층 ID 통일(F1), 그리드 SSOT(69×11), 골조 연동 |
 
-### Phase 3: AI Analysis Engine (AI 분석 엔진)
-- Gemini API 호출 함수 작성
-- 페르소나 프롬프트 최적화
-- JSON 파싱 및 에러 핸들링
-
-### Phase 4: Data Pipeline (데이터 파이프라인)
-- 26개 컬럼 데이터 매핑
-- Google Sheet 쓰기 로직
-- 타임스탬프 및 자동 번호 부여
-
-### Phase 5: Testing & Deployment (테스트 및 배포)
-- 단위 테스트 작성
-- 통합 테스트 (실제 메일 샘플)
-- 트리거 설정 (일일 배치)
+### 데이터 규격 SSOT
+```
+Grid SSOT: COLUMN_CONFIG (column_data_generator.js)
+  - 열: 69 (X1~X69)
+  - 행: 11 (A~K)
+  - 층: F1~F10, RF (11개)
+  - 포맷: 프론트 F{n} / 백엔드 API F0{n}
+  - Zone: A(1-23), B(24-45), C(46-69)
+```
 
 ---
 
@@ -429,13 +454,19 @@ P5_PJT/
 
 ## 9. Future Enhancements (향후 개선 사항)
 
-### Version 2.0 Features
+### 단기 (v2.6)
+- **모바일 UX 최적화**: 터치 제스처, 반응형 그리드 개선
+- **이슈 핀 시각화**: 그리드 위 이슈 위치 표시
+- **index.html 모듈 분리**: Alpine.data() 컴포넌트로 추출 (유지보수성)
+- **이벤트 기반 store 통신**: 직접 호출 → CustomEvent 전환
+
+### 중기 (v3.0)
 - **이미지 OCR 분석**: 도면 이미지 자동 추출 및 분석
 - **실시간 알림**: Slack/Telegram 연동
-- **대시보드**: Google Data Studio 시각화
 - **자동 답변**: 템플릿 기반 메일 초안 생성
+- **PDF 보고서**: 층별 진행률 보고서 자동 생성
 
-### Version 3.0 Features
+### 장기 (v4.0)
 - **다중 프로젝트 지원**: P5 외 다른 프로젝트 확장
 - **머신러닝 피드백 루프**: 사용자 수정 사항 학습
 - **BIM 연동**: Revit/Tekla 모델 연계

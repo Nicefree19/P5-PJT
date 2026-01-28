@@ -305,7 +305,7 @@ function elementToSvgCoords(element, gridConfig, renderConfig) {
 
 /**
  * 그리드 설정 계산
- * ★ cols는 건축 그리드 열 수(67, X3~X69)를 반환
+ * ★ cols는 건축 그리드 열 수(69, X1~X69)를 반환 (X1~X2 미사용, excludedColumns로 표기)
  * ★ rawXValues는 모든 노드 X 좌표 (골조 시각화용)
  * @param {Object[]} nodes - 노드 배열
  * @returns {Object} 그리드 설정

@@ -14,7 +14,7 @@
  * @returns {Object} Progress data by floor
  */
 function calculateFloorProgress(columns) {
-    const floorIds = ['F01', 'F02', 'F03', 'F04', 'F05', 'F06', 'F07', 'F08', 'F09', 'F10', 'RF'];
+    const floorIds = ['F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'RF'];
     const progress = {};
 
     floorIds.forEach(floorId => {
@@ -76,10 +76,10 @@ function getIssueStatusLabel(status) {
  * @param {Object} doc - jsPDF document
  * @param {string} timestamp - Generation timestamp
  * @param {string} reportType - Report type
- * @param {Object} data - { columns, issues, selectedFloor, selectedJeolju }
+ * @param {Object} data - { columns, issues, selectedFloor, selectedSegment }
  */
 function addPdfCoverPage(doc, timestamp, reportType, data) {
-    const { columns, issues, selectedFloor, selectedJeolju } = data;
+    const { columns, issues, selectedFloor, selectedSegment } = data;
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
     const centerX = pageWidth / 2;
@@ -137,10 +137,10 @@ function addPdfCoverPage(doc, timestamp, reportType, data) {
     doc.text(`완료: ${completedCount.toLocaleString()}개 | 미해결 이슈: ${openIssues}건`, 40, infoY + 31);
     doc.text(`보고서 생성일시: ${timestamp}`, 40, infoY + 39);
 
-    // Floor and Jeolju context
+    // Floor and Segment context
     const floorContext = selectedFloor || 'ALL';
-    const jeoljuContext = selectedJeolju || '전체';
-    doc.text(`현재 조회 범위: ${floorContext}층 / ${jeoljuContext}절주`, 40, infoY + 47);
+    const segmentContext = selectedSegment || '전체';
+    doc.text(`현재 조회 범위: ${floorContext}층 / ${segmentContext}구간`, 40, infoY + 47);
 
     // Footer
     doc.setFontSize(8);
@@ -279,7 +279,7 @@ function addPdfSummaryPage(doc, margin, contentWidth, data) {
  */
 function addPdfDetailedPages(doc, margin, contentWidth, data) {
     const { columns, issues, zones } = data;
-    const floorIds = ['F01', 'F02', 'F03', 'F04', 'F05', 'F06', 'F07', 'F08', 'F09', 'F10', 'RF'];
+    const floorIds = ['F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'RF'];
     const pageWidth = doc.internal.pageSize.getWidth();
 
     floorIds.forEach(floorId => {
@@ -569,7 +569,7 @@ function addPdfPageNumbers(doc) {
 /**
  * Generate complete PDF report
  * @param {string} type - Report type: 'summary' | 'detailed' | 'issues'
- * @param {Object} data - { columns, issues, zones, statusCodes, selectedFloor, selectedJeolju }
+ * @param {Object} data - { columns, issues, zones, statusCodes, selectedFloor, selectedSegment }
  * @returns {Object} { success, filename, error }
  */
 function generatePdfReport(type, data) {

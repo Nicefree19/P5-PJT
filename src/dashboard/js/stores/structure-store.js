@@ -127,15 +127,7 @@
              * @private
              */
             _setupEventListeners() {
-                // 층 변경 감지
-                if (typeof Alpine !== 'undefined') {
-                    Alpine.effect(() => {
-                        const gridStore = Alpine.store('grid');
-                        if (gridStore && gridStore.currentFloor !== this.currentFloor) {
-                            this.setFloor(gridStore.currentFloor);
-                        }
-                    });
-                }
+                // 층 변경은 selectFloor() → Alpine.store('structure').setFloor() 로 직접 호출됨
 
                 // 윈도우 리사이즈 시 렌더 설정 재계산
                 window.addEventListener('resize', () => {

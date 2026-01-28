@@ -1,7 +1,7 @@
 # P5 Dashboard Task List
 
-**최종 업데이트**: 2025-12-31
-**현재 Phase**: Phase 7 UX 완료, 층-절주 구조 진행중
+**최종 업데이트**: 2026-01-28
+**현재 Phase**: Phase 8 정합성 통합 완료
 
 ---
 
@@ -166,7 +166,7 @@
 
 #### Task 7.4: 층 선택기 컴포넌트
 - [x] 층 선택 드롭다운 UI
-- [x] F01-F11 (11개 층) 지원
+- [x] F1~F10, RF (11개 층) 지원 — floorId 표준: `F{n}` (프론트), `F0{n}` (백엔드 API)
 - [x] 선택된 층 표시
 - [x] 키보드 단축키 (F)
 
@@ -210,7 +210,7 @@
 
 #### Phase C: API Integration ✅
 - [x] `getFloorStats` endpoint 추가
-- [x] `getColumns&floorId=F01` 필터 지원
+- [x] `getColumns&floorId=F01` 필터 지원 (API는 F01 포맷, 프론트에서 `toApiFloorId()` 변환)
 - [x] API 문서 업데이트 (v2.1)
 - [x] Frontend `loadFloorData()` → Backend API 연결
 - [x] `updateGridData()` 그리드 변환 함수 추가
@@ -225,19 +225,58 @@
 
 ---
 
+## Phase 8: 정합성 통합 및 골조 연동 ✅ (Completed)
+
+**완료일**: 2026-01-28
+
+| 순서 | Task | 상태 | 파일 |
+|------|------|------|------|
+| 1 | 층 ID 포맷 통일 (F1 표준) | ✅ | index.html, pdf-generator.js |
+| 2 | 그리드 SSOT 통합 (69×11, A-K) | ✅ | index.html, mgt-parser.js, mgt_parsed_config.json |
+| 3 | Alpine.store('grid') dead watcher 제거 | ✅ | structure-store.js |
+| 4 | 층-골조 오버레이 동기화 | ✅ | index.html, structure-store.js |
+| 5 | 문서 정합성 업데이트 | ✅ | techspec.md, task_list.md |
+| 6 | E2E 콘솔 에러 필터 강화 | ✅ | smoke.spec.ts |
+
+### 상세 체크리스트
+
+#### Task 8.1: 층 ID 포맷 통일
+- [x] `floors[].floorId`: `1F`→`F1`, `2F`→`F2` ... `10F`→`F10` 통일
+- [x] `jeoljuConfig[].floors`: 동일 포맷 통일
+- [x] 초기화 버튼 `F01`→`F1`, legacy wrapper 매핑 제거
+- [x] `normalizeFloorId()` / `toApiFloorId()` 유틸 추가
+- [x] API 호출 시 `toApiFloorId()` 적용 (백엔드 F01 호환)
+- [x] `padStart(2,'0')` fallback 제거 (MGT applyConfig)
+- [x] pdf-generator.js `F01` → `F1` 통일
+
+#### Task 8.2: 그리드 SSOT 통합
+- [x] `updateGridData()` 하드코딩 `['A'...'L']/69` → `this.rowLabels/this.gridConfig.cols` 참조
+- [x] gridConfig SSOT 주석 명확화 (COLUMN_CONFIG 단일 소스)
+- [x] `mgt-parser.js` 주석 수정 (67→69 cols)
+- [x] `mgt_parsed_config.json` 메타에 테스트 산출물 표기
+
+#### Task 8.3: 골조 연동 정비
+- [x] `selectFloor()` → `Alpine.store('structure').setFloor()` 호출 추가
+- [x] `selectFloorAndSegment()` → 동일 호출 추가
+- [x] `Alpine.store('grid')` dead watcher 제거
+- [x] E2E 콘솔 에러 필터 강화 (Script error, GlobalError, Failed to load resource)
+
+---
+
 ## 통계
 
 | 상태 | 개수 |
 |------|------|
-| ✅ 완료 | 72 |
+| ✅ 완료 | 86 |
 | 🔄 진행중 | 0 |
 | 📋 대기 | 0 |
-| **총계** | **72** |
+| **총계** | **86** |
 
 > Phase 5 완료 (2025-12-30): LockService 동시성 제어, Urgency→Severity 매핑, 시맨틱 프롬프트 강화, 데이터 스키마 통합, 비동기 분석 트리거 API
 > Phase 6 완료 (2025-12-30): 6단계 공정 데이터 모델, 2x3 셀 Multi-Stage Indicator, 진행률 헤더, SVG 워크플로우 다이어그램
 > Phase 7 완료 (2025-12-31): Smart Search, Notification System, History Viewer, 층 선택기, 절주 입면 뷰어, Grid 층별 로딩 Frontend
 > Phase 7+ Backend 완료 (2025-12-31): floorId 컬럼 추가, getFloorStats API, 마이그레이션 함수, Testing & Validation
+> Phase 8 완료 (2026-01-28): 층 ID 포맷 통일(F1 표준), 그리드 SSOT 통합(69×11), 골조 연동 정비, 문서 정합성 업데이트
 
 ---
 

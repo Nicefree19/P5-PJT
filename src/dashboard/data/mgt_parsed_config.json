@@ -60,7 +60,8 @@
   "meta": {
     "totalNodes": 28771,
     "totalElements": 43361,
-    "parsedAt": "2026-01-02T07:43:29.296Z",
-    "source": "mgt_import"
+    "parsedAt": "2026-01-27T06:45:44.440Z",
+    "source": "mgt_import",
+    "note": "테스트 산출물 (test-mgt-parser.js 생성). 앱에서 미사용. 대시보드 SSOT는 COLUMN_CONFIG (column_data_generator.js: 69cols × 11rows)"
   }
 }
