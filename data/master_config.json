@@ -1,0 +1,357 @@
+{
+  "zones": [
+    {
+      "id": "zone_a",
+      "name": "ZONE A",
+      "displayName": "FAB",
+      "description": "Utility Support - 유틸리티 지원 시설",
+      "range": {
+        "startColumn": 1,
+        "endColumn": 23,
+        "startRow": 0,
+        "endRow": 11
+      },
+      "style": {
+        "primaryColor": "#238636",
+        "backgroundColor": "rgba(35, 134, 54, 0.1)",
+        "progressPercent": 0
+      },
+      "metadata": {
+        "createdAt": "2025-12-29",
+        "updatedAt": "2025-12-29",
+        "createdBy": "system"
+      }
+    },
+    {
+      "id": "zone_b",
+      "name": "ZONE B",
+      "displayName": "CUB",
+      "description": "Main Link - CUB 연결 구간",
+      "range": {
+        "startColumn": 24,
+        "endColumn": 45,
+        "startRow": 0,
+        "endRow": 11
+      },
+      "style": {
+        "primaryColor": "#1f6feb",
+        "backgroundColor": "rgba(31, 111, 235, 0.1)",
+        "progressPercent": 0
+      },
+      "metadata": {
+        "createdAt": "2025-12-29",
+        "updatedAt": "2025-12-29",
+        "createdBy": "system"
+      }
+    },
+    {
+      "id": "zone_c",
+      "name": "ZONE C",
+      "displayName": "COMPLEX",
+      "description": "Office/Amenity - 복합동 사무/편의시설",
+      "range": {
+        "startColumn": 46,
+        "endColumn": 69,
+        "startRow": 0,
+        "endRow": 11
+      },
+      "style": {
+        "primaryColor": "#d29922",
+        "backgroundColor": "rgba(210, 153, 34, 0.1)",
+        "progressPercent": 0
+      },
+      "metadata": {
+        "createdAt": "2025-12-29",
+        "updatedAt": "2025-12-29",
+        "createdBy": "system"
+      }
+    }
+  ],
+  "statusCodes": {
+    "pending": {
+      "label": "대기",
+      "labelEn": "Pending",
+      "color": "#484f58",
+      "shape": "circle",
+      "opacity": 0.5,
+      "order": 0
+    },
+    "active": {
+      "label": "진행중",
+      "labelEn": "Active",
+      "color": "#1f6feb",
+      "shape": "circle",
+      "opacity": 1.0,
+      "order": 1
+    },
+    "installed": {
+      "label": "설치완료",
+      "labelEn": "Installed",
+      "color": "#238636",
+      "shape": "circle",
+      "opacity": 1.0,
+      "order": 2
+    },
+    "hold_tc": {
+      "label": "T/C Hold",
+      "labelEn": "Tower Crane Hold",
+      "color": "#da3633",
+      "shape": "square",
+      "opacity": 1.0,
+      "order": 10
+    },
+    "hold_design": {
+      "label": "설계 변경",
+      "labelEn": "Design Hold",
+      "color": "#d29922",
+      "shape": "circle",
+      "borderWidth": 2,
+      "opacity": 1.0,
+      "order": 11
+    },
+    "hold_material": {
+      "label": "자재 대기",
+      "labelEn": "Material Hold",
+      "color": "#8957e5",
+      "shape": "circle",
+      "opacity": 1.0,
+      "order": 12
+    },
+    "hold_safety": {
+      "label": "안전 점검",
+      "labelEn": "Safety Hold",
+      "color": "#f85149",
+      "shape": "triangle",
+      "opacity": 1.0,
+      "order": 13
+    }
+  },
+  "memberTypes": [
+    {
+      "code": "SRC_COL",
+      "label": "SRC Column",
+      "description": "철골철근콘크리트 기둥"
+    },
+    { "code": "STEEL_BEAM", "label": "Steel Beam", "description": "철골 보" },
+    { "code": "PC_GIRDER", "label": "PC Girder", "description": "PC 거더" },
+    { "code": "PC_SLAB", "label": "PC Slab", "description": "PC 슬래브" }
+  ],
+  "materials": [
+    { "code": "SM490", "label": "SM490", "grade": "일반 구조용" },
+    { "code": "SM490Y", "label": "SM490Y", "grade": "고강도 구조용" },
+    { "code": "SN490B", "label": "SN490B", "grade": "건축 구조용" },
+    { "code": "HSA800", "label": "HSA800", "grade": "초고강도" }
+  ],
+  "issueTypes": [
+    { "code": "tc", "label": "T/C 간섭", "color": "#da3633", "icon": "⛔" },
+    {
+      "code": "design",
+      "label": "설계 변경",
+      "color": "#d29922",
+      "icon": "⚠️"
+    },
+    {
+      "code": "material",
+      "label": "자재 이슈",
+      "color": "#8957e5",
+      "icon": "📦"
+    },
+    {
+      "code": "safety",
+      "label": "안전 이슈",
+      "color": "#f85149",
+      "icon": "🛑"
+    },
+    {
+      "code": "quality",
+      "label": "품질 이슈",
+      "color": "#f778ba",
+      "icon": "🔍"
+    }
+  ],
+  "severityLevels": [
+    { "code": "critical", "label": "Critical", "color": "#da3633", "order": 0 },
+    { "code": "high", "label": "High", "color": "#d29922", "order": 1 },
+    { "code": "medium", "label": "Medium", "color": "#1f6feb", "order": 2 },
+    { "code": "low", "label": "Low", "color": "#238636", "order": 3 }
+  ],
+  "productionStages": [
+    {
+      "code": "hmb_fab",
+      "label": "HMB제작",
+      "labelEn": "HMB Fabrication",
+      "order": 1,
+      "color": "#1f6feb",
+      "description": "HMB 부재 제작",
+      "gridPosition": { "row": 0, "col": 0 }
+    },
+    {
+      "code": "pre_assem",
+      "label": "면조립",
+      "labelEn": "Pre-Assembly",
+      "order": 2,
+      "color": "#8957e5",
+      "description": "연결부 조립",
+      "gridPosition": { "row": 0, "col": 1 }
+    },
+    {
+      "code": "main_assem",
+      "label": "대조립",
+      "labelEn": "Main Assembly",
+      "order": 3,
+      "color": "#d29922",
+      "description": "본체 조립",
+      "gridPosition": { "row": 0, "col": 2 }
+    },
+    {
+      "code": "hmb_psrc",
+      "label": "HMB+PSRC",
+      "labelEn": "HMB+PSRC Insert",
+      "order": 4,
+      "color": "#238636",
+      "description": "HMB+PSRC 삽입",
+      "gridPosition": { "row": 1, "col": 0 }
+    },
+    {
+      "code": "form",
+      "label": "FORM",
+      "labelEn": "Formwork",
+      "order": 5,
+      "color": "#da3633",
+      "description": "거푸집 설치",
+      "gridPosition": { "row": 1, "col": 1 }
+    },
+    {
+      "code": "embed",
+      "label": "앰베드",
+      "labelEn": "Embed",
+      "order": 6,
+      "color": "#f85149",
+      "description": "매립 및 마감",
+      "gridPosition": { "row": 1, "col": 2 }
+    }
+  ],
+  "contractors": [
+    { "code": "SAMSUNG", "name": "삼성E&A", "domain": "@samsung.com" },
+    { "code": "SAMOO", "name": "삼우종합건축", "domain": "@samoo.com" },
+    { "code": "EANDI", "name": "이앤디몰", "domain": "naver.com" },
+    { "code": "SENKUZO", "name": "센구조", "domain": "@senkuzo.com" }
+  ],
+  "shopIssue": {
+    "typeDefinitions": {
+      "A": {
+        "code": "A",
+        "name": "일반 사항",
+        "fullName": "일반 사항(전체 영향)",
+        "color": "#6b7280",
+        "owner": "공통"
+      },
+      "P": {
+        "code": "P",
+        "name": "PSRC",
+        "fullName": "PSRC 사항",
+        "color": "#f97316",
+        "owner": "강상규, 센구조"
+      },
+      "G": {
+        "code": "G",
+        "name": "PC",
+        "fullName": "PC 사항",
+        "color": "#22c55e",
+        "owner": "강상규, 이엔디몰"
+      },
+      "W": {
+        "code": "W",
+        "name": "PTW",
+        "fullName": "PTW 사항",
+        "color": "#3b82f6",
+        "owner": "이지영, PSTEC"
+      },
+      "R": {
+        "code": "R",
+        "name": "철근",
+        "fullName": "철근 사항 (기초제외)",
+        "color": "#ef4444",
+        "owner": "담당자 미정"
+      },
+      "S": {
+        "code": "S",
+        "name": "철골",
+        "fullName": "철골 사항",
+        "color": "#8b5cf6",
+        "owner": "담당자 미정"
+      },
+      "D": {
+        "code": "D",
+        "name": "DECK",
+        "fullName": "DECK 사항",
+        "color": "#06b6d4",
+        "owner": "담당자 미정"
+      },
+      "F": {
+        "code": "F",
+        "name": "기초",
+        "fullName": "기초 사항",
+        "color": "#84cc16",
+        "owner": "담당자 미정"
+      }
+    },
+    "locationMapping": {
+      "전체": {
+        "name": "전체",
+        "gridColumns": ["C01", "C02", "C03", "C04", "C05", "C06", "C07", "C08", "C09", "C10", "C11", "C12", "C13", "C14", "C15", "C16", "C17", "C18", "C19", "C20", "C21", "C22", "C23", "C24"],
+        "description": "프로젝트 전체 영역"
+      },
+      "1절주": {
+        "name": "1절주",
+        "gridColumns": ["C01", "C02", "C03", "C04", "C05", "C06", "C07", "C08"],
+        "description": "1절주 영역 (C01-C08)"
+      },
+      "2절주": {
+        "name": "2절주",
+        "gridColumns": ["C09", "C10", "C11", "C12", "C13", "C14", "C15", "C16"],
+        "description": "2절주 영역 (C09-C16)"
+      },
+      "3절주": {
+        "name": "3절주",
+        "gridColumns": ["C17", "C18", "C19", "C20", "C21", "C22", "C23", "C24"],
+        "description": "3절주 영역 (C17-C24)"
+      }
+    },
+    "statusDefinitions": {
+      "O": {
+        "code": "O",
+        "name": "반영완료",
+        "color": "#3fb950",
+        "icon": "✓"
+      },
+      "X": {
+        "code": "X",
+        "name": "미반영",
+        "color": "#f85149",
+        "icon": "✕"
+      },
+      "": {
+        "code": "",
+        "name": "확인중",
+        "color": "#8b949e",
+        "icon": "-"
+      }
+    },
+    "methodTypes": ["메일", "질의서", "주간회의"],
+    "csvColumnMapping": {
+      "sentDate": 0,
+      "method": 1,
+      "sender": 2,
+      "receiver": 3,
+      "typeCode": 4,
+      "typeNumber": 5,
+      "title": 6,
+      "description": 7,
+      "location": 8,
+      "notes": 9,
+      "status": 10,
+      "comment": 11
+    }
+  }
+}

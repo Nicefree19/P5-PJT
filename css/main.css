@@ -1,0 +1,27 @@
+/**
+ * P5 Dashboard - Main CSS Entry Point
+ * Phase 7 Refactoring
+ * 
+ * This file imports all modular CSS files.
+ * Import order matters for cascade priority.
+ */
+
+/* 1. Design Tokens (CSS Variables) - Must be first */
+@import url('./variables.css');
+
+/* 2. Base Reset & Accessibility */
+@import url('./accessibility.css');
+
+/* 3. Animations & Effects */
+@import url('./animations.css');
+
+/* 4. Performance Optimizations (CSS Containment, GPU hints) */
+@import url('./performance.css');
+
+/*
+ * Future CSS modules to add:
+ * @import url('./layout.css');
+ * @import url('./grid.css');
+ * @import url('./components.css');
+ * @import url('./mobile.css');
+ */
