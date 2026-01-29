@@ -269,7 +269,7 @@
 
 | 순서 | Task | 상태 | 설명 |
 |------|------|------|------|
-| 1 | index.html 컴포넌트 분리 | 📋 | ~13,000줄 모놀리식 → `/js/components/` 모듈화 |
+| 1 | index.html 컴포넌트 분리 | ✅ | 4개 모듈 추출 (Notification, SearchFilter, MeetingIssues, FloorSegment) — mixin-spread 패턴 |
 | 2 | F2 층 컬럼 데이터 누락 확인 | ✅ | 오탐 — F2 데이터 17,985건 정상 존재. F1+F2는 1절주 기초 구간(0.3m~7.8m) 설계 의도 확인 |
 | 3 | Event Bus 도입 | 📋 | store-to-store 직접 호출 → 커스텀 Event Bus로 컴포넌트 디커플링 |
 
@@ -279,9 +279,9 @@
 
 | 상태 | 개수 |
 |------|------|
-| ✅ 완료 | 87 |
+| ✅ 완료 | 88 |
 | 🔄 진행중 | 0 |
-| 📋 대기 | 2 |
+| 📋 대기 | 1 |
 | **총계** | **89** |
 
 > Phase 5 완료 (2025-12-30): LockService 동시성 제어, Urgency→Severity 매핑, 시맨틱 프롬프트 강화, 데이터 스키마 통합, 비동기 분석 트리거 API
